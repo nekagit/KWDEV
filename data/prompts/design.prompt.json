@@ -1,0 +1,58 @@
+{
+  "source_file": "design.prompt.md",
+  "source_markdown": "# Design System & Styling Analysis\n\nYou are an expert UI/UX Designer and Frontend Architect. Your objective is to formally generate or update the project's Design System Setup document (`design.md`) for the KWCode application.\n\n## 🎯 Design Analysis Checklist\n- [ ] **Inspect Configuration**: Read `tailwind.config.ts`, `postcss.config.js`, and `src/styles/` or `globals.css`.\n- [ ] **Identify Tokens**: Extract the primary color palette (e.g., Zinc, Indigo, specific hex overrides), typography rules, and border-radius conventions.\n- [ ] **Review Atoms**: Look at `src/components/atoms/` (like Buttons, Inputs, Cards) to understand the baseline visual language.\n- [ ] **Assess Dark Mode**: Confirm how dark mode is implemented (`next-themes`, native utility classes, CSS variables) and verify the fallback strategy for dark hues.\n- [ ] **Draft the Document**: Create the output Markdown conforming perfectly to the required structure below.\n\n## ✅ Dos\n- **Do** be incredibly specific about the CSS framework (Tailwind) and what utility classes are strictly preferred (e.g., \"Use `text-zinc-400` instead of `text-gray-400`\").\n- **Do** highlight animation or interaction libraries (e.g., Framer Motion, transition-all utilities) used to give the app its dynamic feel.\n- **Do** call out accessibility standards (e.g., contrast rules, `sr-only` usage).\n\n## ❌ Don'ts\n- **Don't** invent design tokens that do not exist in the Tailwind configuration or global stylesheet.\n- **Don't** omit the spacing or responsive design (mobile-first) conventions.\n\n---\n## Required Document Structure\n\nOutput exactly this structure for the `design.md` file:\n\n```markdown\n# Design System\n\n## Overview\nA concise 2-4 sentence summary of the visual identity of KWCode (e.g., modern, dark-themed, dense information layout using Zinc and Indigo primitives, highly interactive).\n\n## Color Palette\n- **Primary:** [Colors and Tailwind utility examples]\n- **Surface/Background:** [Colors for light and dark modes]\n- **Accents:** [Warning, Success, Error colors]\n\n## Typography\n- **Fonts utilized:** [e.g., Inter, local fonts]\n- **Hierarchy:** [e.g., h1=text-2xl font-bold, h2=text-xl]\n\n## Styling Conventions\n- **Framework:** Tailwind CSS\n- **Dark Mode:** [How it is toggled and enforced]\n- **Spacing Guidelines:** [e.g., prefer 4-point grid, pt-4, gap-2]\n- **Component Anatomy:** [Atomic design guidelines]\n\n## UI Component Library\n[Note whether the project uses Radix UK, shadcn/ui, Headless UI, or purely bespoke Tailwind components].\n\n## Animation & Interaction\n[Details on hover states, active states, micro-interactions, and Framer Motion patterns].\n```\nOutput the **complete** design content. The app overwrites the target file with your output.\n",
+  "structured": {
+    "title": "Design System & Styling Analysis",
+    "role_or_intent": "You are an expert UI/UX Designer and Frontend Architect. Your objective is to formally generate or update the project's Design System Setup document (`design.md`) for the KWCode application.",
+    "context_and_conventions": "",
+    "checklist": [
+      {
+        "items": [
+          "Inspect Configuration",
+          "Identify Tokens",
+          "Review Atoms",
+          "Assess Dark Mode",
+          "Draft the Document"
+        ]
+      }
+    ],
+    "dos": [
+      "be incredibly specific about the CSS framework (Tailwind) and what utility classes are strictly preferred (e.g., \"Use `text-zinc-400` instead of `text-gray-400`\").",
+      "highlight animation or interaction libraries (e.g., Framer Motion, transition-all utilities) used to give the app its dynamic feel.",
+      "call out accessibility standards (e.g., contrast rules, `sr-only` usage)."
+    ],
+    "donts": [
+      "invent design tokens that do not exist in the Tailwind configuration or global stylesheet.",
+      "omit the spacing or responsive design (mobile-first) conventions."
+    ],
+    "output_format": {
+      "description": "",
+      "target_file": "design.md",
+      "required_structure_markdown": ""
+    },
+    "user_placeholder_note": "## Required Document Structure",
+    "references": {
+      "file_refs": [],
+      "tables": ""
+    }
+  },
+  "prompt": {
+    "template": "# Design System & Styling Analysis\n\nYou are an expert UI/UX Designer and Frontend Architect. Your objective is to formally generate or update the project's Design System Setup document (`design.md`) for the KWCode application.\n\n## 🎯 Design Analysis Checklist\n- [ ] **Inspect Configuration**: Read `tailwind.config.ts`, `postcss.config.js`, and `src/styles/` or `globals.css`.\n- [ ] **Identify Tokens**: Extract the primary color palette (e.g., Zinc, Indigo, specific hex overrides), typography rules, and border-radius conventions.\n- [ ] **Review Atoms**: Look at `src/components/atoms/` (like Buttons, Inputs, Cards) to understand the baseline visual language.\n- [ ] **Assess Dark Mode**: Confirm how dark mode is implemented (`next-themes`, native utility classes, CSS variables) and verify the fallback strategy for dark hues.\n- [ ] **Draft the Document**: Create the output Markdown conforming perfectly to the required structure below.\n\n## ✅ Dos\n- **Do** be incredibly specific about the CSS framework (Tailwind) and what utility classes are strictly preferred (e.g., \"Use `text-zinc-400` instead of `text-gray-400`\").\n- **Do** highlight animation or interaction libraries (e.g., Framer Motion, transition-all utilities) used to give the app its dynamic feel.\n- **Do** call out accessibility standards (e.g., contrast rules, `sr-only` usage).\n\n## ❌ Don'ts\n- **Don't** invent design tokens that do not exist in the Tailwind configuration or global stylesheet.\n- **Don't** omit the spacing or responsive design (mobile-first) conventions.\n\n---\n## Required Document Structure\n\nOutput exactly this structure for the `design.md` file:\n\n```markdown\n# Design System\n\n## Overview\nA concise 2-4 sentence summary of the visual identity of KWCode (e.g., modern, dark-themed, dense information layout using Zinc and Indigo primitives, highly interactive).\n\n## Color Palette\n- **Primary:** [Colors and Tailwind utility examples]\n- **Surface/Background:** [Colors for light and dark modes]\n- **Accents:** [Warning, Success, Error colors]\n\n## Typography\n- **Fonts utilized:** [e.g., Inter, local fonts]\n- **Hierarchy:** [e.g., h1=text-2xl font-bold, h2=text-xl]\n\n## Styling Conventions\n- **Framework:** Tailwind CSS\n- **Dark Mode:** [How it is toggled and enforced]\n- **Spacing Guidelines:** [e.g., prefer 4-point grid, pt-4, gap-2]\n- **Component Anatomy:** [Atomic design guidelines]\n\n## UI Component Library\n[Note whether the project uses Radix UK, shadcn/ui, Headless UI, or purely bespoke Tailwind components].\n\n## Animation & Interaction\n[Details on hover states, active states, micro-interactions, and Framer Motion patterns].\n```\nOutput the **complete** design content. The app overwrites the target file with your output.",
+    "template_variables": [
+      "appended_content"
+    ],
+    "metadata": {
+      "name": "Design System & Styling Analysis",
+      "description": "an expert UI/UX Designer and Frontend Architect. Your objective is to formally generate or update the project's Design S",
+      "version": "0.1.0",
+      "tags": [
+        "setup",
+        "analyze"
+      ]
+    },
+    "client_parameters": {
+      "temperature": 0.2,
+      "max_tokens": 4096
+    }
+  }
+}

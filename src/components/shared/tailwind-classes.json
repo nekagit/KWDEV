@@ -1,0 +1,1441 @@
+{
+  "_meta": {
+    "generated": "2026-02-11T20:36:22.586Z",
+    "script": "script/tailwind/extract-tailwind-classes.mjs",
+    "note": "Central Tailwind class catalog. Edit 'common' or 'byFile' to improve styles. Re-running the script (npm run extract:tailwind-classes) overwrites byFile\u2014back up edits to byFile if needed."
+  },
+  "common": {
+    "h-4 w-4": {
+      "usageCount": 28
+    },
+    "h-4 w-4 mr-2": {
+      "usageCount": 18
+    },
+    "space-y-2": {
+      "usageCount": 14
+    },
+    "flex items-center gap-2": {
+      "usageCount": 11
+    },
+    "w-full": {
+      "usageCount": 11
+    },
+    "text-lg": {
+      "usageCount": 11
+    },
+    "Content-Type": {
+      "usageCount": 10
+    },
+    "text-gray-600 dark:text-gray-400": {
+      "usageCount": 9
+    },
+    "text-xs text-gray-600 dark:text-gray-400": {
+      "usageCount": 9
+    },
+    "space-y-3": {
+      "usageCount": 9
+    },
+    "space-y-6": {
+      "usageCount": 9
+    },
+    "text-sm text-gray-600 dark:text-gray-400": {
+      "usageCount": 8
+    },
+    "h-4 w-4 mr-1": {
+      "usageCount": 7
+    },
+    "h-4 w-4 animate-spin": {
+      "usageCount": 7
+    },
+    "h-4 w-4 animate-spin mr-2": {
+      "usageCount": 7
+    },
+    "space-y-4": {
+      "usageCount": 7
+    },
+    "mt-6": {
+      "usageCount": 7
+    },
+    "mt-4 space-y-6": {
+      "usageCount": 7
+    },
+    "grid gap-2": {
+      "usageCount": 6
+    },
+    "text-xs": {
+      "usageCount": 6
+    },
+    "h-4 w-4 mr-2 animate-spin": {
+      "usageCount": 6
+    },
+    "truncate": {
+      "usageCount": 5
+    },
+    "text-gray-600 dark:text-gray-400 text-sm": {
+      "usageCount": 4
+    },
+    "h-8 w-8 p-0": {
+      "usageCount": 4
+    },
+    "flex flex-col bg-gradient-to-br from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-900/50": {
+      "usageCount": 4
+    },
+    "h-4 w-4 ml-2": {
+      "usageCount": 4
+    },
+    "shrink-0 text-xs": {
+      "usageCount": 4
+    },
+    "flex flex-wrap gap-2": {
+      "usageCount": 4
+    },
+    "h-[calc(100vh-20rem)] pr-4": {
+      "usageCount": 4
+    },
+    "h-5 w-5": {
+      "usageCount": 4
+    },
+    "flex items-center justify-between": {
+      "usageCount": 3
+    },
+    "shrink-0": {
+      "usageCount": 3
+    },
+    "mt-4": {
+      "usageCount": 3
+    },
+    "text-xs text-gray-600 dark:text-gray-400 mb-2": {
+      "usageCount": 3
+    },
+    "h-[200px] rounded border p-2": {
+      "usageCount": 3
+    },
+    "space-y-2 text-sm": {
+      "usageCount": 3
+    },
+    "mt-0 space-y-6": {
+      "usageCount": 3
+    },
+    "mt-0": {
+      "usageCount": 3
+    },
+    "whitespace-pre-wrap break-all": {
+      "usageCount": 3
+    },
+    "h-6 w-6 text-indigo-600/90 dark:text-indigo-400/90": {
+      "usageCount": 3
+    },
+    "h-6 w-6 text-amber-600/90 dark:text-amber-400/90": {
+      "usageCount": 3
+    },
+    "flex items-center justify-center py-12": {
+      "usageCount": 3
+    },
+    "mt-6 space-y-6": {
+      "usageCount": 3
+    },
+    "default": {
+      "usageCount": 3
+    },
+    "text-lg font-semibold": {
+      "usageCount": 2
+    },
+    "text-sm font-medium text-gray-600 dark:text-gray-400": {
+      "usageCount": 2
+    },
+    "grid gap-4 py-4": {
+      "usageCount": 2
+    },
+    "font-mono text-sm": {
+      "usageCount": 2
+    },
+    "space-y-1": {
+      "usageCount": 2
+    },
+    "rounded-xl border px-3 py-2 hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-all duration-200": {
+      "usageCount": 2
+    },
+    "rounded bg-gray-100 dark:bg-gray-800 px-1": {
+      "usageCount": 2
+    },
+    "text-3xl font-bold tracking-tight": {
+      "usageCount": 2
+    },
+    "flex items-center gap-2 flex-wrap": {
+      "usageCount": 2
+    },
+    "text-base": {
+      "usageCount": 2
+    },
+    "min-h-[200px]": {
+      "usageCount": 2
+    },
+    "flex gap-2": {
+      "usageCount": 2
+    },
+    "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70": {
+      "usageCount": 2
+    },
+    "h-8 w-8 p-0 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-all duration-200": {
+      "usageCount": 2
+    },
+    "flex flex-col": {
+      "usageCount": 2
+    },
+    "font-mono text-xs": {
+      "usageCount": 2
+    },
+    "h-[400px] pr-4 mt-4": {
+      "usageCount": 2
+    },
+    "h-[180px] rounded-xl border p-3": {
+      "usageCount": 2
+    },
+    "mt-1": {
+      "usageCount": 2
+    },
+    "text-gray-600 dark:text-gray-400 text-xs": {
+      "usageCount": 2
+    },
+    "h-[220px] rounded border p-2": {
+      "usageCount": 2
+    },
+    "rounded border p-2 bg-gray-50/50 dark:bg-gray-800/30": {
+      "usageCount": 2
+    },
+    "font-medium truncate": {
+      "usageCount": 2
+    },
+    "text-xs text-gray-600 dark:text-gray-400 mt-2": {
+      "usageCount": 2
+    },
+    "grid grid-cols-1 md:grid-cols-2 gap-4": {
+      "usageCount": 2
+    },
+    "h-32 rounded border bg-gradient-to-br from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-900/50 p-2": {
+      "usageCount": 2
+    },
+    "block w-full text-left text-sm px-2 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 truncate transition-all duration-200": {
+      "usageCount": 2
+    },
+    "h-48 rounded border bg-gradient-to-br from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-900/50 p-3 font-mono text-xs whitespace-pre-wrap break-all": {
+      "usageCount": 2
+    },
+    "text-sm text-gray-500 dark:text-gray-400 mb-4": {
+      "usageCount": 2
+    },
+    "flex flex-wrap items-center gap-2": {
+      "usageCount": 2
+    },
+    "text-indigo-600/90 dark:text-indigo-400/90": {
+      "usageCount": 2
+    },
+    "flex items-center justify-end": {
+      "usageCount": 2
+    },
+    "border-b": {
+      "usageCount": 2
+    },
+    "underline hover:text-gray-900 dark:hover:text-white transition-all duration-200": {
+      "usageCount": 2
+    },
+    "h-5 w-5 text-indigo-600/90 dark:text-indigo-400/90": {
+      "usageCount": 2
+    },
+    "h-[400px] rounded border bg-gradient-to-br from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-900/50 p-3 font-mono text-sm": {
+      "usageCount": 2
+    },
+    "h-6 w-6 text-blue-600/90 dark:text-blue-400/90": {
+      "usageCount": 2
+    },
+    "p-6": {
+      "usageCount": 2
+    },
+    "h-8 w-8 animate-spin text-gray-600 dark:text-gray-400": {
+      "usageCount": 2
+    },
+    "h-4 w-4 text-red-600/90 dark:text-red-400/90": {
+      "usageCount": 2
+    },
+    "flex flex-wrap items-center justify-between gap-2": {
+      "usageCount": 2
+    },
+    "space-y-6 max-w-xl": {
+      "usageCount": 2
+    },
+    "sr-only": {
+      "usageCount": 2
+    },
+    "px-2 py-1.5 text-sm font-semibold": {
+      "usageCount": 2
+    },
+    "-mx-1 my-1 h-px bg-gray-100 dark:bg-gray-800": {
+      "usageCount": 2
+    }
+  },
+  "byFile": {
+    "components/ErrorBoundary.tsx": [
+      "min-h-[120px] flex flex-col items-center justify-center p-6 rounded-xl border border-gray-200/60 dark:border-gray-700/60 bg-gradient-to-br from-white to-gray-50/30 dark:from-gray-900 dark:to-gray-800/50 backdrop-blur-sm text-gray-900 dark:text-white"
+    ],
+    "components/app-shell.tsx": [
+      "flex h-screen overflow-hidden relative bg-transparent",
+      "flex shrink-0 flex-col border-r border-gray-200/60 dark:border-gray-700/60 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800/90 py-4 h-screen overflow-hidden relative",
+      "text-xl font-bold whitespace-nowrap uppercase",
+      "absolute top-0 right-0 w-1.5 h-full cursor-col-resize hover:bg-indigo-700/20 dark:hover:bg-indigo-600/20 active:bg-primary/30 transition-colors shrink-0 z-10",
+      "flex-1 flex flex-col min-w-0 min-h-0 overflow-auto p-4 md:p-6 bg-white dark:bg-gray-900",
+      "min-h-[60vh] flex items-center justify-center",
+      "h-8 w-8 rounded-full border-2 border-gray-200/60 dark:border-gray-700/60 border-t-muted-foreground animate-spin",
+      "flex flex-col min-h-0 flex-1",
+      "px-3 pb-3 border-b border-primary/30 mb-3 overflow-hidden ${ sidebarCollapsed ? \"px-2\" : \"\" }",
+      "mt-2 mx-2 border-t border-primary/30 pt-2 ${sidebarCollapsed ? \"flex justify-center\" : \"\"}"
+    ],
+    "components/atoms/architecture/ArchitectureDetailsDisplay.tsx": [
+      "space-y-4 py-4",
+      "flex items-center gap-2",
+      "text-lg font-semibold",
+      "text-sm text-gray-600 dark:text-gray-400",
+      "text-sm font-medium mb-2",
+      "text-sm whitespace-pre-wrap font-mono bg-muted/30 dark:bg-muted/30 rounded-xl p-3 overflow-x-auto",
+      "space-y-2",
+      "text-sm font-medium text-gray-600 dark:text-gray-400",
+      "text-sm whitespace-pre-wrap font-mono bg-muted/30 dark:bg-muted/30 rounded-xl p-2 mt-0.5 overflow-x-auto",
+      "text-gray-600 dark:text-gray-400 text-sm"
+    ],
+    "components/atoms/architecture/ArchitectureEditForm.tsx": [
+      "grid gap-4 py-4",
+      "grid gap-2",
+      "font-mono text-sm",
+      "space-y-2",
+      "flex items-center justify-between",
+      "h-4 w-4 mr-1",
+      "text-sm text-gray-600 dark:text-gray-400",
+      "flex gap-2 items-center",
+      "flex-1 min-w-0",
+      "shrink-0 text-red-600 dark:text-red-400",
+      "h-4 w-4"
+    ],
+    "components/atoms/badges/PriorityBadge.tsx": [
+      "text-xs"
+    ],
+    "components/atoms/buttons/DeleteButton.tsx": [
+      "absolute top-2 right-2 h-8 w-8 p-0 opacity-0 group-hover:opacity-100 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 z-10 transition-all duration-200"
+    ],
+    "components/atoms/buttons/FeatureQueueActions.tsx": [
+      "flex items-center gap-2 ml-4 pl-4 border-l",
+      "text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1",
+      "h-4 w-4",
+      "h-4 w-4 animate-spin",
+      "h-4 w-4 mr-1"
+    ],
+    "components/atoms/buttons/GeneratePromptWithAiButton.tsx": [
+      "h-4 w-4"
+    ],
+    "components/atoms/checkbox-groups/ProjectCheckboxGroup.tsx": [
+      "grid gap-2",
+      "h-[100px] surface-card p-3",
+      "space-y-1"
+    ],
+    "components/atoms/checkbox-groups/ProjectCheckboxItem.tsx": [
+      "rounded-xl border px-3 py-2 hover:bg-muted/30 dark:hover:bg-muted/30 transition-all duration-200"
+    ],
+    "components/atoms/checkbox-groups/PromptCheckboxItem.tsx": [
+      "rounded-xl border px-3 py-2 hover:bg-muted/30 dark:hover:bg-muted/30 transition-all duration-200"
+    ],
+    "components/atoms/checkbox-groups/PromptRecordCheckboxItem.tsx": [
+      "flex items-center gap-2",
+      "text-sm cursor-pointer truncate"
+    ],
+    "components/atoms/displays/CodeBlock.tsx": [
+      "rounded bg-gray-100 dark:bg-gray-800 px-1"
+    ],
+    "components/atoms/displays/EmptyPagePlaceholder.tsx": [
+      "space-y-2",
+      "text-3xl font-bold tracking-tight",
+      "text-gray-600 dark:text-gray-400"
+    ],
+    "components/atoms/forms/DefinitionCategorySelect.tsx": [
+      "w-[180px]"
+    ],
+    "components/atoms/forms/FeatureAddForm.tsx": [
+      "px-4 pb-4 pt-1 grid gap-2",
+      "h-4 w-4 mr-2"
+    ],
+    "components/atoms/forms/FeatureFilterSelect.tsx": [
+      "flex items-center gap-2 flex-wrap",
+      "text-sm text-gray-600 dark:text-gray-400 shrink-0",
+      "w-[220px]"
+    ],
+    "components/atoms/forms/GenerateKanbanPromptSection.tsx": [
+      "w-full",
+      "text-base",
+      "flex items-center gap-2",
+      "h-4 w-4 text-purple-500",
+      "text-gray-600 dark:text-gray-400 text-sm mb-4",
+      "mb-4",
+      "h-4 w-4 animate-spin mr-2",
+      "h-4 w-4 mr-2",
+      "relative rounded-xl border bg-gradient-to-br from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-900/50 p-4 font-mono text-sm",
+      "whitespace-pre-wrap break-all pr-10",
+      "absolute right-2 top-2",
+      "h-8 w-8 p-0",
+      "h-4 w-4"
+    ],
+    "components/atoms/forms/IdeaFormFields.tsx": [
+      "grid gap-4 py-4",
+      "grid gap-2"
+    ],
+    "components/atoms/forms/PromptFormFields.tsx": [
+      "grid gap-4 py-2",
+      "min-h-[200px]"
+    ],
+    "components/atoms/forms/PromptRecordGeneratorForm.tsx": [
+      "flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700"
+    ],
+    "components/atoms/forms/TicketFormFields.tsx": [
+      "grid gap-2",
+      "min-h-[60px]",
+      "flex items-center gap-4",
+      "space-y-2",
+      "w-[120px]",
+      "w-20",
+      "h-4 w-4 mr-2"
+    ],
+    "components/atoms/headers/ThemeNameHeader.tsx": [
+      "text-xl font-semibold text-inherit"
+    ],
+    "components/atoms/headers/TitleWithIcon.tsx": [
+      "text-xl font-semibold",
+      "flex items-center space-x-2 ${className}",
+      "h-5 w-5 ${iconClassName}"
+    ],
+    "components/atoms/inputs/AiGeneratorInput.tsx": [
+      "flex gap-2",
+      "h-4 w-4 animate-spin",
+      "h-4 w-4",
+      "ml-2"
+    ],
+    "components/atoms/inputs/ProjectInput.tsx": [
+      "space-y-2",
+      "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
+      "flex space-x-2"
+    ],
+    "components/atoms/list-items/AiArchitectureListItem.tsx": [
+      "h-4 w-4 mr-1"
+    ],
+    "components/atoms/list-items/AiIdeaListItem.tsx": [
+      "h-4 w-4 mr-1"
+    ],
+    "components/atoms/list-items/ArchitectureTemplateListItem.tsx": [
+      "h-4 w-4 mr-1"
+    ],
+    "components/atoms/list-items/CuratedPracticeListItem.tsx": [
+      "flex gap-2 text-sm items-center",
+      "text-gray-600 dark:text-gray-400 shrink-0"
+    ],
+    "components/atoms/list-items/DefinitionListItem.tsx": [
+      "h-8 w-8 p-0",
+      "h-4 w-4",
+      "h-8 w-8 p-0 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-all duration-200"
+    ],
+    "components/atoms/list-items/FeatureActions.tsx": [
+      "flex gap-1",
+      "h-4 w-4",
+      "h-4 w-4 animate-spin"
+    ],
+    "components/atoms/list-items/FeatureListItem.tsx": [
+      "text-xs text-gray-600 dark:text-gray-400",
+      "flex flex-col",
+      ","
+    ],
+    "components/atoms/list-items/IdeaActions.tsx": [
+      "h-4 w-4 animate-spin",
+      "h-4 w-4",
+      "ml-1.5 sr-only sm:not-sr-only",
+      "shrink-0",
+      "shrink-0 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-all duration-200"
+    ],
+    "components/atoms/list-items/IdeaListItem.tsx": [
+      "flex items-center gap-2 mt-2",
+      "text-xs"
+    ],
+    "components/atoms/list-items/IdeaTemplateListItem.tsx": [
+      "h-4 w-4 mr-1"
+    ],
+    "components/atoms/list-items/LocalProjectListItem.tsx": [
+      "flex items-center gap-2 rounded-xl py-1.5 px-2 hover:bg-muted/30 dark:hover:bg-muted/30 group transition-all duration-200",
+      "flex-1 min-w-0 truncate font-mono text-gray-600 dark:text-gray-400",
+      "shrink-0",
+      "h-3.5 w-3 mr-1"
+    ],
+    "components/atoms/list-items/ProjectArchitectureListItem.tsx": [
+      "flex-grow",
+      "hover:bg-muted/30 dark:hover:bg-muted/30 transition-colors flex justify-between items-center bg-gradient-to-br from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-900/50",
+      "flex items-center",
+      "h-5 w-5 text-gray-600 dark:text-gray-400"
+    ],
+    "components/atoms/list-items/ProjectCheckboxListItem.tsx": [
+      "flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-muted/30 dark:hover:bg-muted/30 transition-all duration-200",
+      "truncate text-sm font-mono"
+    ],
+    "components/atoms/list-items/ProjectDesignListItem.tsx": [
+      "flex flex-col bg-gradient-to-br from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-900/50",
+      "w-full",
+      "h-4 w-4 ml-2"
+    ],
+    "components/atoms/list-items/ProjectFeatureListItem.tsx": [
+      "flex flex-col bg-gradient-to-br from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-900/50",
+      "w-full",
+      "h-4 w-4 ml-2"
+    ],
+    "components/atoms/list-items/ProjectIdeaListItem.tsx": [
+      "flex flex-col bg-gradient-to-br from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-900/50",
+      "shrink-0 text-xs",
+      "w-full",
+      "h-4 w-4 ml-2"
+    ],
+    "components/atoms/list-items/ProjectPromptListItem.tsx": [
+      "flex flex-col bg-gradient-to-br from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-900/50",
+      "w-full",
+      "h-4 w-4 ml-2"
+    ],
+    "components/atoms/list-items/PromptTableRow.tsx": [
+      "font-mono text-xs",
+      "font-medium max-w-[180px] truncate",
+      "hidden sm:table-cell text-gray-600 dark:text-gray-400",
+      "hidden md:table-cell text-gray-600 dark:text-gray-400 max-w-[120px] truncate",
+      "hidden lg:table-cell text-gray-600 dark:text-gray-400 text-xs whitespace-nowrap",
+      "max-w-[200px] text-gray-600 dark:text-gray-400 text-xs truncate",
+      "text-right",
+      "h-8 w-8 p-0",
+      "h-4 w-4",
+      "h-8 w-8 p-0 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-all duration-200"
+    ],
+    "components/atoms/list-items/TestTemplateListItem.tsx": [
+      "flex flex-col gap-2",
+      "mt-2",
+      "text-xs text-gray-600 dark:text-gray-400 mt-2 font-mono bg-white/50 dark:bg-gray-900/50 rounded p-2 border",
+      "shrink-0",
+      "h-4 w-4 text-sky-600 dark:text-sky-400",
+      "h-4 w-4",
+      "ml-1.5"
+    ],
+    "components/atoms/list-items/TestingPhaseListItem.tsx": [
+      "flex items-center gap-2",
+      "flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600/10 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-sm font-medium",
+      "h-5 w-5 text-blue-600/80 dark:text-blue-400/80",
+      "font-medium",
+      "static"
+    ],
+    "components/atoms/theme/ThemeButtonPreview.tsx": [
+      "space-y-2",
+      "text-[10px] font-medium uppercase tracking-wide",
+      "flex flex-wrap gap-2",
+      "rounded-xl px-2 py-0.5 text-[10px] font-medium shadow-md hover:shadow-lg transition-all duration-200"
+    ],
+    "components/atoms/theme/ThemeColorSwatches.tsx": [
+      "rounded-xl p-3 min-h-[48px] border",
+      "text-[10px] font-medium uppercase tracking-wide mb-2",
+      "flex flex-wrap gap-1.5",
+      "rounded h-5 w-5 border shrink-0"
+    ],
+    "components/atoms/theme/ThemeIconPreview.tsx": [
+      "flex items-center gap-2 flex-wrap",
+      "text-[10px] font-medium uppercase tracking-wide w-full",
+      "flex gap-2",
+      "h-4 w-4"
+    ],
+    "components/atoms/visual-effects/FlyingStarItem.tsx": [
+      "kwcode-flying-star absolute rounded-full bg-white"
+    ],
+    "components/atoms/visual-effects/LoadingPulseDot.tsx": [
+      "h-1.5 w-1.5 rounded-full bg-white/70"
+    ],
+    "components/atoms/visual-effects/RaindropCircle.tsx": [
+      "kwcode-load-drop absolute rounded-full bg-[rgba(59,130,246,0.4)]"
+    ],
+    "components/cursor-files-tree.tsx": [
+      "space-y-0.5"
+    ],
+    "components/molecules/CardsAndDisplay/AiGeneratedArchitecturesCard.tsx": [
+      "text-lg",
+      "h-[400px] pr-4 mt-4",
+      "space-y-3",
+      "Content-Type"
+    ],
+    "components/molecules/CardsAndDisplay/AiGeneratedIdeasCard.tsx": [
+      "text-lg",
+      "h-[400px] pr-4 mt-4",
+      "space-y-3",
+      "Content-Type"
+    ],
+    "components/molecules/CardsAndDisplay/ArchitectureTemplateCard.tsx": [
+      "h-[calc(100vh-20rem)] pr-4",
+      "space-y-3"
+    ],
+    "components/molecules/CardsAndDisplay/CoverageMetricCard.tsx": [
+      "text-sm font-medium text-gray-600 dark:text-gray-400",
+      "text-xs text-gray-600 dark:text-gray-400",
+      "text-2xl font-bold",
+      "mt-2 h-2"
+    ],
+    "components/molecules/CardsAndDisplay/CuratedPracticesCard.tsx": [
+      "rounded bg-gray-100 dark:bg-gray-800 px-1",
+      "h-[280px] pr-4",
+      "space-y-2"
+    ],
+    "components/molecules/CardsAndDisplay/FeatureManagementCard.tsx": [
+      "text-lg",
+      "flex items-center gap-2 flex-wrap mt-4",
+      "h-4 w-4 mr-1",
+      "min-h-[280px] h-[60vh] rounded-xl border p-3 mt-4",
+      "space-y-2"
+    ],
+    "components/molecules/CardsAndDisplay/IdeaTemplateCard.tsx": [
+      "h-[calc(100vh-20rem)] pr-4",
+      "space-y-3"
+    ],
+    "components/molecules/CardsAndDisplay/MyDefinitionsCard.tsx": [
+      "h-[calc(100vh-20rem)] pr-4",
+      "space-y-3"
+    ],
+    "components/molecules/CardsAndDisplay/MyIdeasCard.tsx": [
+      "h-4 w-4 mr-2",
+      "mt-4",
+      "h-[calc(100vh-20rem)] pr-4",
+      "space-y-3",
+      "Content-Type"
+    ],
+    "components/molecules/CardsAndDisplay/MyTestPracticesCard.tsx": [
+      "min-h-[180px] font-mono text-sm"
+    ],
+    "components/molecules/CardsAndDisplay/NoProjectsFoundCard.tsx": [
+      "h-4 w-4 animate-spin mr-2",
+      "h-4 w-4 mr-2"
+    ],
+    "components/molecules/CardsAndDisplay/ProjectSelectionCard.tsx": [
+      "text-lg",
+      "h-[180px] rounded-xl border p-3",
+      "flex flex-wrap gap-2"
+    ],
+    "components/molecules/CardsAndDisplay/PromptRecordSelectionCard.tsx": [
+      "text-lg",
+      "text-xs",
+      "h-[180px] rounded-xl border p-3",
+      "flex flex-wrap gap-2"
+    ],
+    "components/molecules/CardsAndDisplay/QuickActionCard.tsx": [
+      "text-lg"
+    ],
+    "components/molecules/CardsAndDisplay/RunFromFeatureCard.tsx": [
+      "text-lg",
+      "w-full max-w-md",
+      "text-gray-600 dark:text-gray-400"
+    ],
+    "components/molecules/CardsAndDisplay/RunLabelCard.tsx": [
+      "max-w-md"
+    ],
+    "components/molecules/CardsAndDisplay/TemplateIdeaCard.tsx": [
+      "flex flex-col",
+      "shrink-0 text-xs",
+      "w-full",
+      "h-4 w-4 animate-spin mr-2",
+      "h-4 w-4 mr-2",
+      "Content-Type"
+    ],
+    "components/molecules/CardsAndDisplay/TestGenerationCard.tsx": [
+      "text-lg",
+      "rounded-xl border bg-gradient-to-br from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-900/50 p-4 text-sm whitespace-pre-wrap mt-4"
+    ],
+    "components/molecules/CardsAndDisplay/TestingPhasesCard.tsx": [
+      "space-y-4"
+    ],
+    "components/molecules/CardsAndDisplay/ThemePreviewCard.tsx": [
+      "px-4 pt-4 pb-2",
+      "px-4 pb-4 space-y-3",
+      "block px-4 py-3 text-[11px] line-clamp-2"
+    ],
+    "components/molecules/CardsAndDisplay/TicketCard.tsx": [
+      "flex items-center justify-between w-full",
+      "rounded-xl border bg-gradient-to-br from-white to-gray-50/30 dark:from-gray-900 dark:to-gray-800/50 backdrop-blur-sm p-3 cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow"
+    ],
+    "components/molecules/CardsAndDisplay/TicketManagementCard.tsx": [
+      "text-lg",
+      "block mt-1 font-semibold text-gray-900 dark:text-white"
+    ],
+    "components/molecules/ControlsAndButtons/PaginationControls.tsx": [
+      "flex items-center gap-2",
+      "text-sm text-gray-600 dark:text-gray-400",
+      "h-8 w-8 p-0",
+      "h-4 w-4"
+    ],
+    "components/molecules/ControlsAndButtons/RowsPerPageSelector.tsx": [
+      "flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400",
+      "h-8 w-[70px]"
+    ],
+    "components/molecules/ControlsAndButtons/RunControls.tsx": [
+      "space-y-6",
+      "text-sm text-gray-600 dark:text-gray-400"
+    ],
+    "components/molecules/ControlsAndButtons/SidebarToggle.tsx": [
+      "h-4 w-4"
+    ],
+    "components/molecules/DashboardsAndViews/CoverageDashboard.tsx": [
+      "h-5 w-5",
+      "grid gap-4 sm:grid-cols-2 lg:grid-cols-4",
+      "rounded-xl border bg-muted/30 dark:bg-muted/30 p-4 text-sm text-gray-600 dark:text-gray-400 mt-6",
+      "font-medium text-gray-900 dark:text-white",
+      "mt-1"
+    ],
+    "components/molecules/Display/DescriptionTooltip.tsx": [
+      "text-gray-600 dark:text-gray-400 text-xs",
+      "text-gray-600 dark:text-gray-400 text-xs max-w-[240px] truncate block cursor-default",
+      "max-w-sm",
+      "whitespace-pre-wrap text-xs"
+    ],
+    "components/molecules/Display/KwcodeBranding.tsx": [
+      "relative z-10 flex flex-col items-center justify-center gap-2 pointer-events-none",
+      "text-4xl font-bold tracking-tight text-white drop-shadow-lg sm:text-5xl",
+      "flex gap-1.5"
+    ],
+    "components/molecules/Display/StatusBadge.tsx": [
+      "capitalize text-xs"
+    ],
+    "components/molecules/Display/TerminalStatusBadge.tsx": [
+      "fixed top-3 right-3 z-50 flex items-center gap-1.5 rounded-xl border bg-white/95 dark:bg-gray-900/95 px-2.5 py-1.5 shadow-md hover:shadow-lg backdrop-blur supports-[backdrop-filter]:bg-background/60 hover:bg-muted/30 dark:hover:bg-muted/30 transition-colors glass-card",
+      "h-4 w-4 text-gray-600 dark:text-gray-400",
+      "tabular-nums font-medium"
+    ],
+    "components/molecules/Displays/AllProjectsDisplay.tsx": [
+      "text-xs text-gray-600 dark:text-gray-400 mb-2",
+      "h-24 surface-card bg-gradient-to-br from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-900/50 p-3 font-mono text-xs"
+    ],
+    "components/molecules/Displays/AllProjectsDisplayList.tsx": [
+      "h-[200px] surface-card p-3",
+      "space-y-1",
+      "flex items-center gap-2 text-sm",
+      "truncate font-mono",
+      "text-xs"
+    ],
+    "components/molecules/Displays/FeaturesDisplayList.tsx": [
+      "h-[220px] surface-card p-3",
+      "space-y-2 text-sm",
+      "surface-card p-3 bg-muted/30 dark:bg-muted/30",
+      "font-medium truncate",
+      "text-xs text-gray-600 dark:text-gray-400"
+    ],
+    "components/molecules/Displays/IdeasDisplayList.tsx": [
+      "h-[200px] w-full rounded",
+      "h-[200px] surface-card p-3",
+      "space-y-2 text-sm",
+      "surface-card p-3 bg-muted/30 dark:bg-muted/30",
+      "font-medium truncate",
+      "text-xs text-gray-600 dark:text-gray-400 line-clamp-2",
+      "mt-1 text-xs",
+      "text-xs text-gray-600 dark:text-gray-400 mt-2",
+      "text-indigo-600 dark:text-indigo-400 hover:underline transition-all duration-200"
+    ],
+    "components/molecules/Displays/JsonFileListDisplay.tsx": [
+      "grid grid-cols-1 md:grid-cols-2 gap-4",
+      "space-y-2",
+      "text-xs text-gray-600 dark:text-gray-400",
+      "h-32 surface-card bg-gradient-to-br from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-900/50 p-2",
+      "text-gray-600 dark:text-gray-400 text-sm",
+      "block w-full text-left text-sm px-2 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 truncate transition-all duration-200",
+      "h-48 surface-card bg-gradient-to-br from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-900/50 p-3 font-mono text-xs whitespace-pre-wrap break-all",
+      "text-gray-600 dark:text-gray-400"
+    ],
+    "components/molecules/Displays/KvStoreDisplay.tsx": [
+      "text-xs text-gray-600 dark:text-gray-400 mb-2",
+      "h-40 surface-card bg-gradient-to-br from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-900/50 p-3 font-mono text-xs",
+      "text-gray-600 dark:text-gray-400",
+      "mb-3",
+      "font-semibold text-gray-900 dark:text-white",
+      "mt-1 whitespace-pre-wrap break-all text-gray-600 dark:text-gray-400"
+    ],
+    "components/molecules/Displays/PromptsDisplayList.tsx": [
+      "h-[200px] surface-card p-3",
+      "space-y-1 text-sm",
+      "flex items-center gap-2",
+      "truncate"
+    ],
+    "components/molecules/Displays/ScriptListDisplay.tsx": [
+      "grid grid-cols-1 md:grid-cols-2 gap-4",
+      "space-y-2",
+      "text-xs text-gray-600 dark:text-gray-400",
+      "h-32 surface-card bg-gradient-to-br from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-900/50 p-2",
+      "text-gray-600 dark:text-gray-400 text-sm",
+      "block w-full text-left text-sm px-2 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 truncate transition-all duration-200",
+      "h-48 surface-card bg-gradient-to-br from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-900/50 p-3 font-mono text-xs whitespace-pre-wrap break-all",
+      "text-gray-600 dark:text-gray-400"
+    ],
+    "components/molecules/Displays/TicketsDisplay.tsx": [
+      "text-xs text-gray-600 dark:text-gray-400 mb-2",
+      "h-48 surface-card bg-gradient-to-br from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-900/50 p-3 font-mono text-xs whitespace-pre-wrap"
+    ],
+    "components/molecules/Displays/TicketsDisplayList.tsx": [
+      "h-[220px] surface-card p-3",
+      "space-y-2 text-sm",
+      "flex items-start gap-2 surface-card p-3 bg-muted/30 dark:bg-muted/30",
+      "shrink-0 text-xs",
+      "truncate font-medium",
+      "text-xs text-gray-600 dark:text-gray-400"
+    ],
+    "components/molecules/FormsAndDialogs/ArchitectureEditDialog.tsx": [
+      "h-4 w-4 mr-2 animate-spin",
+      "text-sm text-gray-500 dark:text-gray-400 mb-4"
+    ],
+    "components/molecules/FormsAndDialogs/ArchitectureViewDialog.tsx": [
+      "h-4 w-4 mr-2"
+    ],
+    "components/molecules/FormsAndDialogs/GeneratedContentForm.tsx": [
+      "grid gap-2",
+      "min-h-[200px]",
+      "h-4 w-4 mr-2 animate-spin"
+    ],
+    "components/molecules/FormsAndDialogs/IdeaFormDialog.tsx": [
+      "h-4 w-4 mr-2 animate-spin",
+      "text-sm text-gray-500 dark:text-gray-400 mb-4"
+    ],
+    "components/molecules/FormsAndDialogs/NewProjectForm.tsx": [
+      "font-mono text-sm",
+      "h-4 w-4 mr-2 animate-spin"
+    ],
+    "components/molecules/FormsAndDialogs/PromptRecordFormDialog.tsx": [
+      "h-4 w-4 mr-2 animate-spin"
+    ],
+    "components/molecules/FormsAndDialogs/TicketActionsMenu.tsx": [
+      "h-8 w-8",
+      "h-4 w-4",
+      "text-red-600 dark:text-red-400 focus:text-destructive",
+      "h-4 w-4 mr-2"
+    ],
+    "components/molecules/FormsAndDialogs/TicketSearchInput.tsx": [
+      "flex flex-wrap items-center gap-2",
+      "max-w-sm h-9",
+      "text-sm text-gray-600 dark:text-gray-400"
+    ],
+    "components/molecules/FormsAndDialogs/TicketStatusUpdater.tsx": [
+      "w-[120px] h-8 text-xs"
+    ],
+    "components/molecules/Kanban/KanbanColumnCard.tsx": [
+      "kanban-column-card flex min-h-[320px] w-full flex-col border-2 border-border/60 p-5",
+      "min-h-0 flex-1 px-1 pb-4 pt-1",
+      "flex flex-col items-center gap-2"
+    ],
+    "components/molecules/Kanban/KanbanColumnHeader.tsx": [
+      "pb-4",
+      "text-base font-semibold flex items-center gap-2",
+      "h-4 w-4"
+    ],
+    "components/molecules/Kanban/KanbanTicketCard.tsx": [
+      "pb-2",
+      "text-sm font-semibold flex items-center justify-between gap-2",
+      "truncate",
+      "shrink-0 text-xs",
+      "line-clamp-2 text-xs text-gray-600 dark:text-gray-400",
+      "flex flex-wrap items-center gap-2 pt-0",
+      "flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400",
+      "h-3 w-3",
+      "text-xs",
+      "w-fit min-w-[200px] max-w-[240px] bg-muted/30 dark:bg-muted/30 p-4 ${featureBorderClass ?? \"border-2 border-border\"}"
+    ],
+    "components/molecules/LayoutAndNavigation/PageHeader.tsx": [
+      "flex items-center space-x-2",
+      "text-indigo-600/90 dark:text-indigo-400/90",
+      "flex flex-col space-y-2",
+      "text-3xl font-bold tracking-tight",
+      "text-gray-600 dark:text-gray-400"
+    ],
+    "components/molecules/LayoutAndNavigation/PageWithHeader.tsx": [
+      "space-y-6",
+      "flex items-center gap-2",
+      "h-4 w-4"
+    ],
+    "components/molecules/LayoutAndNavigation/ProjectHeader.tsx": [
+      "flex items-center justify-end",
+      "h-4 w-4 mr-2"
+    ],
+    "components/molecules/LayoutAndNavigation/ProjectsHeader.tsx": [
+      "flex items-center justify-between",
+      "h-4 w-4 animate-spin mr-2",
+      "h-4 w-4 mr-2"
+    ],
+    "components/molecules/LayoutAndNavigation/RunPageHeader.tsx": [
+      "text-xs bg-gray-100 dark:bg-gray-800 px-1 rounded"
+    ],
+    "components/molecules/LayoutAndNavigation/ThemedPageLayout.tsx": [
+      "space-y-6",
+      "h-4 w-4"
+    ],
+    "components/molecules/LayoutAndNavigation/ThreeTabLayout.tsx": [
+      "w-full",
+      "mt-6"
+    ],
+    "components/molecules/LayoutAndNavigation/TicketBoardLayout.tsx": [
+      "text-lg",
+      "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4",
+      "Content-Type"
+    ],
+    "components/molecules/ListsAndTables/LocalReposSection.tsx": [
+      "text-sm text-gray-600 dark:text-gray-400",
+      "py-8 text-center text-gray-600 dark:text-gray-400 text-sm",
+      "rounded-xl border bg-gradient-to-br from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-900/50 max-h-[520px]",
+      "p-2 space-y-0.5",
+      "w-full",
+      "border-b",
+      "text-lg font-semibold py-4 hover:no-underline transition-all duration-200",
+      "text-lg",
+      "space-y-3"
+    ],
+    "components/molecules/ListsAndTables/PromptRecordTable.tsx": [
+      "text-center text-gray-600 dark:text-gray-400 py-8"
+    ],
+    "components/molecules/ListsAndTables/TestTemplateList.tsx": [
+      "h-[calc(100vh-22rem)] pr-4",
+      "space-y-3"
+    ],
+    "components/molecules/Navigation/FileTreeItem.tsx": [
+      "flex items-center gap-2 rounded px-2 py-1.5 hover:bg-muted/30 dark:hover:bg-muted/30 min-w-0 group transition-all duration-200",
+      "h-4 w-4 shrink-0 text-gray-600 dark:text-gray-400",
+      "truncate flex-1 min-w-0 font-mono text-sm",
+      "h-7 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity",
+      "h-3.5 w-3.5 mr-1"
+    ],
+    "components/molecules/Navigation/FolderTreeItem.tsx": [
+      "select-none",
+      "flex items-center gap-2 w-full rounded px-2 py-1.5 hover:bg-muted/30 dark:hover:bg-muted/30 text-left text-sm font-mono min-w-0 transition-all duration-200",
+      "shrink-0 text-gray-600 dark:text-gray-400",
+      "h-4 w-4",
+      "truncate"
+    ],
+    "components/molecules/Navigation/NavLinkItem.tsx": [
+      "truncate",
+      "flex items-center gap-2 rounded-xl py-2.5 w-full text-sm font-medium transition-colors",
+      "h-4 w-4 shrink-0"
+    ],
+    "components/molecules/Navigation/PageFooterText.tsx": [
+      "text-xs text-gray-600 dark:text-gray-400",
+      "underline hover:text-gray-900 dark:hover:text-white transition-all duration-200"
+    ],
+    "components/molecules/TabAndContentSections/AiGeneratedArchitecturesTabContent.tsx": [
+      "mt-6"
+    ],
+    "components/molecules/TabAndContentSections/AllDataTabContent.tsx": [
+      "space-y-6",
+      "text-lg font-semibold mb-1",
+      "text-sm text-gray-600 dark:text-gray-400 mb-4",
+      "grid gap-6 md:grid-cols-2",
+      "h-5 w-5 text-sky-600/90 dark:text-sky-400/90",
+      "h-5 w-5 text-indigo-600/90 dark:text-indigo-400/90",
+      "text-xs text-gray-600 dark:text-gray-400 mt-2",
+      "h-5 w-5 text-amber-600/90 dark:text-amber-400/90",
+      "h-5 w-5 text-blue-600/90 dark:text-blue-400/90",
+      "text-sm text-gray-600 dark:text-gray-400 mb-3"
+    ],
+    "components/molecules/TabAndContentSections/ArchitectureTemplatesTabContent.tsx": [
+      "mt-6"
+    ],
+    "components/molecules/TabAndContentSections/DashboardTabContent.tsx": [
+      "mt-0 space-y-6"
+    ],
+    "components/molecules/TabAndContentSections/DatabaseDataTabContent.tsx": [
+      "h-5 w-5",
+      "block",
+      "block text-gray-600 dark:text-gray-400 text-xs mt-1",
+      "text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2 mt-4",
+      "h-4 w-4 animate-spin",
+      "w-full glass-card",
+      "flex items-center gap-2",
+      "h-4 w-4",
+      "space-y-4"
+    ],
+    "components/molecules/TabAndContentSections/FeatureTabContent.tsx": [
+      "mt-0"
+    ],
+    "components/molecules/TabAndContentSections/LogTabContent.tsx": [
+      "h-[400px] surface-card bg-gradient-to-br from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-900/50 p-3 font-mono text-sm",
+      "text-gray-600 dark:text-gray-400",
+      "whitespace-pre-wrap break-all"
+    ],
+    "components/molecules/TabAndContentSections/MyDefinitionsTabContent.tsx": [
+      "mt-6"
+    ],
+    "components/molecules/TabAndContentSections/ProjectArchitectureTab.tsx": [
+      "mt-4 space-y-6",
+      "h-6 w-6 text-indigo-600/90 dark:text-indigo-400/90",
+      "h-4 w-4 mr-2"
+    ],
+    "components/molecules/TabAndContentSections/ProjectDesignTab.tsx": [
+      "mt-4 space-y-6",
+      "h-6 w-6 text-indigo-600/90 dark:text-indigo-400/90",
+      "h-4 w-4 mr-2"
+    ],
+    "components/molecules/TabAndContentSections/ProjectFeaturesTab.tsx": [
+      "mt-4 space-y-6",
+      "h-6 w-6 text-blue-600/90 dark:text-blue-400/90",
+      "h-4 w-4 mr-2"
+    ],
+    "components/molecules/TabAndContentSections/ProjectGitTab.tsx": [
+      "mt-4 space-y-6",
+      "flex items-center gap-2 text-lg font-semibold",
+      "h-6 w-6",
+      "p-6",
+      "text-gray-600 dark:text-gray-400",
+      "text-indigo-600 dark:text-indigo-400 underline",
+      "mt-4 flex items-center justify-center py-12",
+      "h-8 w-8 animate-spin text-gray-600 dark:text-gray-400",
+      "flex items-center justify-between",
+      "h-4 w-4 mr-2",
+      "p-6 border-destructive/50",
+      "text-red-600 dark:text-red-400",
+      "h-4 w-4 animate-spin mr-2",
+      "space-y-2",
+      "flex items-center justify-end",
+      "h-4 w-4 animate-spin",
+      "h-4 w-4",
+      "sr-only sm:not-sr-only sm:ml-2",
+      "h-4 w-4 mr-2 animate-spin",
+      "space-y-4",
+      "grid grid-cols-1 sm:grid-cols-2 gap-4",
+      "p-4",
+      "text-xs font-medium text-gray-600 dark:text-gray-400 mb-2",
+      "rounded-xl border border-gray-200/60 dark:border-gray-700/60 bg-gradient-to-br from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-900/50 p-3",
+      "font-mono text-xs break-all line-clamp-2",
+      "text-xs font-medium text-gray-600 dark:text-gray-400 mb-2 flex items-center gap-2",
+      "h-3.5 w-3.5",
+      "font-mono text-xs text-indigo-600 dark:text-indigo-400 font-medium truncate",
+      "text-sm font-medium text-gray-600 dark:text-gray-400 mb-2",
+      "h-[200px] w-full rounded-xl border border-gray-200/60 dark:border-gray-700/60 p-0",
+      "font-mono text-xs",
+      "flex items-center gap-2 border-b border-gray-200/60 dark:border-gray-700/60 px-3 py-2 last:border-b-0",
+      "break-all text-gray-900 dark:text-white",
+      "rounded-xl border border-gray-200/60 dark:border-gray-700/60 bg-gradient-to-br from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-900/50 p-4 text-center text-sm text-gray-600 dark:text-gray-400",
+      "w-full",
+      "border rounded-xl",
+      "px-4 py-3 hover:no-underline transition-all duration-200",
+      "px-4 pb-4",
+      "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2",
+      "font-mono text-xs whitespace-pre-wrap break-all line-clamp-2",
+      "h-[120px] w-full rounded-xl border border-gray-200/60 dark:border-gray-700/60 p-0",
+      "border-b border-gray-200/60 dark:border-gray-700/60 px-3 py-2 last:border-b-0 truncate",
+      "font-mono text-xs whitespace-pre-wrap break-all line-clamp-4",
+      "p-4 sm:col-span-2",
+      "h-[160px] w-full rounded-xl border border-gray-200/60 dark:border-gray-700/60 p-0",
+      "border-b border-gray-200/60 dark:border-gray-700/60 px-3 py-2 last:border-b-0 break-all",
+      "h-[120px] w-full rounded-xl border border-gray-200/60 dark:border-gray-700/60 p-3",
+      "font-mono text-xs whitespace-pre-wrap break-all text-gray-600 dark:text-gray-400",
+      "shrink-0 w-8 rounded px-1.5 py-0.5 text-center tabular-nums ${className}"
+    ],
+    "components/molecules/TabAndContentSections/ProjectIdeasTab.tsx": [
+      "mt-4 space-y-6",
+      "h-6 w-6 text-amber-600/90 dark:text-amber-400/90",
+      "h-4 w-4 mr-2"
+    ],
+    "components/molecules/TabAndContentSections/ProjectPromptRecordsTab.tsx": [
+      "mt-4 space-y-6",
+      "h-6 w-6 text-indigo-600/90 dark:text-indigo-400/90",
+      "h-4 w-4 mr-2"
+    ],
+    "components/molecules/TabAndContentSections/ProjectTicketsTab.tsx": [
+      "grid w-full grid-cols-1 gap-4 sm:grid-cols-3",
+      "relative",
+      "absolute right-2 top-2 z-10 flex items-center gap-2 rounded bg-muted/80 px-2 py-1 font-mono text-sm tabular-nums",
+      "h-4 w-4 animate-spin text-gray-600 dark:text-gray-400",
+      "h-[50vh] min-h-[200px] surface-card bg-gradient-to-br from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-900/50 p-3 font-mono text-sm",
+      "text-gray-600 dark:text-gray-400 text-sm",
+      "flex items-center gap-2 text-gray-600 dark:text-gray-400 text-sm",
+      "h-4 w-4 animate-spin",
+      "whitespace-pre-wrap break-all",
+      "flex flex-wrap items-center gap-2",
+      "gap-2",
+      "h-4 w-4",
+      "gap-2 bg-sky-500 text-white hover:bg-sky-600 transition-all duration-200",
+      "w-[200px] bg-violet-500 text-white hover:bg-violet-600 transition-all duration-200",
+      "gap-1 bg-violet-500 text-white hover:bg-violet-600 transition-all duration-200",
+      "gap-2 bg-red-500 text-white hover:bg-red-600 transition-all duration-200",
+      "gap-2 bg-amber-500 text-white hover:bg-amber-600 transition-all duration-200",
+      "gap-2 bg-cyan-500 text-white hover:bg-cyan-600 transition-all duration-200",
+      "min-h-[120px] font-mono text-sm",
+      "mt-0 flex min-h-0 flex-1 flex-col gap-6",
+      "h-6 w-6 text-amber-600/90 dark:text-amber-400/90",
+      "h-4 w-4 text-red-600/90 dark:text-red-400/90",
+      "flex items-center justify-center py-12",
+      "space-y-2",
+      "text-sm font-medium flex items-center gap-2",
+      "grid grid-cols-1 gap-4 sm:grid-cols-2",
+      "text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide",
+      "flex flex-wrap gap-2",
+      "opacity-80",
+      "text-xs text-gray-600 dark:text-gray-400",
+      "flex min-h-0 w-full flex-1 flex-col rounded-xl p-4",
+      "grid h-full min-h-0 w-full flex-1 grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4",
+      "grid gap-2",
+      "inline-flex items-center gap-2 rounded-xl border-2 bg-white dark:bg-gray-900 px-2 py-1 text-xs ${colorClasses}",
+      "inline-flex items-center gap-2 rounded-xl border-2 bg-muted/30 dark:bg-muted/30 line-through opacity-90 px-2 py-1 text-xs ${colorClasses}",
+      "running",
+      "Content-Type"
+    ],
+    "components/molecules/TabAndContentSections/ProjectsTabContent.tsx": [
+      "h-[280px] rounded-xl border p-3",
+      "space-y-2"
+    ],
+    "components/molecules/TabAndContentSections/PromptsTabContent.tsx": [
+      "mt-0 space-y-6"
+    ],
+    "components/molecules/TabAndContentSections/TestingCoverageTabContent.tsx": [
+      "mt-6"
+    ],
+    "components/molecules/TabAndContentSections/TestingPhasesTabContent.tsx": [
+      "mt-6"
+    ],
+    "components/molecules/TabAndContentSections/TestingPracticesTabContent.tsx": [
+      "mt-6 space-y-6"
+    ],
+    "components/molecules/TabAndContentSections/TestingTemplatesTabContent.tsx": [
+      "mt-6 space-y-6"
+    ],
+    "components/molecules/TabAndContentSections/TicketsTabContent.tsx": [
+      "mt-0"
+    ],
+    "components/molecules/Tables/DataTableHeader.tsx": [
+      "-ml-2 h-8",
+      "ml-2 h-3.5 w-3.5"
+    ],
+    "components/molecules/Tables/DataTableLayout.tsx": [
+      "h-24 text-center text-gray-600 dark:text-gray-400"
+    ],
+    "components/molecules/Tables/DataTableWithControls.tsx": [
+      "space-y-4",
+      "flex flex-wrap items-center justify-between gap-2"
+    ],
+    "components/molecules/UtilitiesAndHelpers/NewProjectHeader.tsx": [
+      "space-y-6 max-w-xl",
+      "flex items-center gap-2",
+      "h-4 w-4"
+    ],
+    "components/molecules/UtilitiesAndHelpers/ProjectLoadingState.tsx": [
+      "flex items-center justify-center py-12",
+      "h-8 w-8 animate-spin text-gray-600 dark:text-gray-400"
+    ],
+    "components/molecules/UtilitiesAndHelpers/ThemeSelector.tsx": [
+      "grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
+    ],
+    "components/molecules/VisualEffects/CursorLightGlow.tsx": [
+      "pointer-events-none absolute inset-0 z-[1]"
+    ],
+    "components/molecules/VisualEffects/MoonGraphic.tsx": [
+      "pointer-events-none absolute top-[12%] right-[14%] z-[1] w-16 h-16 sm:w-20 sm:h-20",
+      "absolute inset-0 rounded-full bg-[#fef9c3] opacity-95",
+      "absolute rounded-full bg-[#e4e4e7] opacity-40"
+    ],
+    "components/molecules/VisualEffects/RainEffect.tsx": [
+      "kwcode-load-rain absolute inset-0 overflow-hidden pointer-events-none"
+    ],
+    "components/molecules/VisualEffects/StarField.tsx": [
+      "pointer-events-none absolute inset-0 overflow-hidden z-[1]"
+    ],
+    "components/organisms/ArchitecturePageContent.tsx": [
+      "text-indigo-600/90 dark:text-indigo-400/90",
+      "Content-Type"
+    ],
+    "components/organisms/ConfigurationPageContent.tsx": [
+      "h-5 w-5 text-indigo-600/90 dark:text-indigo-400/90"
+    ],
+    "components/organisms/HomePageContent.tsx": [
+      "flex flex-1 flex-col",
+      "flex-1 flex flex-col min-w-0 overflow-auto",
+      "mb-4 flex items-center justify-between gap-4",
+      "w-full whitespace-nowrap pb-2",
+      "mt-0 space-y-6",
+      "mt-0"
+    ],
+    "components/organisms/IdeasPageContent.tsx": [
+      "text-amber-600/90 dark:text-amber-400/90",
+      "Content-Type"
+    ],
+    "components/organisms/LoadingScreenPageContent.tsx": [
+      "fixed inset-0 flex items-center justify-center z-0",
+      "absolute top-4 left-4 z-[10] flex items-center justify-center w-10 h-10 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors",
+      "h-5 w-5"
+    ],
+    "components/organisms/NewProjectPageContent.tsx": [
+      "space-y-6 max-w-xl"
+    ],
+    "components/organisms/ProjectDetailsPageContent.tsx": [
+      "flex items-center justify-center py-12",
+      "h-8 w-8 animate-spin text-indigo-600/80 dark:text-indigo-400/80",
+      "space-y-4",
+      "h-4 w-4 text-red-600/90 dark:text-red-400/90",
+      "space-y-6",
+      "w-full",
+      "mx-auto grid w-full max-w-2xl grid-cols-3",
+      "flex items-center gap-2",
+      "h-4 w-4 text-red-600 dark:text-red-400",
+      "h-4 w-4 text-blue-600/90 dark:text-blue-400/90",
+      "h-4 w-4 text-sky-600/90 dark:text-sky-400/90",
+      "mt-4",
+      "mt-4 flex min-h-[calc(100vh-14rem)] flex-col gap-6",
+      "mt-4 space-y-6",
+      "pt-6"
+    ],
+    "components/organisms/ProjectsListPageContent.tsx": [
+      "space-y-6",
+      "space-y-3",
+      "text-lg font-semibold",
+      "space-y-1 rounded-xl border bg-gradient-to-br from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-900/50 p-2",
+      "flex items-center justify-between gap-2 py-1.5 px-2 rounded hover:bg-muted/30 dark:hover:bg-muted/30 group transition-all duration-200",
+      "flex-1 min-w-0 truncate font-medium text-indigo-600 dark:text-indigo-400 hover:underline transition-all duration-200",
+      "text-xs text-gray-600 dark:text-gray-400 hover:text-red-700 dark:hover:text-red-300 opacity-0 group-hover:opacity-100 transition-opacity"
+    ],
+    "components/organisms/PromptRecordsPageContent.tsx": [
+      "space-y-4",
+      "flex flex-wrap items-center justify-between gap-2",
+      "text-base",
+      "mt-1",
+      "text-xs",
+      "underline hover:text-gray-900 dark:hover:text-white transition-all duration-200",
+      "text-sm text-gray-600 dark:text-gray-400 py-4",
+      "Content-Type"
+    ],
+    "components/organisms/RunPageContent.tsx": [
+      "space-y-6",
+      "border-amber-500/50 bg-amber-500/10"
+    ],
+    "components/organisms/SidebarNavigation.tsx": [
+      "flex flex-col flex-1 min-h-0 gap-4 mt-4",
+      "flex flex-col flex-1 min-h-0 border-t border-primary/30 pt-4 gap-1",
+      "px-3 mb-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/90/80 shrink-0",
+      "flex flex-col flex-1 min-h-0 border-t border-primary/30 pt-4 gap-1 mt-auto",
+      "h-4 w-4 shrink-0 text-blue-600/80 dark:text-blue-400/80",
+      "truncate",
+      "flex flex-col flex-1 min-w-0 w-full px-2 gap-1",
+      "flex items-center gap-2 rounded-xl py-2.5 w-full text-sm font-medium transition-colors justify-center px-0",
+      "flex items-center gap-2 rounded-xl py-2.5 w-full text-sm font-medium transition-colors px-3"
+    ],
+    "components/organisms/SingleContentPage.tsx": [
+      "h-4 w-4"
+    ],
+    "components/organisms/TestingPageContent.tsx": [
+      "space-y-6",
+      "h-6 w-6 text-blue-600/90 dark:text-blue-400/90",
+      "w-full",
+      "grid w-full max-w-2xl grid-cols-4",
+      "flex items-center gap-2",
+      "h-4 w-4",
+      "mt-6 space-y-6",
+      "mt-6",
+      "Content-Type"
+    ],
+    "components/organisms/ThreeTabResourcePageContent.tsx": [
+      "space-y-6"
+    ],
+    "components/organisms/TicketBoard.tsx": [
+      "rounded-xl border bg-muted/30 dark:bg-muted/30 min-h-[320px] flex flex-col",
+      "px-3 py-2 border-b bg-gray-100/40 dark:bg-gray-800/40 rounded-t-lg flex items-center justify-between gap-2",
+      "capitalize font-medium",
+      "text-xs text-gray-600 dark:text-gray-400",
+      "flex-1 p-2",
+      "space-y-2"
+    ],
+    "components/root-loading-overlay.tsx": [
+      "fixed inset-0 flex items-center justify-center z-[9999] transition-opacity duration-500 ease-out data-[loaded=true]:opacity-0 data-[loaded=true]:pointer-events-none"
+    ],
+    "components/shared/Accordion.tsx": [
+      "${sharedClasses.Accordion.itemChevron} ${isOpen ? sharedClasses.Accordion.itemChevronOpen : sharedClasses.Accordion.itemChevronClosed}"
+    ],
+    "components/shared/ButtonGroup.tsx": [
+      "${sharedClasses.ButtonGroup.root} ${justifyClass} ${className || ''}"
+    ],
+    "components/shared/Form.tsx": [
+      "${sharedClasses.Form.root} ${className || ''}"
+    ],
+    "components/shared/Header.tsx": [
+      "h-4 w-4 mr-2",
+      "h-4 w-4 animate-spin mr-2"
+    ],
+    "components/shared/List.tsx": [
+      "${sharedClasses.List.root} ${className || ''}"
+    ],
+    "components/shared/ProjectHeader.tsx": [
+      "h-4 w-4 mr-2",
+      "h-4 w-4 animate-spin mr-2"
+    ],
+    "components/shared/Table.tsx": [
+      "${sharedClasses.Table.table} ${className || ''}"
+    ],
+    "components/shared/Tabs.tsx": [
+      "${sharedClasses.Tabs.tabButtonBase} ${ activeTab === tab.label ? sharedClasses.Tabs.tabButtonActive : sharedClasses.Tabs.tabButtonInactive }"
+    ],
+    "components/tickets-data-table.tsx": [
+      "font-medium max-w-[200px] truncate block",
+      "text-gray-600 dark:text-gray-400 text-xs",
+      "text-gray-600 dark:text-gray-400 text-xs whitespace-nowrap",
+      "sr-only",
+      "flex items-center gap-1",
+      "h-6 w-6 text-amber-600/90 dark:text-amber-400/90"
+    ],
+    "components/ui/accordion.tsx": [
+      "flex",
+      "h-4 w-4 shrink-0 text-gray-600 dark:text-gray-400 transition-transform duration-200",
+      "overflow-hidden text-sm data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down",
+      "border-b",
+      "flex flex-1 items-center justify-between py-4 text-sm font-medium transition-all hover:underline text-left [&[data-state=open]>svg]:rotate-180",
+      "pb-4 pt-0"
+    ],
+    "components/ui/alert.tsx": [
+      "mb-1 font-medium leading-none tracking-tight",
+      "text-sm [&_p]:leading-relaxed",
+      "relative w-full rounded-xl border p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground",
+      "bg-white dark:bg-gray-900 text-gray-900 dark:text-white",
+      "default"
+    ],
+    "components/ui/badge.tsx": [
+      "inline-flex items-center rounded-xl border px-3 py-1 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/50 dark:focus:ring-indigo-400/50 focus:ring-offset-2 glass-card",
+      "border-transparent bg-gradient-to-r from-indigo-600 to-indigo-700 dark:from-indigo-500 dark:to-indigo-600 text-white shadow-lg shadow-gray-200/50 dark:shadow-none hover:bg-indigo-700/80 dark:hover:bg-indigo-600/80 transition-all duration-200",
+      "default"
+    ],
+    "components/ui/button.tsx": [
+      "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+      "bg-gradient-to-r from-indigo-600 to-indigo-700 dark:from-indigo-500 dark:to-indigo-600 text-white shadow-lg shadow-gray-200/50 dark:shadow-none hover:bg-indigo-700/90 dark:hover:bg-indigo-600/90 transition-all duration-200",
+      "h-9 px-4 py-2",
+      "default"
+    ],
+    "components/ui/card.tsx": [
+      "rounded-xl border bg-gradient-to-br from-white to-gray-50/30 dark:from-gray-900 dark:to-gray-800/50 backdrop-blur-sm text-gray-900 dark:text-white shadow-lg shadow-gray-200/50 dark:shadow-none",
+      "flex flex-col space-y-1.5 p-6",
+      "font-semibold leading-none tracking-tight",
+      "text-sm text-gray-600 dark:text-gray-400",
+      "p-6 pt-0",
+      "flex items-center p-6 pt-0"
+    ],
+    "components/ui/checkbox.tsx": [
+      "h-4 w-4",
+      "grid place-content-center peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow-lg shadow-gray-200/50 dark:shadow-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
+      "grid place-content-center text-current"
+    ],
+    "components/ui/dialog.tsx": [
+      "absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 dark:focus:ring-indigo-400/50 focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground/90",
+      "h-4 w-4",
+      "sr-only",
+      "fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "fixed left-[50%] top-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 border bg-white dark:bg-gray-900 p-6 shadow-xl shadow-gray-200/50 dark:shadow-none duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:max-w-lg rounded-xl",
+      "flex flex-col space-y-1.5 text-center sm:text-left",
+      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
+      "text-lg font-semibold leading-none tracking-tight",
+      "text-sm text-gray-600 dark:text-gray-400"
+    ],
+    "components/ui/dropdown-menu.tsx": [
+      "ml-auto",
+      "absolute left-2 flex h-3.5 w-3.5 items-center justify-center",
+      "h-4 w-4",
+      "h-2 w-2 fill-current",
+      "flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-gray-100 dark:focus:bg-gray-800 data-[state=open]:bg-accent [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+      "z-50 min-w-[8rem] overflow-hidden rounded-xl border bg-white dark:bg-gray-900 p-1 text-gray-900 dark:text-white shadow-xl shadow-gray-200/50 dark:shadow-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+      "z-50 min-w-[8rem] overflow-hidden rounded-xl border bg-white dark:bg-gray-900 p-1 text-gray-900 dark:text-white shadow-lg shadow-gray-200/50 dark:shadow-none",
+      "relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-gray-100 dark:focus:bg-gray-800 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+      "relative flex cursor-default select-none items-center gap-2 rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-gray-100 dark:focus:bg-gray-800 data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "px-2 py-1.5 text-sm font-semibold",
+      "-mx-1 my-1 h-px bg-gray-100 dark:bg-gray-800",
+      "ml-auto text-xs tracking-widest opacity-60"
+    ],
+    "components/ui/empty.tsx": [
+      "flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-indigo-600/80 dark:text-indigo-400/80 [&>svg]:h-6 [&>svg]:w-6",
+      "mt-4 text-sm font-semibold",
+      "mt-2 text-sm text-gray-600 dark:text-gray-400",
+      "mt-4",
+      "flex min-h-[200px] flex-col items-center justify-center rounded-xl border border-dashed p-8 text-center"
+    ],
+    "components/ui/input.tsx": [
+      "flex h-9 w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-transparent px-3 py-1 text-base shadow-md hover:shadow-lg transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+    ],
+    "components/ui/label.tsx": [
+      "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+    ],
+    "components/ui/popover.tsx": [
+      "z-50 w-72 rounded-xl border bg-white dark:bg-gray-900 p-4 text-gray-900 dark:text-white shadow-lg shadow-gray-200/50 dark:shadow-none outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2"
+    ],
+    "components/ui/progress.tsx": [
+      "h-full w-full flex-1 bg-gradient-to-r from-indigo-600 to-indigo-700 dark:from-indigo-500 dark:to-indigo-600 transition-all",
+      "relative h-2 w-full overflow-hidden rounded-full bg-indigo-600/20 dark:bg-indigo-500/20"
+    ],
+    "components/ui/scroll-area.tsx": [
+      "h-full w-full rounded-[inherit]",
+      "relative flex-1 rounded-full bg-gray-200/60 dark:bg-gray-700/60",
+      "relative overflow-hidden",
+      "flex touch-none select-none transition-colors"
+    ],
+    "components/ui/select.tsx": [
+      "h-4 w-4 opacity-50",
+      "h-4 w-4",
+      "absolute right-2 flex h-3.5 w-3.5 items-center justify-center",
+      "flex h-9 w-full items-center justify-between whitespace-nowrap rounded-xl border border-gray-300 dark:border-gray-600 bg-transparent px-3 py-2 text-sm shadow-md hover:shadow-lg ring-offset-background data-[placeholder]:text-muted-foreground/90 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 dark:focus:ring-indigo-400/50 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 transition-all duration-200",
+      "flex cursor-default items-center justify-center py-1",
+      "relative z-50 max-h-[--radix-select-content-available-height] min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-xl border bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-lg shadow-gray-200/50 dark:shadow-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[--radix-select-content-transform-origin]",
+      "p-1",
+      "px-2 py-1.5 text-sm font-semibold",
+      "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-gray-100 dark:focus:bg-gray-800 data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "-mx-1 my-1 h-px bg-gray-100 dark:bg-gray-800"
+    ],
+    "components/ui/separator.tsx": [
+      "shrink-0 bg-gray-200/60 dark:bg-gray-700/60"
+    ],
+    "components/ui/skeleton.tsx": [
+      "animate-pulse rounded-xl bg-gray-100 dark:bg-gray-800"
+    ],
+    "components/ui/switch.tsx": [
+      "peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent shadow-md hover:shadow-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=unchecked]:bg-input",
+      "pointer-events-none block h-4 w-4 rounded-full bg-white dark:bg-gray-900 shadow-xl shadow-gray-200/50 dark:shadow-none ring-0 transition-transform data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0"
+    ],
+    "components/ui/table.tsx": [
+      "relative w-full overflow-auto",
+      "w-full caption-bottom text-sm",
+      "[&_tr]:border-b",
+      "[&_tr:last-child]:border-0",
+      "border-t bg-muted/30 dark:bg-muted/30 font-medium [&>tr]:last:border-b-0",
+      "border-b transition-colors hover:bg-muted/30 dark:hover:bg-muted/30 data-[state=selected]:bg-muted",
+      "h-10 px-2 text-left align-middle font-medium text-gray-600 dark:text-gray-400 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+      "p-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+      "mt-4 text-sm text-gray-600 dark:text-gray-400"
+    ],
+    "components/ui/tabs.tsx": [
+      "inline-flex h-9 items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800 p-1 text-gray-600 dark:text-gray-400",
+      "inline-flex items-center justify-center whitespace-nowrap rounded-xl px-3 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow",
+      "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+    ],
+    "components/ui/textarea.tsx": [
+      "flex min-h-[60px] w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-transparent px-3 py-2 text-base shadow-md hover:shadow-lg placeholder:text-muted-foreground/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm transition-all duration-200"
+    ],
+    "components/ui/tooltip.tsx": [
+      "z-50 overflow-hidden rounded-xl border bg-gradient-to-r from-indigo-600 to-indigo-700 dark:from-indigo-500 dark:to-indigo-600 px-3 py-1.5 text-xs text-white animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2"
+    ],
+    "app/configuration/layout.tsx": [
+      "max-w-4xl w-full mx-auto"
+    ],
+    "app/error.tsx": [
+      "min-h-[60vh] flex flex-col items-center justify-center p-8 text-center",
+      "text-xl font-semibold mb-2",
+      "text-gray-600 dark:text-gray-400 mb-4 max-w-md font-mono text-sm",
+      "px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 dark:from-indigo-500 dark:to-indigo-600 text-white hover:opacity-90 transition-all duration-200"
+    ],
+    "app/layout.tsx": [
+      "min-h-screen antialiased bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+    ],
+    "context/quick-actions-context.tsx": [
+      "space-y-4",
+      "h-[400px] surface-card bg-gradient-to-br from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-900/50 p-3 font-mono text-sm",
+      "text-gray-600 dark:text-gray-400",
+      "whitespace-pre-wrap break-all",
+      "fixed bottom-6 right-6 z-[99999] flex flex-col items-end gap-3 pointer-events-none",
+      "pointer-events-auto flex flex-col items-end gap-3",
+      "group flex flex-col items-end gap-3",
+      "flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-white to-gray-50/30 dark:from-gray-900 dark:to-gray-800/50 backdrop-blur-sm text-gray-900 dark:text-white shadow-lg shadow-gray-200/50 dark:shadow-none border border-gray-200/60 dark:border-gray-700/60 transition-all duration-200 opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100 hover:shadow-lg hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:ring-offset-2",
+      "flex h-14 w-14 min-w-[3.5rem] min-h-[3.5rem] items-center justify-center rounded-full bg-gradient-to-r from-indigo-600 to-indigo-700 dark:from-indigo-500 dark:to-indigo-600 text-white ring-2 ring-indigo-500/20 dark:ring-indigo-400/20 transition-all duration-200 group-hover:shadow-[0_8px_16px_-2px_rgba(0,0,0,0.2),0_12px_24px_-4px_rgba(0,0,0,0.15)] group-hover:scale-105 cursor-pointer border-0",
+      "h-7 w-7 shrink-0",
+      "max-w-2xl max-h-[85vh] overflow-hidden flex flex-col",
+      "max-w-2xl max-h-[90vh] overflow-hidden flex flex-col p-0",
+      "max-h-[85vh]",
+      "p-6",
+      "h-5 w-5"
+    ]
+  }
+}

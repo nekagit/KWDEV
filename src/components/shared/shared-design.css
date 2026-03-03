@@ -1,0 +1,133 @@
+/**
+ * Shared design system for src/components/shared
+ * Apply to any shared component root via data-shared-ui.
+ * Provides: smooth shadows, larger typography, consistent radius and spacing.
+ */
+
+/* ---------------------------------------------------------------------------
+   Design tokens (usable by Tailwind or direct CSS)
+   --------------------------------------------------------------------------- */
+:root {
+  /* Smooth, layered shadows (best practice: soft, multi-layer) */
+  --shared-shadow-sm: 0 1px 2px hsl(0 0% 0% / 0.03), 0 1px 3px hsl(0 0% 0% / 0.03);
+  --shared-shadow: 0 1px 3px hsl(0 0% 0% / 0.04), 0 2px 6px hsl(0 0% 0% / 0.03),
+    0 4px 12px hsl(0 0% 0% / 0.02);
+  --shared-shadow-md: 0 2px 4px hsl(0 0% 0% / 0.04), 0 4px 8px hsl(0 0% 0% / 0.04),
+    0 8px 16px hsl(0 0% 0% / 0.03);
+  --shared-shadow-lg: 0 4px 8px hsl(0 0% 0% / 0.05), 0 8px 16px hsl(0 0% 0% / 0.04),
+    0 16px 32px hsl(0 0% 0% / 0.03);
+
+  /* Typography: larger, readable base */
+  --shared-font-size-base: 1rem;
+  --shared-font-size-sm: 0.9375rem;
+  --shared-font-size-lg: 1.125rem;
+  --shared-font-size-xl: 1.25rem;
+  --shared-font-size-2xl: 1.5rem;
+  --shared-font-size-3xl: 1.875rem;
+  --shared-line-height-tight: 1.25;
+  --shared-line-height-normal: 1.5;
+  --shared-line-height-relaxed: 1.625;
+  --shared-font-weight-medium: 500;
+  --shared-font-weight-semibold: 600;
+  --shared-font-weight-bold: 700;
+
+  /* Letter-spacing for headings (slightly tighter for large type) */
+  --shared-tracking-tight: -0.025em;
+  --shared-tracking-normal: 0;
+
+  /* Radius and transition (smooth) */
+  --shared-radius: var(--radius, 0.75rem);
+  --shared-radius-sm: calc(var(--shared-radius) - 4px);
+  --shared-transition: 0.2s ease;
+  --shared-transition-fast: 0.15s ease;
+}
+
+/* ---------------------------------------------------------------------------
+   Scoped styles: applied to any element with data-shared-ui
+   --------------------------------------------------------------------------- */
+[data-shared-ui] {
+  font-size: var(--shared-font-size-base);
+  line-height: var(--shared-line-height-normal);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headings: big, clear hierarchy */
+[data-shared-ui] h1,
+[data-shared-ui] .shared-heading-1 {
+  font-size: var(--shared-font-size-3xl);
+  font-weight: var(--shared-font-weight-bold);
+  line-height: var(--shared-line-height-tight);
+  letter-spacing: var(--shared-tracking-tight);
+}
+
+[data-shared-ui] h2,
+[data-shared-ui] .shared-heading-2 {
+  font-size: var(--shared-font-size-2xl);
+  font-weight: var(--shared-font-weight-bold);
+  line-height: var(--shared-line-height-tight);
+  letter-spacing: var(--shared-tracking-tight);
+}
+
+[data-shared-ui] h3,
+[data-shared-ui] .shared-heading-3 {
+  font-size: var(--shared-font-size-xl);
+  font-weight: var(--shared-font-weight-semibold);
+  line-height: var(--shared-line-height-tight);
+}
+
+[data-shared-ui] h4,
+[data-shared-ui] .shared-heading-4 {
+  font-size: var(--shared-font-size-lg);
+  font-weight: var(--shared-font-weight-semibold);
+  line-height: var(--shared-line-height-normal);
+}
+
+/* Body and muted text */
+[data-shared-ui] p {
+  font-size: var(--shared-font-size-base);
+  line-height: var(--shared-line-height-relaxed);
+}
+
+[data-shared-ui] .text-muted-foreground,
+[data-shared-ui] [class*="muted"] {
+  font-size: var(--shared-font-size-sm);
+}
+
+/* Cards and elevated surfaces: smooth shadow by default */
+[data-shared-ui].shared-card,
+[data-shared-ui] [class*="bg-card"][class*="rounded"] {
+  box-shadow: var(--shared-shadow);
+  border-radius: var(--shared-radius);
+  transition: box-shadow var(--shared-transition), transform var(--shared-transition);
+}
+
+[data-shared-ui].shared-card:hover,
+[data-shared-ui] [class*="bg-card"][class*="rounded"]:hover {
+  box-shadow: var(--shared-shadow-md);
+  transform: translateY(-1px);
+}
+
+/* Buttons and interactive elements: smooth feedback */
+[data-shared-ui] button:not([class*="border-0"]):not([class*="shadow-none"]),
+[data-shared-ui] [role="button"] {
+  transition: box-shadow var(--shared-transition), transform var(--shared-transition);
+}
+
+[data-shared-ui] button:active:not(:disabled),
+[data-shared-ui] [role="button"]:active {
+  transform: scale(0.98);
+}
+
+/* Utility class for explicit smooth shadow (use when not using bg-card) */
+.shared-shadow {
+  box-shadow: var(--shared-shadow);
+}
+
+.shared-shadow-md {
+  box-shadow: var(--shared-shadow-md);
+}
+
+.shared-shadow-lg {
+  box-shadow: var(--shared-shadow-lg);
+}

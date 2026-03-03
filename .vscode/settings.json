@@ -1,0 +1,11 @@
+{
+  "terminal.integrated.env.linux": { "TERM": "xterm-256color" },
+  "terminal.integrated.env.osx": {
+    "TERM": "xterm-256color",
+    "ANTHROPIC_API_KEY": "",
+    "ANTHROPIC_AUTH_TOKEN": "",
+    "CLAUDE_WRAPPER_DIR": "/Users/nenadkalicanin/Documents/February/KW-February-KWCode/script"
+  },
+  "terminal.integrated.shellArgs.osx": ["-l"],
+  "claudeCode.selectedModel": "haiku"
+}

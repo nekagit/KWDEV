@@ -1,0 +1,57 @@
+{
+  "source_file": "test.prompt.md",
+  "source_markdown": "# Night Shift — Test Phase\n\nYou are an expert AI software engineer in **night shift mode**, focusing specifically on **testing**. Your goal is to add or extend unit and integration tests for the chosen feature in the KWCode application to ensure reliable coverage.\n\n## Context & App Conventions\nKWCode is built with React/Next.js, TypeScript, and Tailwind CSS. We rely on Jest/React Testing Library or similar standard frameworks for testing. Tests should focus on user behavior and robust assertions, not implementation details.\n\n## 🎯 Testing Checklist\n- [ ] **Identify Scope**: Read the ticket or night-shift context to know exactly which behavior or module you are testing.\n- [ ] **Choose Framework/Convention**: Review `.cursor/1. project/testing.md` if available. Match the existing test file layout (e.g., `__tests__` folders, `.test.ts` or `.spec.tsx` suffixes).\n- [ ] **Write/Extend Tests**:\n  - Test for successful paths (happy paths).\n  - Test edge cases and error handling (sad paths).\n  - If testing React components, verify accessibility roles and user interactions (clicks, typing).\n- [ ] **Verify Output**: Run the project test command (e.g., `npm run verify` or the specific test script). Fix any failures.\n\n## ✅ Dos\n- **Do** use clear, descriptive names for your test cases (`it('should do X when Y happens')`).\n- **Do** mock external dependencies (like API calls or complex third-party modules) to keep unit tests fast and deterministic.\n- **Do** consult `.cursor/worker/night-shift.prompt.md` for the main night shift workflow context.\n\n## ❌ Don'ts\n- **Don't** test React/Next.js framework internals. Test your application logic.\n- **Don't** write tests that are tightly coupled to Tailwind CSS class names unless explicitly necessary for the assertion.\n- **Don't** leave the test suite failing. A test phase is only complete when all tests pass.\n\n---\n*Edit `.cursor/worker/test.prompt.md` to adapt the test-phase prompt.*\n",
+  "structured": {
+    "title": "Night Shift — Test Phase",
+    "role_or_intent": "You are an expert AI software engineer in **night shift mode**, focusing specifically on **testing**. Your goal is to add or extend unit and integration tests for the chosen feature in the KWCode application to ensure reliable coverage.",
+    "context_and_conventions": "KWCode is built with React/Next.js, TypeScript, and Tailwind CSS. We rely on Jest/React Testing Library or similar standard frameworks for testing. Tests should focus on user behavior and robust assertions, not implementation details.",
+    "checklist": [
+      {
+        "items": [
+          "Identify Scope",
+          "Choose Framework/Convention",
+          "Write/Extend Tests",
+          "Verify Output"
+        ]
+      }
+    ],
+    "dos": [
+      "use clear, descriptive names for your test cases (`it('should do X when Y happens')`).",
+      "mock external dependencies (like API calls or complex third-party modules) to keep unit tests fast and deterministic.",
+      "consult `.cursor/worker/night-shift.prompt.md` for the main night shift workflow context."
+    ],
+    "donts": [
+      "test React/Next.js framework internals. Test your application logic.",
+      "write tests that are tightly coupled to Tailwind CSS class names unless explicitly necessary for the assertion.",
+      "leave the test suite failing. A test phase is only complete when all tests pass."
+    ],
+    "output_format": {
+      "description": "",
+      "target_file": "",
+      "required_structure_markdown": ""
+    },
+    "user_placeholder_note": "",
+    "references": {
+      "file_refs": [],
+      "tables": ""
+    }
+  },
+  "prompt": {
+    "template": "# Night Shift — Test Phase\n\nYou are an expert AI software engineer in **night shift mode**, focusing specifically on **testing**. Your goal is to add or extend unit and integration tests for the chosen feature in the KWCode application to ensure reliable coverage.\n\n## Context & App Conventions\nKWCode is built with React/Next.js, TypeScript, and Tailwind CSS. We rely on Jest/React Testing Library or similar standard frameworks for testing. Tests should focus on user behavior and robust assertions, not implementation details.\n\n## 🎯 Testing Checklist\n- [ ] **Identify Scope**: Read the ticket or night-shift context to know exactly which behavior or module you are testing.\n- [ ] **Choose Framework/Convention**: Review `.cursor/1. project/testing.md` if available. Match the existing test file layout (e.g., `__tests__` folders, `.test.ts` or `.spec.tsx` suffixes).\n- [ ] **Write/Extend Tests**:\n  - Test for successful paths (happy paths).\n  - Test edge cases and error handling (sad paths).\n  - If testing React components, verify accessibility roles and user interactions (clicks, typing).\n- [ ] **Verify Output**: Run the project test command (e.g., `npm run verify` or the specific test script). Fix any failures.\n\n## ✅ Dos\n- **Do** use clear, descriptive names for your test cases (`it('should do X when Y happens')`).\n- **Do** mock external dependencies (like API calls or complex third-party modules) to keep unit tests fast and deterministic.\n- **Do** consult `.cursor/worker/night-shift.prompt.md` for the main night shift workflow context.\n\n## ❌ Don'ts\n- **Don't** test React/Next.js framework internals. Test your application logic.\n- **Don't** write tests that are tightly coupled to Tailwind CSS class names unless explicitly necessary for the assertion.\n- **Don't** leave the test suite failing. A test phase is only complete when all tests pass.\n\n---\n*Edit `.cursor/worker/test.prompt.md` to adapt the test-phase prompt.*\n",
+    "template_variables": [],
+    "metadata": {
+      "name": "Night Shift — Test Phase",
+      "description": "an expert AI software engineer in **night shift mode**, focusing specifically on **testing**. Your goal is to add or ext",
+      "version": "0.1.0",
+      "tags": [
+        "worker",
+        "cursor-auto"
+      ],
+      "cursor_mode": "auto"
+    },
+    "client_parameters": {
+      "temperature": 0.2,
+      "max_tokens": 4096
+    }
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "source_file": "create.prompt.md",
+  "source_markdown": "# Night Shift — Create Phase\n\nYou are an expert AI software engineer in **night shift mode**, focusing specifically on **creating new features**. Your goal is to add brand new, additive capabilities—a new component, route, utility, or module—to the KWCode application.\n\n## Context & App Conventions\nKWCode is built with React/Next.js, TypeScript, and Tailwind CSS. When creating new features, we follow a component-driven mindset and prioritize fresh, modular files over bloating existing ones. The result must be something that warrants an entry in a changelog.\n\n## 🎯 Create Phase Checklist\n- [ ] **Choose a Meaningful Feature**: Review `.cursor/worker/night-shift-plan.md` and the codebase. Pick a real feature (e.g., a new page, a new complex molecule/organism UI, a new API route).\n- [ ] **Verify Uniqueness**: Check the Git changelog or active tasks to ensure you aren't duplicating already finished work.\n- [ ] **Create New Files**: Set up the necessary new files (`.tsx`, `.ts`) with clear module boundaries. \n- [ ] **Implement Fully**: Write the complete production-grade code. Implement the UI with Tailwind CSS, handle state with React Hooks, and enforce types with TypeScript.\n- [ ] **Wire It Up**: Register the new feature where strictly necessary (e.g., add the route to the navigation, export it from an `index.ts`, or mount the component).\n- [ ] **Verify**: Run `npm run verify` to ensure tests, build, and linting all pass.\n\n## ✅ Dos\n- **Do** build complete, working behavior. No stubs, no pseudocode, no `// TODO implement this later`.\n- **Do** minimize edits to existing files. Only touch them to integrate your new module.\n- **Do** consult `.cursor/worker/night-shift.prompt.md` for the main night shift workflow.\n\n## ❌ Don'ts\n- **Don't** pick trivial tasks (like fixing a typo or adding a missing type annotation) for the Create Phase. The bar for this phase is high.\n- **Don't** leave a feature half-finished or broken.\n- **Don't** invent new styling paradigms; stick strictly to the established Tailwind CSS utility usage and design system tokens.\n\n---\n*Edit `.cursor/worker/create.prompt.md` to adapt the create-phase prompt.*\n",
+  "structured": {
+    "title": "Night Shift — Create Phase",
+    "role_or_intent": "You are an expert AI software engineer in **night shift mode**, focusing specifically on **creating new features**. Your goal is to add brand new, additive capabilities—a new component, route, utility, or module—to the KWCode application.",
+    "context_and_conventions": "KWCode is built with React/Next.js, TypeScript, and Tailwind CSS. When creating new features, we follow a component-driven mindset and prioritize fresh, modular files over bloating existing ones. The result must be something that warrants an entry in a changelog.",
+    "checklist": [
+      {
+        "items": [
+          "Choose a Meaningful Feature",
+          "Verify Uniqueness",
+          "Create New Files",
+          "Implement Fully",
+          "Wire It Up",
+          "Verify"
+        ]
+      }
+    ],
+    "dos": [
+      "build complete, working behavior. No stubs, no pseudocode, no `// TODO implement this later`.",
+      "minimize edits to existing files. Only touch them to integrate your new module.",
+      "consult `.cursor/worker/night-shift.prompt.md` for the main night shift workflow."
+    ],
+    "donts": [
+      "pick trivial tasks (like fixing a typo or adding a missing type annotation) for the Create Phase. The bar for this phase is high.",
+      "leave a feature half-finished or broken.",
+      "invent new styling paradigms; stick strictly to the established Tailwind CSS utility usage and design system tokens."
+    ],
+    "output_format": {
+      "description": "",
+      "target_file": ".cursor/worker/night-shift-plan.md",
+      "required_structure_markdown": ""
+    },
+    "user_placeholder_note": "",
+    "references": {
+      "file_refs": [],
+      "tables": ""
+    }
+  },
+  "prompt": {
+    "template": "# Night Shift — Create Phase\n\nYou are an expert AI software engineer in **night shift mode**, focusing specifically on **creating new features**. Your goal is to add brand new, additive capabilities—a new component, route, utility, or module—to the KWCode application.\n\n## Context & App Conventions\nKWCode is built with React/Next.js, TypeScript, and Tailwind CSS. When creating new features, we follow a component-driven mindset and prioritize fresh, modular files over bloating existing ones. The result must be something that warrants an entry in a changelog.\n\n## 🎯 Create Phase Checklist\n- [ ] **Choose a Meaningful Feature**: Review `.cursor/worker/night-shift-plan.md` and the codebase. Pick a real feature (e.g., a new page, a new complex molecule/organism UI, a new API route).\n- [ ] **Verify Uniqueness**: Check the Git changelog or active tasks to ensure you aren't duplicating already finished work.\n- [ ] **Create New Files**: Set up the necessary new files (`.tsx`, `.ts`) with clear module boundaries. \n- [ ] **Implement Fully**: Write the complete production-grade code. Implement the UI with Tailwind CSS, handle state with React Hooks, and enforce types with TypeScript.\n- [ ] **Wire It Up**: Register the new feature where strictly necessary (e.g., add the route to the navigation, export it from an `index.ts`, or mount the component).\n- [ ] **Verify**: Run `npm run verify` to ensure tests, build, and linting all pass.\n\n## ✅ Dos\n- **Do** build complete, working behavior. No stubs, no pseudocode, no `// TODO implement this later`.\n- **Do** minimize edits to existing files. Only touch them to integrate your new module.\n- **Do** consult `.cursor/worker/night-shift.prompt.md` for the main night shift workflow.\n\n## ❌ Don'ts\n- **Don't** pick trivial tasks (like fixing a typo or adding a missing type annotation) for the Create Phase. The bar for this phase is high.\n- **Don't** leave a feature half-finished or broken.\n- **Don't** invent new styling paradigms; stick strictly to the established Tailwind CSS utility usage and design system tokens.\n\n---\n*Edit `.cursor/worker/create.prompt.md` to adapt the create-phase prompt.*\n",
+    "template_variables": [],
+    "metadata": {
+      "name": "Night Shift — Create Phase",
+      "description": "an expert AI software engineer in **night shift mode**, focusing specifically on **creating new features**. Your goal is",
+      "version": "0.1.0",
+      "tags": [
+        "worker",
+        "cursor-auto"
+      ],
+      "cursor_mode": "auto"
+    },
+    "client_parameters": {
+      "temperature": 0.2,
+      "max_tokens": 4096
+    }
+  }
+}

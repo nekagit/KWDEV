@@ -1,0 +1,88 @@
+{
+  "ConfigurationPageContent.tsx": {
+    "0": "size-5 text-primary/90"
+  },
+  "IntegrationsPageContent.tsx": {
+    "0": "size-5 text-primary/90"
+  },
+  "HomePageContent.tsx": {
+    "0": "flex flex-1 flex-col",
+    "1": "flex-1 flex flex-col min-w-0 overflow-auto",
+    "2": "mb-6 flex items-center justify-between gap-4",
+    "3": "w-full whitespace-nowrap pb-3",
+    "4": "mt-0 pt-6 pb-6 px-4 space-y-6",
+    "5": "mt-0 pt-6 pb-6 px-4 space-y-6",
+    "6": "mt-0 pt-6 pb-6 px-4",
+    "7": "mt-0 pt-6 pb-6 px-4",
+    "8": "mt-0 pt-6 pb-6 px-4",
+    "9": "mt-0 pt-6 pb-6 px-4 space-y-6",
+    "10": "mt-0 pt-6 pb-6 px-4 space-y-6",
+    "11": "mt-0 pt-6 pb-6 px-4"
+  },
+  "IdeasPageContent.tsx": {
+    "0": "size-5 text-warning/90"
+  },
+  "LoadingScreenPageContent.tsx": {
+    "0": "fixed inset-0 flex items-center justify-center z-0",
+    "1": "absolute top-4 left-4 z-[10] flex items-center justify-center size-10 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all duration-200",
+    "2": "size-5"
+  },
+  "NewProjectPageContent.tsx": {
+    "0": "space-y-6 max-w-xl"
+  },
+  "ProjectDetailsPageContent.tsx": {},
+  "ProjectsListPageContent.tsx": {
+    "0": "space-y-6",
+    "1": "w-full space-y-4",
+    "2": "text-lg font-semibold tracking-tight text-foreground/90",
+    "grid": "w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 list-none p-0 m-0"
+  },
+  "PromptRecordsPageContent.tsx": {
+    "0": "space-y-6",
+    "1": "flex flex-wrap items-center justify-between gap-3",
+    "2": "text-base font-medium",
+    "3": "mt-2",
+    "4": "text-xs",
+    "5": "underline hover:text-foreground transition-colors",
+    "6": "underline hover:text-foreground transition-colors",
+    "7": "text-sm text-muted-foreground py-4"
+  },
+  "SidebarNavigation.tsx": {
+    "0": "flex flex-col flex-1 min-h-0 gap-3 mt-3",
+    "1": "flex flex-col flex-1 min-h-0 border-t border-border/40 pt-3 gap-0.5",
+    "2": "px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70 shrink-0",
+    "3": "flex flex-col flex-1 min-h-0 border-t border-border/40 pt-3 gap-0.5",
+    "4": "px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70 shrink-0",
+    "5": "flex flex-col flex-1 min-h-0 border-t border-border/40 pt-3 gap-0.5 mt-auto",
+    "6": "px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70 shrink-0",
+    "7": "size-4 shrink-0 text-info/80",
+    "8": "size-4 shrink-0 text-info/80",
+    "9": "truncate",
+    "10": "flex flex-col flex-1 min-w-0 w-full px-2 gap-0.5",
+    "11": "flex items-center gap-2 rounded-lg py-2 w-full text-sm font-medium transition-all duration-150 justify-center px-0",
+    "12": "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+    "13": "flex items-center gap-2 rounded-lg py-2 w-full text-sm font-medium transition-all duration-150 px-3",
+    "14": "text-success/90",
+    "15": "text-info/90",
+    "16": "text-primary/90",
+    "17": "text-destructive/90",
+    "18": "text-warning/90",
+    "19": "text-muted-foreground"
+  },
+  "SingleContentPage.tsx": {
+    "0": "size-4",
+    "1": "space-y-6"
+  },
+  "ThreeTabResourcePageContent.tsx": {
+    "0": "min-h-screen bg-background space-y-8 pb-20 container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 animate-fade-in",
+    "1": "space-y-8 pb-12 animate-fade-in"
+  },
+  "TicketBoard.tsx": {
+    "0": "rounded-xl border border-border/60 bg-card/50 backdrop-blur-sm min-h-80 flex flex-col shadow-sm",
+    "1": "px-4 py-3 border-b border-border/40 bg-muted/30 rounded-t-xl flex items-center justify-between gap-2",
+    "2": "capitalize font-semibold text-sm",
+    "3": "text-xs text-muted-foreground tabular-nums",
+    "4": "flex-1 p-3",
+    "5": "space-y-2"
+  }
+}

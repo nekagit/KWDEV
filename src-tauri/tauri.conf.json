@@ -1,0 +1,43 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "KWCode",
+  "identifier": "com.kwcode.app",
+  "build": {
+    "beforeDevCommand": "npm run dev:tauri:wait",
+    "devUrl": "http://127.0.0.1:4000/",
+    "beforeBuildCommand": "node script/tauri/build-for-tauri.mjs",
+    "frontendDist": "../out"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "title": "KWCode",
+        "width": 1000,
+        "height": 780,
+        "minWidth": 800,
+        "minHeight": 600,
+        "resizable": true
+      }
+    ],
+    "security": {
+      "assetProtocol": {
+        "enable": true,
+        "scope": [
+          "**"
+        ]
+      },
+      "capabilities": [
+        "default"
+      ]
+    }
+  },
+  "bundle": {
+    "resources": {
+      "../script/worker/run_terminal_agent.sh": "run_terminal_agent.sh",
+      "../cursor_init.zip": "cursor_init.zip",
+      "../project_template.zip": "project_template.zip"
+    }
+  },
+  "plugins": {}
+}

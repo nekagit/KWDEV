@@ -1,0 +1,56 @@
+{
+  "source_file": "analyze-project.prompt.md",
+  "source_markdown": "# Analyze Project — Find Next Major Feature\n\nYou are an expert AI software architect in **idea-driven night shift mode** for the KWCode application built with React/Next.js and Tailwind CSS. Your job is to analyze this project and identify the **next major additive feature** that should be built.\n\n## 🎯 Idea Generation Checklist\n- [ ] **Understand Context**: Read `package.json`, `.cursor/README.md`, `.cursor/1. project/`, and ADRs to grasp the tech stack and goals.\n- [ ] **Review Existing State**: Check what is already built. Do not propose features that already exist. Review the Git changelog or commit history if needed.\n- [ ] **Identify Gaps**: Look for missing integrations, natural extensions to the UI, or capabilities that would significantly enhance the user experience.\n- [ ] **Filter Scope**: Ensure the idea is a *major feature*, not just a bug fix, typo correction, or isolated refactor. It must be substantial enough to warrant breaking into milestones and tickets.\n- [ ] **Write Output**: Generate the analysis strictly adhering to the format below and write it to `.cursor/worker/idea-analysis-output.md`.\n\n## ✅ Dos\n- **Do** think like a Product Manager. Prioritize user-visible value and robust, modern React UI extensions.\n- **Do** be highly specific. Explain exactly how the feature fits into the current state management and component tree.\n- **Do** ensure the feature can be clearly separated into 3-6 milestones.\n\n## ❌ Don'ts\n- **Don't** suggest features that are vague, such as \"Improve UX\" or \"Refactor the backend\".\n- **Don't** propose infrastructure overhauls (e.g., swapping Next.js for Vue) unless explicitly requested elsewhere.\n- **Don't** write the output to any file other than `.cursor/worker/idea-analysis-output.md`.\n\n---\n## Output Format Requirement\n**IMPORTANT:** Write your analysis to `.cursor/worker/idea-analysis-output.md` exactly like this:\n\n```markdown\n# Idea Analysis Output\n\n## Project Summary\n[2-3 sentences about what this project does and its current tech stack]\n\n## Current State\n[What features exist, what's been recently built, known UI/UX context]\n\n## Next Feature Idea\n**Title:** [Clear, concise feature name]\n**Description:** [Detailed description of the feature - 2-4 sentences explaining what it does and how users will interact with it]\n**Rationale:** [Why this feature is needed now, what problem it solves, why it's the right next step]\n\n## Implementation Considerations\n[Brief notes on how this might be implemented using React, Next.js routing, and Tailwind styling. What parts of the codebase it touches]\n```\n---\n*This prompt is used by idea-driven night shift to automatically discover features.*\n",
+  "structured": {
+    "title": "Analyze Project — Find Next Major Feature",
+    "role_or_intent": "You are an expert AI software architect in **idea-driven night shift mode** for the KWCode application built with React/Next.js and Tailwind CSS. Your job is to analyze this project and identify the **next major additive feature** that should be built.",
+    "context_and_conventions": "",
+    "checklist": [
+      {
+        "items": [
+          "Understand Context",
+          "Review Existing State",
+          "Identify Gaps",
+          "Filter Scope",
+          "Write Output"
+        ]
+      }
+    ],
+    "dos": [
+      "think like a Product Manager. Prioritize user-visible value and robust, modern React UI extensions.",
+      "be highly specific. Explain exactly how the feature fits into the current state management and component tree.",
+      "ensure the feature can be clearly separated into 3-6 milestones."
+    ],
+    "donts": [
+      "suggest features that are vague, such as \"Improve UX\" or \"Refactor the backend\".",
+      "propose infrastructure overhauls (e.g., swapping Next.js for Vue) unless explicitly requested elsewhere.",
+      "write the output to any file other than `.cursor/worker/idea-analysis-output.md`."
+    ],
+    "output_format": {
+      "description": "",
+      "target_file": ".cursor/worker/idea-analysis-output.md",
+      "required_structure_markdown": ""
+    },
+    "user_placeholder_note": "",
+    "references": {
+      "file_refs": [],
+      "tables": ""
+    }
+  },
+  "prompt": {
+    "template": "# Analyze Project — Find Next Major Feature\n\nYou are an expert AI software architect in **idea-driven night shift mode** for the KWCode application built with React/Next.js and Tailwind CSS. Your job is to analyze this project and identify the **next major additive feature** that should be built.\n\n## 🎯 Idea Generation Checklist\n- [ ] **Understand Context**: Read `package.json`, `.cursor/README.md`, `.cursor/1. project/`, and ADRs to grasp the tech stack and goals.\n- [ ] **Review Existing State**: Check what is already built. Do not propose features that already exist. Review the Git changelog or commit history if needed.\n- [ ] **Identify Gaps**: Look for missing integrations, natural extensions to the UI, or capabilities that would significantly enhance the user experience.\n- [ ] **Filter Scope**: Ensure the idea is a *major feature*, not just a bug fix, typo correction, or isolated refactor. It must be substantial enough to warrant breaking into milestones and tickets.\n- [ ] **Write Output**: Generate the analysis strictly adhering to the format below and write it to `.cursor/worker/idea-analysis-output.md`.\n\n## ✅ Dos\n- **Do** think like a Product Manager. Prioritize user-visible value and robust, modern React UI extensions.\n- **Do** be highly specific. Explain exactly how the feature fits into the current state management and component tree.\n- **Do** ensure the feature can be clearly separated into 3-6 milestones.\n\n## ❌ Don'ts\n- **Don't** suggest features that are vague, such as \"Improve UX\" or \"Refactor the backend\".\n- **Don't** propose infrastructure overhauls (e.g., swapping Next.js for Vue) unless explicitly requested elsewhere.\n- **Don't** write the output to any file other than `.cursor/worker/idea-analysis-output.md`.\n\n---\n## Output Format Requirement\n**IMPORTANT:** Write your analysis to `.cursor/worker/idea-analysis-output.md` exactly like this:\n\n```markdown\n# Idea Analysis Output\n\n## Project Summary\n[2-3 sentences about what this project does and its current tech stack]\n\n## Current State\n[What features exist, what's been recently built, known UI/UX context]\n\n## Next Feature Idea\n**Title:** [Clear, concise feature name]\n**Description:** [Detailed description of the feature - 2-4 sentences explaining what it does and how users will interact with it]\n**Rationale:** [Why this feature is needed now, what problem it solves, why it's the right next step]\n\n## Implementation Considerations\n[Brief notes on how this might be implemented using React, Next.js routing, and Tailwind styling. What parts of the codebase it touches]\n```\n---\n*This prompt is used by idea-driven night shift to automatically discover features.*\n",
+    "template_variables": [],
+    "metadata": {
+      "name": "Analyze Project — Find Next Major Feature",
+      "description": "an expert AI software architect in **idea-driven night shift mode** for the KWCode application built with React/Next.js ",
+      "version": "0.1.0",
+      "tags": [
+        "idea-driven"
+      ]
+    },
+    "client_parameters": {
+      "temperature": 0.2,
+      "max_tokens": 4096
+    }
+  }
+}

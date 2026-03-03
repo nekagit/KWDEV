@@ -1,0 +1,58 @@
+{
+  "source_file": "architecture.prompt.md",
+  "source_markdown": "# Architecture Analysis & Documentation\n\nYou are an expert Software Architect tasked with generating a comprehensive System Architecture document (`architecture.prompt.md` target `architecture.md`) for the KWCode application.\n\n## 🎯 Architecture Analysis Checklist\n- [ ] **Map the Data Flow**: Identify how data enters the application (user input, external APIs), how it is processed (Next.js server-side, client-side), and where it is persisted (PostgreSQL, local storage, etc.).\n- [ ] **Identify Core Modules**: Outline the distinct modules of the system (e.g., Auth, Project Planner, External AI Agents integration).\n- [ ] **Analyze State Management**: Detail how global state is handled vs local component state.\n- [ ] **Review Security & Auth**: Specifically document the authentication flow (e.g., NextAuth, JWT, Session cookies).\n- [ ] **Draft the Document**: Build the Markdown document ensuring it strictly conforms to the required output format.\n\n## ✅ Dos\n- **Do** explain *why* certain architectural choices were made if obvious from the code (e.g., \"Using React Context to avoid prop drilling in deeply nested configurations\").\n- **Do** explicitly mention how the frontend and backend talk to each other (e.g., TRPC, REST, GraphQL, Server Actions).\n- **Do** include any architectural diagrams if you can accurately generate them using standard Mermaid syntax.\n\n## ❌ Don'ts\n- **Don't** provide a list of every single file. Keep it high-level, focusing on modules and boundaries.\n- **Don't** omit the database or data persistence layer.\n\n---\n## Required Document Structure\n\nOutput exactly this structure for the `architecture.md` file:\n\n```markdown\n# System Architecture\n\n## Overview\nA high-level 2-3 sentence summary of the system design (e.g., Monolithic Next.js application with tightly coupled tRPC APIs and an external PostgreSQL database acting as the single source of truth).\n\n## System Diagram\n[Optional: Fenced Mermaid diagram demonstrating data flow].\n\n## Core Subsystems\n### 1. Frontend Client\n- **Tech:** React / Next.js\n- **Responsibility:** Handles user interactions, optimistic UI updates, and client-side routing.\n\n### 2. Backend API / Server Actions\n- **Tech:** Node.js / Next.js Server Actions\n- **Responsibility:** Data validation, secure operations, interfacing with the DB.\n\n### 3. Data Layer\n- **Tech:** [Database, ORM]\n- **Responsibility:** Relational data storage, migrations.\n\n## State Management Strategy\n[Explain where state lives: Server State (react-query/SWR), Global UI State (Zustand/Context), Local State (useState).]\n\n## Authentication & Security\n[Provide a summary of the auth flow, token handling, and route protection.]\n\n## Data Flow Example\n[Walk through one core user action, from the button click down to the database row insertion.]\n```\nOutput the **complete** architecture content. The app overwrites the target file with your output.\n",
+  "structured": {
+    "title": "Architecture Analysis & Documentation",
+    "role_or_intent": "You are an expert Software Architect tasked with generating a comprehensive System Architecture document (`architecture.prompt.md` target `architecture.md`) for the KWCode application.",
+    "context_and_conventions": "",
+    "checklist": [
+      {
+        "items": [
+          "Map the Data Flow",
+          "Identify Core Modules",
+          "Analyze State Management",
+          "Review Security & Auth",
+          "Draft the Document"
+        ]
+      }
+    ],
+    "dos": [
+      "explain *why* certain architectural choices were made if obvious from the code (e.g., \"Using React Context to avoid prop drilling in deeply nested configurations\").",
+      "explicitly mention how the frontend and backend talk to each other (e.g., TRPC, REST, GraphQL, Server Actions).",
+      "include any architectural diagrams if you can accurately generate them using standard Mermaid syntax."
+    ],
+    "donts": [
+      "provide a list of every single file. Keep it high-level, focusing on modules and boundaries.",
+      "omit the database or data persistence layer."
+    ],
+    "output_format": {
+      "description": "",
+      "target_file": "architecture.md",
+      "required_structure_markdown": ""
+    },
+    "user_placeholder_note": "## Required Document Structure",
+    "references": {
+      "file_refs": [],
+      "tables": ""
+    }
+  },
+  "prompt": {
+    "template": "# Architecture Analysis & Documentation\n\nYou are an expert Software Architect tasked with generating a comprehensive System Architecture document (`architecture.prompt.md` target `architecture.md`) for the KWCode application.\n\n## 🎯 Architecture Analysis Checklist\n- [ ] **Map the Data Flow**: Identify how data enters the application (user input, external APIs), how it is processed (Next.js server-side, client-side), and where it is persisted (PostgreSQL, local storage, etc.).\n- [ ] **Identify Core Modules**: Outline the distinct modules of the system (e.g., Auth, Project Planner, External AI Agents integration).\n- [ ] **Analyze State Management**: Detail how global state is handled vs local component state.\n- [ ] **Review Security & Auth**: Specifically document the authentication flow (e.g., NextAuth, JWT, Session cookies).\n- [ ] **Draft the Document**: Build the Markdown document ensuring it strictly conforms to the required output format.\n\n## ✅ Dos\n- **Do** explain *why* certain architectural choices were made if obvious from the code (e.g., \"Using React Context to avoid prop drilling in deeply nested configurations\").\n- **Do** explicitly mention how the frontend and backend talk to each other (e.g., TRPC, REST, GraphQL, Server Actions).\n- **Do** include any architectural diagrams if you can accurately generate them using standard Mermaid syntax.\n\n## ❌ Don'ts\n- **Don't** provide a list of every single file. Keep it high-level, focusing on modules and boundaries.\n- **Don't** omit the database or data persistence layer.\n\n---\n## Required Document Structure\n\nOutput exactly this structure for the `architecture.md` file:\n\n```markdown\n# System Architecture\n\n## Overview\nA high-level 2-3 sentence summary of the system design (e.g., Monolithic Next.js application with tightly coupled tRPC APIs and an external PostgreSQL database acting as the single source of truth).\n\n## System Diagram\n[Optional: Fenced Mermaid diagram demonstrating data flow].\n\n## Core Subsystems\n### 1. Frontend Client\n- **Tech:** React / Next.js\n- **Responsibility:** Handles user interactions, optimistic UI updates, and client-side routing.\n\n### 2. Backend API / Server Actions\n- **Tech:** Node.js / Next.js Server Actions\n- **Responsibility:** Data validation, secure operations, interfacing with the DB.\n\n### 3. Data Layer\n- **Tech:** [Database, ORM]\n- **Responsibility:** Relational data storage, migrations.\n\n## State Management Strategy\n[Explain where state lives: Server State (react-query/SWR), Global UI State (Zustand/Context), Local State (useState).]\n\n## Authentication & Security\n[Provide a summary of the auth flow, token handling, and route protection.]\n\n## Data Flow Example\n[Walk through one core user action, from the button click down to the database row insertion.]\n```\nOutput the **complete** architecture content. The app overwrites the target file with your output.",
+    "template_variables": [
+      "appended_content"
+    ],
+    "metadata": {
+      "name": "Architecture Analysis & Documentation",
+      "description": "an expert Software Architect tasked with generating a comprehensive System Architecture document (`architecture.prompt.m",
+      "version": "0.1.0",
+      "tags": [
+        "setup",
+        "analyze"
+      ]
+    },
+    "client_parameters": {
+      "temperature": 0.2,
+      "max_tokens": 4096
+    }
+  }
+}

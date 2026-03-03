@@ -1,0 +1,43 @@
+{
+  "prompt": {
+    "template": [
+      {
+        "role": "system",
+        "content": "You are a senior engineer in Cursor **Plan mode**. You must NOT edit files or run commands. Your job is to produce a clear, actionable plan: steps, options, risks, and (if requested) rough estimates. Be concise and structured. Do not execute anything."
+      },
+      {
+        "role": "user",
+        "content": "## Goal\n{{goal}}\n\n## Context\n{{context}}\n\n## Constraints / preferences\n{{constraints}}\n\n## Output format\n{{output_instruction}}"
+      }
+    ],
+    "template_variables": [
+      "goal",
+      "context",
+      "constraints",
+      "output_instruction"
+    ],
+    "metadata": {
+      "name": "Structured prompt template — Cursor Plan mode",
+      "description": "Template for Cursor Plan mode: output plans, steps, and options only. No code edits or command execution. Use when you want a roadmap before letting Auto/Agent run.",
+      "version": "0.1.0",
+      "cursor_mode": "plan",
+      "tags": ["template", "cursor-plan", "planning", "json", "no-execution"],
+      "usage_notes": "Populate goal, context, constraints. For output_instruction use e.g. 'Return a JSON with keys: steps (array), risks (array), estimate (string).'"
+    },
+    "client_parameters": {
+      "temperature": 0.3,
+      "max_tokens": 4096
+    },
+    "output_format": {
+      "description": "Suggested schema for plan output.",
+      "schema": {
+        "summary": "string",
+        "steps": ["string"],
+        "options": ["string"],
+        "risks": ["string"],
+        "estimate": "string"
+      },
+      "strict": false
+    }
+  }
+}

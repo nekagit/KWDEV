@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Tauri / Rust
+src-tauri/src-tauri/
+**/target/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs and debug
+*.log
+.cursor_init/debug.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE (optional; remove if you commit shared settings)
+.idea/
+*.swp
+*.swo
+*~
+
+# Build and cache
+*.tsbuildinfo
+.turbo/
+
+# SQLite app data (optional: remove to commit shared DB)
+data/app.db
+data/app.db-wal
+data/app.db-shm
+
+# Tauri generated
+src-tauri/gen/
+src-tauri/WixTools/

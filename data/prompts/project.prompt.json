@@ -1,0 +1,58 @@
+{
+  "source_file": "project.prompt.md",
+  "source_markdown": "# Project Analysis & Context \n\nYou are an expert AI architect tasked with reading the entire workspace and generating a central Project Information document (`project.prompt.md` target `PROJECT-INFO.md`). This document serves as the foundational \"What is this?\" for both human developers and future AI agents to understand the KWCode application.\n\n## 🎯 Project Info Checklist\n- [ ] **Scan Root Files**: Review `package.json`, `README.md`, `next.config.js`, `tsconfig.json`, and `.cursor/adr/` to glean the exact tech stack and tooling.\n- [ ] **Understand the Domain**: Summarize the primary business logic or user purpose of the application.\n- [ ] **Identify Key Workflows**: Note the primary scripts and workflows developers use (e.g., `npm run dev`, `npm run verify`).\n- [ ] **Assess Folder Architecture**: Summarize what lives in `src/app/`, `src/components/`, `src/store/`, `src/lib/`, and the `.cursor/` directory.\n- [ ] **Draft the Output**: Ensure the Markdown accurately reflects the current state of the application without hallucinations.\n\n## ✅ Dos\n- **Do** use exact versions of major dependencies if helpful (e.g., Next.js 14, React 18).\n- **Do** mention the specific flavor of the UI stack (Tailwind CSS, Radix UI, Framer Motion) since that's critical to front-end work.\n- **Do** emphasize the atomic design methodology if it's visible in `src/components/{atoms,molecules,organisms}`.\n\n## ❌ Don'ts\n- **Don't** write \"The project seems to be...\" Write authoritatively: \"The project is...\"\n- **Don't** delve too deeply into the frontend/backend endpoints, just provide the 10,000-foot view. (There are dedicated frontend/backend analyzer prompts for that).\n\n---\n## Required Document Structure\n\nBuild the project document using this distinct structure:\n\n```markdown\n# Project Overview: KWCode\n\n## Domain & Purpose\n[A 3-5 sentence summary of what the KWCode application actually does, its primary users, and its core value proposition.]\n\n## Core Technologies\n- **Framework:** Next.js (App/Pages Router) / React\n- **Language:** TypeScript\n- **Styling:** Tailwind CSS\n- **State Management:** [e.g., Zustand, Context]\n- **Tooling:** [e.g., ESLint, Jest, Playwright]\n\n## Repository Architecture\n- `src/app/`: Next.js Routing\n- `src/components/`: Atomic UI components (atoms, molecules, organisms)\n- `src/store/`: Global state management\n- `src/lib/`: Shared utilities and constants\n- `.cursor/`: AI agent instructions, workflows, and prompts\n\n## Developer Workflow\n- **Start Dev Server:** `npm run dev`\n- **Verify (Lint/Test/Build):** `npm run verify`\n\n## Core Architectural Decisions\n[Brief bullet points referencing any major ADRs or strict conventions in the codebase, such as specifically using dark-mode tailored Zinc/Indigo Tailwind palettes].\n```\nOutput the **complete** project content. The app overwrites the target file with your output.\n",
+  "structured": {
+    "title": "Project Analysis & Context",
+    "role_or_intent": "You are an expert AI architect tasked with reading the entire workspace and generating a central Project Information document (`project.prompt.md` target `PROJECT-INFO.md`). This document serves as the foundational \"What is this?\" for both human developers and future AI agents to understand the KWCode application.",
+    "context_and_conventions": "",
+    "checklist": [
+      {
+        "items": [
+          "Scan Root Files",
+          "Understand the Domain",
+          "Identify Key Workflows",
+          "Assess Folder Architecture",
+          "Draft the Output"
+        ]
+      }
+    ],
+    "dos": [
+      "use exact versions of major dependencies if helpful (e.g., Next.js 14, React 18).",
+      "mention the specific flavor of the UI stack (Tailwind CSS, Radix UI, Framer Motion) since that's critical to front-end work.",
+      "emphasize the atomic design methodology if it's visible in `src/components/{atoms,molecules,organisms}`."
+    ],
+    "donts": [
+      "write \"The project seems to be...\" Write authoritatively: \"The project is...\"",
+      "delve too deeply into the frontend/backend endpoints, just provide the 10,000-foot view. (There are dedicated frontend/backend analyzer prompts for that)."
+    ],
+    "output_format": {
+      "description": "",
+      "target_file": "",
+      "required_structure_markdown": ""
+    },
+    "user_placeholder_note": "## Required Document Structure",
+    "references": {
+      "file_refs": [],
+      "tables": ""
+    }
+  },
+  "prompt": {
+    "template": "# Project Analysis & Context \n\nYou are an expert AI architect tasked with reading the entire workspace and generating a central Project Information document (`project.prompt.md` target `PROJECT-INFO.md`). This document serves as the foundational \"What is this?\" for both human developers and future AI agents to understand the KWCode application.\n\n## 🎯 Project Info Checklist\n- [ ] **Scan Root Files**: Review `package.json`, `README.md`, `next.config.js`, `tsconfig.json`, and `.cursor/adr/` to glean the exact tech stack and tooling.\n- [ ] **Understand the Domain**: Summarize the primary business logic or user purpose of the application.\n- [ ] **Identify Key Workflows**: Note the primary scripts and workflows developers use (e.g., `npm run dev`, `npm run verify`).\n- [ ] **Assess Folder Architecture**: Summarize what lives in `src/app/`, `src/components/`, `src/store/`, `src/lib/`, and the `.cursor/` directory.\n- [ ] **Draft the Output**: Ensure the Markdown accurately reflects the current state of the application without hallucinations.\n\n## ✅ Dos\n- **Do** use exact versions of major dependencies if helpful (e.g., Next.js 14, React 18).\n- **Do** mention the specific flavor of the UI stack (Tailwind CSS, Radix UI, Framer Motion) since that's critical to front-end work.\n- **Do** emphasize the atomic design methodology if it's visible in `src/components/{atoms,molecules,organisms}`.\n\n## ❌ Don'ts\n- **Don't** write \"The project seems to be...\" Write authoritatively: \"The project is...\"\n- **Don't** delve too deeply into the frontend/backend endpoints, just provide the 10,000-foot view. (There are dedicated frontend/backend analyzer prompts for that).\n\n---\n## Required Document Structure\n\nBuild the project document using this distinct structure:\n\n```markdown\n# Project Overview: KWCode\n\n## Domain & Purpose\n[A 3-5 sentence summary of what the KWCode application actually does, its primary users, and its core value proposition.]\n\n## Core Technologies\n- **Framework:** Next.js (App/Pages Router) / React\n- **Language:** TypeScript\n- **Styling:** Tailwind CSS\n- **State Management:** [e.g., Zustand, Context]\n- **Tooling:** [e.g., ESLint, Jest, Playwright]\n\n## Repository Architecture\n- `src/app/`: Next.js Routing\n- `src/components/`: Atomic UI components (atoms, molecules, organisms)\n- `src/store/`: Global state management\n- `src/lib/`: Shared utilities and constants\n- `.cursor/`: AI agent instructions, workflows, and prompts\n\n## Developer Workflow\n- **Start Dev Server:** `npm run dev`\n- **Verify (Lint/Test/Build):** `npm run verify`\n\n## Core Architectural Decisions\n[Brief bullet points referencing any major ADRs or strict conventions in the codebase, such as specifically using dark-mode tailored Zinc/Indigo Tailwind palettes].\n```\nOutput the **complete** project content. The app overwrites the target file with your output.",
+    "template_variables": [
+      "appended_content"
+    ],
+    "metadata": {
+      "name": "Project Analysis & Context",
+      "description": "an expert AI architect tasked with reading the entire workspace and generating a central Project Information document (`",
+      "version": "0.1.0",
+      "tags": [
+        "setup",
+        "analyze"
+      ]
+    },
+    "client_parameters": {
+      "temperature": 0.2,
+      "max_tokens": 4096
+    }
+  }
+}

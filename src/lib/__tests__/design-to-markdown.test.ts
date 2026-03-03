@@ -1,0 +1,195 @@
+/**
+ * Unit tests for design-to-markdown: design config and record to .md export.
+ */
+import { describe, it, expect } from "vitest";
+import {
+  designConfigToMarkdown,
+  designRecordToMarkdown,
+  type DesignRecordForExport,
+} from "../design-to-markdown";
+import type { DesignConfig, DesignSection } from "@/types/design";
+
+function minimalConfig(overrides: Partial<DesignConfig> = {}): DesignConfig {
+  return {
+    projectName: "Test Project",
+    templateId: "landing",
+    pageTitle: "Home",
+    colors: {
+      primary: "#0f172a",
+      secondary: "#64748b",
+      accent: "#3b82f6",
+      background: "#ffffff",
+      surface: "#f8fafc",
+      text: "#0f172a",
+      textMuted: "#64748b",
+    },
+    typography: {
+      headingFont: "Inter, system-ui, sans-serif",
+      bodyFont: "Inter, system-ui, sans-serif",
+      baseSize: "16px",
+      scale: "1.25",
+    },
+    layout: {
+      maxWidth: "1200px",
+      spacing: "1.5rem",
+      borderRadius: "0.5rem",
+      navStyle: "minimal",
+    },
+    sections: [
+      { id: "s1", kind: "hero", title: "Hero", order: 0, enabled: true },
+      { id: "s2", kind: "footer", title: "Footer", order: 1, enabled: true },
+    ],
+    ...overrides,
+  };
+}
+
+function minimalRecord(
+  config?: DesignConfig,
+  overrides: Partial<DesignRecordForExport> = {}
+): DesignRecordForExport {
+  return {
+    id: "design-1",
+    name: "My Design",
+    config: config ?? minimalConfig(),
+    ...overrides,
+  };
+}
+
+describe("designConfigToMarkdown", () => {
+  it("starts with page title and Design Spec heading", () => {
+    const md = designConfigToMarkdown(minimalConfig());
+    expect(md).toMatch(/^# Home — Design Spec\n/);
+  });
+
+  it("includes project name and template in metadata", () => {
+    const md = designConfigToMarkdown(minimalConfig());
+    expect(md).toContain("**Project:** Test Project");
+    expect(md).toContain("**Template:** landing");
+  });
+
+  it("includes notes when present", () => {
+    const md = designConfigToMarkdown(
+      minimalConfig({ notes: "Use dark mode for accessibility." })
+    );
+    expect(md).toContain("Use dark mode for accessibility.");
+  });
+
+  it("omits notes when absent", () => {
+    const md = designConfigToMarkdown(minimalConfig());
+    expect(md).not.toMatch(/\*\*Notes:\*\*/);
+  });
+
+  it("includes Colors table with token and hex columns", () => {
+    const md = designConfigToMarkdown(minimalConfig());
+    expect(md).toContain("## Colors");
+    expect(md).toContain("| Token | Hex |");
+    expect(md).toContain("| Primary | `#0f172a` |");
+    expect(md).toContain("| Secondary | `#64748b` |");
+    expect(md).toContain("| Accent | `#3b82f6` |");
+    expect(md).toContain("| Background | `#ffffff` |");
+    expect(md).toContain("| Surface | `#f8fafc` |");
+    expect(md).toContain("| Text | `#0f172a` |");
+    expect(md).toContain("| Text (muted) | `#64748b` |");
+  });
+
+  it("includes Typography section", () => {
+    const md = designConfigToMarkdown(minimalConfig());
+    expect(md).toContain("## Typography");
+    expect(md).toContain("**Heading font:** Inter, system-ui, sans-serif");
+    expect(md).toContain("**Body font:** Inter, system-ui, sans-serif");
+    expect(md).toContain("**Base size:** 16px");
+    expect(md).toContain("**Scale:** 1.25");
+  });
+
+  it("includes Layout section", () => {
+    const md = designConfigToMarkdown(minimalConfig());
+    expect(md).toContain("## Layout");
+    expect(md).toContain("**Max width:** 1200px");
+    expect(md).toContain("**Spacing:** 1.5rem");
+    expect(md).toContain("**Border radius:** 0.5rem");
+    expect(md).toContain("**Nav style:** minimal");
+  });
+
+  it("includes Page Structure (Sections) with enabled sections only, sorted by order", () => {
+    const sections: DesignSection[] = [
+      { id: "a", kind: "footer", title: "Footer", order: 2, enabled: true },
+      { id: "b", kind: "hero", title: "Hero", order: 0, enabled: true },
+      { id: "c", kind: "cta", title: "CTA", order: 1, enabled: false },
+    ];
+    const md = designConfigToMarkdown(minimalConfig({ sections }));
+    expect(md).toContain("## Page Structure (Sections)");
+    expect(md).toContain("1. **Hero** (`hero`)");
+    expect(md).toContain("2. **Footer** (`footer`)");
+    expect(md).not.toContain("CTA");
+  });
+
+  it("includes section description and copy when present", () => {
+    const sections: DesignSection[] = [
+      {
+        id: "s1",
+        kind: "hero",
+        title: "Hero",
+        order: 0,
+        enabled: true,
+        description: "Main headline area",
+        copy: "Welcome to the product",
+      },
+    ];
+    const md = designConfigToMarkdown(minimalConfig({ sections }));
+    expect(md).toContain("   - Main headline area");
+    expect(md).toContain("   - Copy: Welcome to the product");
+  });
+
+  it("ends with export footer", () => {
+    const md = designConfigToMarkdown(minimalConfig());
+    expect(md.trimEnd()).toMatch(/\*Generated by Design Configurator\*$/);
+  });
+
+  it("produces deterministic output for same input", () => {
+    const config = minimalConfig({ pageTitle: "Pricing", templateId: "pricing" });
+    expect(designConfigToMarkdown(config)).toBe(designConfigToMarkdown(config));
+  });
+});
+
+describe("designRecordToMarkdown", () => {
+  it("starts with record name as H1", () => {
+    const md = designRecordToMarkdown(minimalRecord());
+    expect(md).toMatch(/^# My Design\n/);
+  });
+
+  it("includes id in metadata", () => {
+    const md = designRecordToMarkdown(minimalRecord());
+    expect(md).toContain("- **ID:** `design-1`");
+  });
+
+  it("includes Created and Updated when present", () => {
+    const md = designRecordToMarkdown(
+      minimalRecord(undefined, { created_at: "2025-01-01", updated_at: "2025-01-02" })
+    );
+    expect(md).toContain("- **Created:** 2025-01-01");
+    expect(md).toContain("- **Updated:** 2025-01-02");
+  });
+
+  it("omits Created/Updated when missing", () => {
+    const md = designRecordToMarkdown(minimalRecord());
+    expect(md).not.toContain("**Created:**");
+    expect(md).not.toContain("**Updated:**");
+  });
+
+  it("embeds full design config markdown after record header", () => {
+    const config = minimalConfig({ pageTitle: "About", projectName: "Acme" });
+    const md = designRecordToMarkdown(minimalRecord(config));
+    expect(md).toContain("# About — Design Spec");
+    expect(md).toContain("**Project:** Acme");
+    expect(md).toContain("## Colors");
+    expect(md).toContain("*Generated by Design Configurator*");
+  });
+
+  it("produces deterministic output for same input", () => {
+    const record = minimalRecord(minimalConfig({ pageTitle: "Contact" }), {
+      name: "Contact Design",
+      id: "d-2",
+    });
+    expect(designRecordToMarkdown(record)).toBe(designRecordToMarkdown(record));
+  });
+});
