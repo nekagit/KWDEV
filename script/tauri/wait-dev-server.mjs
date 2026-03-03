@@ -8,19 +8,19 @@ import { spawn } from "child_process";
 import { existsSync, unlinkSync } from "fs";
 import { join } from "path";
 
-const port = process.env.TAURI_DEV_PORT || "4000";
+const port = process.env.TAURI_DEV_PORT || "4001";
 const baseUrl = `http://127.0.0.1:${port}`;
 // Wait for the app root (same as devUrl in tauri.conf.json)
 const devUrl = process.env.TAURI_DEV_URL || `${baseUrl}/`;
 const maxWaitMs = 90_000;
 const pollMs = 500;
 // Extra delay after first 200 so Next.js has time to compile (avoids white screen)
-const readyDelayMs = 2000;
+const readyDelayMs = 5000;
 // Max time to wait for a chunk URL to return 200 (Next compiles on first request)
-const chunkReadyMaxMs = 90_000;
+const chunkReadyMaxMs = 180_000;
 const chunkPollMs = 1000;
-// First request can trigger compilation; use longer timeout so we don't abort too early
-const fetchTimeoutMs = 45_000;
+// First request can trigger compilation; use longer timeout so we don't abort too early (match next.config chunkLoadTimeout)
+const fetchTimeoutMs = 120_000;
 
 function check(urlToCheck) {
   return fetch(urlToCheck, { method: "GET", signal: AbortSignal.timeout(3000) })
@@ -98,7 +98,8 @@ async function waitForChunk() {
         return true;
       }
     } catch (error) {
-      console.log("Error while waiting for chunk: ", error.message);
+      const remaining = Math.round((deadline - Date.now()) / 1000);
+      console.log("Error while waiting for chunk:", error.message, "(retrying,", remaining, "s left)");
     }
     await new Promise((r) => setTimeout(r, chunkPollMs));
   }
@@ -171,7 +172,7 @@ if (!alreadyUp) {
   });
   dev.on("exit", (code, signal) => {
     if (code !== 0 && code !== null) {
-      console.log("Dev server process exited (code:", code, "). Port 4000 may be in use. Will keep polling for", maxWaitMs / 1000, "s…");
+      console.log("Dev server process exited (code:", code, "). Port", port, "may be in use. Will keep polling for", maxWaitMs / 1000, "s…");
     }
   });
   dev.unref();
@@ -189,7 +190,7 @@ if (!ready) {
   console.error("Timed out waiting for dev server at", devUrl);
   console.error("Tip: Start the dev server first in a separate terminal: npm run dev");
   console.error("      Wait until it shows 'Ready', then run: npm run tauri dev");
-  console.error("      Or free port 4000 (e.g. kill the process using it) and try again.");
+  console.error("      Or free port", port, "(e.g. kill the process using it) and try again.");
   process.exit(1);
 }
 console.log("Dev server ready, waiting", readyDelayMs, "ms for Next.js to compile…");

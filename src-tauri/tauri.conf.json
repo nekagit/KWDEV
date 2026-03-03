@@ -1,10 +1,10 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "KWCode",
-  "identifier": "com.kwcode.app",
+  "productName": "KWDEV",
+  "identifier": "com.kwdev.app",
   "build": {
     "beforeDevCommand": "npm run dev:tauri:wait",
-    "devUrl": "http://127.0.0.1:4000/",
+    "devUrl": "http://127.0.0.1:4001/",
     "beforeBuildCommand": "node script/tauri/build-for-tauri.mjs",
     "frontendDist": "../out"
   },
@@ -12,7 +12,7 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "KWCode",
+        "title": "KWDEV",
         "width": 1000,
         "height": 780,
         "minWidth": 800,

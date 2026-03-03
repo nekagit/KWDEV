@@ -2,7 +2,7 @@
 
 /**
  * Page title context: syncs document title with pathname and optional search params.
- * Used by the root layout to set "Page — KWCode" per route.
+ * Used by the root layout to set "Page — KWDEV" per route.
  */
 import {
   createContext,
@@ -16,9 +16,9 @@ import {
 } from "react";
 import { usePathname } from "next/navigation";
 
-const APP_TITLE = "KWCode";
+const APP_TITLE = "KWDEV";
 
-/** Pathname to default page title (without " — KWCode"). */
+/** Pathname to default page title (without " — KWDEV"). */
 const PATHNAME_TITLE_MAP: Record<string, string> = {
   "/": "Dashboard",
   "/shortcuts": "Shortcuts",

@@ -44,7 +44,7 @@ async function sendStopToTerminal(sessionId: string) {
 }
 
 /**
- * KWCode agent FAB: bottom-right floating button on Server page when connected.
+ * KWDEV agent FAB: bottom-right floating button on Server page when connected.
  * Idle: click opens modal to run agent; Running: round button with pulsing dot (Worker-style), click to open small floating terminal, Stop to interrupt.
  */
 export function ServerAgentFAB({ sessionId }: { sessionId: string }) {
@@ -180,7 +180,7 @@ export function ServerAgentFAB({ sessionId }: { sessionId: string }) {
     const fabContent = (
         <div
             className="fixed bottom-24 right-6 z-[99998] flex flex-col items-end pointer-events-none"
-            aria-label="KWCode agent (run on server)"
+            aria-label="KWDEV agent (run on server)"
         >
             <div className="pointer-events-auto flex items-center gap-1.5">
                 {isAgentRunning ? (

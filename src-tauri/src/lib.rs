@@ -1312,13 +1312,13 @@ fn project_root() -> Result<PathBuf, String> {
     Err(err_msg.to_string())
 }
 
-/// App data directory for the built app (e.g. ~/Library/Application Support/com.kwcode.app/data). Created if missing.
+/// App data directory for the built app (e.g. ~/Library/Application Support/com.kwdev.app/data). Created if missing.
 fn app_data_data_dir() -> Result<PathBuf, String> {
     let home = std::env::var("HOME").map_err(|_| "HOME not set".to_string())?;
     #[cfg(target_os = "macos")]
-    let app_data = PathBuf::from(&home).join("Library").join("Application Support").join("com.kwcode.app");
+    let app_data = PathBuf::from(&home).join("Library").join("Application Support").join("com.kwdev.app");
     #[cfg(not(target_os = "macos"))]
-    let app_data = PathBuf::from(&home).join(".local").join("share").join("com.kwcode.app");
+    let app_data = PathBuf::from(&home).join(".local").join("share").join("com.kwdev.app");
     let data = app_data.join("data");
     std::fs::create_dir_all(&data).map_err(|e| e.to_string())?;
     Ok(data)
@@ -1397,7 +1397,7 @@ fn fetch_url(url: String) -> Result<FetchUrlResult, String> {
 
     let client = reqwest::blocking::Client::builder()
         .timeout(std::time::Duration::from_secs(FETCH_TIMEOUT_SECS))
-        .user_agent("KWCode-AppAnalyzer/1.0")
+        .user_agent("KWDEV-AppAnalyzer/1.0")
         .build()
         .map_err(|e| e.to_string())?;
 
@@ -3312,7 +3312,7 @@ fn run_run_terminal_agent_script_inner(
         ));
     }
     // Write prompt file inside the project dir so the script (and sandboxed child) can always read it.
-    let p = Path::new(&project_path).join(format!(".kwcode_run_prompt_{}.txt", run_id));
+    let p = Path::new(&project_path).join(format!(".kwdev_run_prompt_{}.txt", run_id));
     std::fs::write(&p, &prompt_content).map_err(|e| format!("Failed to write prompt file in project: {}", e))?;
     // #region agent log
     session_log_c29a12(
@@ -4423,13 +4423,13 @@ pub fn run() {
         })
         .setup(|_app| {
             // Workaround for macOS/Tauri bug: WebView often shows white instead of devUrl.
-            // 1) Load a local loader HTML first (shows "kwcode" then redirects to dev server).
+            // 1) Load a local loader HTML first (shows "kwdev" then redirects to dev server).
             // 2) Retry navigating to app URL at 2s, 4s, 6s in case loader redirect fails.
             #[cfg(debug_assertions)]
             {
                 session_log("lib.rs:setup", "tauri_dev_workaround_start", &[], "H4");
                 session_log_8a3da1("lib.rs:setup", "tauri_dev_workaround_start", &[], "H3");
-                let app_url = "http://127.0.0.1:4000/".to_string();
+                let app_url = "http://127.0.0.1:4001/".to_string();
                 let app_handle = _app.handle().clone();
 
                 // Write loader to temp file so we can navigate to it (file:// works when devUrl fails).
@@ -4453,7 +4453,7 @@ pub fn run() {
                             session_log("lib.rs:workaround", "loader_nav", &[("window_count", &windows.len().to_string())], "H2");
                                 session_log_8a3da1("lib.rs:workaround", "loader_nav", &[("window_count", &windows.len().to_string())], "H3");
                             if let Some((_, w)) = windows.into_iter().next() {
-                                let _ = w.navigate(load_url.as_str().parse().unwrap_or_else(|_| "http://127.0.0.1:4000/".parse().unwrap()));
+                                let _ = w.navigate(load_url.as_str().parse().unwrap_or_else(|_| "http://127.0.0.1:4001/".parse().unwrap()));
                             }
                         });
                     }
@@ -4469,9 +4469,9 @@ pub fn run() {
                                 session_log_8a3da1("lib.rs:workaround", "dev_nav", &[("window_count", &windows.len().to_string()), ("attempt", &attempt.to_string())], "H3");
                             if let Some((_, w)) = windows.into_iter().next() {
                                 let _ = w.navigate(
-                                    url.parse().unwrap_or_else(|_| "http://127.0.0.1:4000/".parse().unwrap()),
+                                    url.parse().unwrap_or_else(|_| "http://127.0.0.1:4001/".parse().unwrap()),
                                 );
-                                let js = format!("window.location.href = {}", serde_json::to_string(&url).unwrap_or_else(|_| "\"http://127.0.0.1:4000/\"".into()));
+                                let js = format!("window.location.href = {}", serde_json::to_string(&url).unwrap_or_else(|_| "\"http://127.0.0.1:4001/\"".into()));
                                 let _ = w.eval(&js);
                             }
                         });

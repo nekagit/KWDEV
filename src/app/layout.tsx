@@ -10,8 +10,8 @@ import { UIThemeProvider } from "@/context/ui-theme";
 import { QuickActionsProvider } from "@/context/quick-actions-context";
 
 export const metadata: Metadata = {
-  title: "KWCode",
-  description: "KWCode – development workflow and prompts",
+  title: "KWDEV",
+  description: "KWDEV – development workflow and prompts",
 };
 
 export default function RootLayout({
@@ -25,7 +25,7 @@ export default function RootLayout({
     <html lang="en" style={{ background: "hsl(var(--background, 0 0% 98%))" }} suppressHydrationWarning>
       <head>
         {/* In dev, base href ensures Tauri webview resolves relative asset URLs (e.g. /_next/static) against the dev server. */}
-        {isDev && <base href="http://127.0.0.1:4000/" />}
+        {isDev && <base href="http://127.0.0.1:4001/" />}
         {/* Apply stored UI theme before paint so first paint and loading overlay match Configuration choice */}
         <script
           dangerouslySetInnerHTML={{

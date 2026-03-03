@@ -1,4 +1,4 @@
-/** Kwcode Branding component. */
+/** KWDEV Branding component. */
 import { LoadingPulseDot } from "@/components/molecules/VisualEffects/LoadingPulseDot";
 import { getClasses } from "@/components/molecules/tailwind-molecules";
 const classes = getClasses("Display/KwcodeBranding.tsx");
@@ -10,7 +10,7 @@ export function KwcodeBranding() {
         className={classes[1]}
         style={{ fontFamily: "system-ui, -apple-system, sans-serif", letterSpacing: "-0.02em" }}
       >
-        kwcode
+        kwdev
       </span>
       <div className={classes[2]}>
         {[0, 1, 2].map((i) => (

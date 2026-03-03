@@ -3,10 +3,10 @@
 <plist version="1.0">
 <dict>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>KWCode uses the microphone for voice input and any features that need to capture audio in the app.</string>
+	<string>KWDEV uses the microphone for voice input and any features that need to capture audio in the app.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>KWCode uses the camera for video input when you use features that need to capture video.</string>
+	<string>KWDEV uses the camera for video input when you use features that need to capture video.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>KWCode uses speech recognition for voice commands and dictation when you enable those features.</string>
+	<string>KWDEV uses speech recognition for voice commands and dictation when you enable those features.</string>
 </dict>
 </plist>

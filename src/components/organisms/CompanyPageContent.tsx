@@ -7,7 +7,7 @@ import { Breadcrumb } from "@/components/molecules/Navigation/Breadcrumb";
 import { SingleContentPage } from "@/components/organisms/SingleContentPage";
 
 const SITE_URL = "https://karaweiss.org";
-const APP_ID = "com.kwcode.app";
+const APP_ID = "com.kwdev.app";
 
 export function CompanyPageContent() {
   return (

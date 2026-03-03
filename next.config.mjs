@@ -4,15 +4,14 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /** @type {import('next').NextConfig} */
-const devOrigin = "http://127.0.0.1:4000";
 // Static export only for production build (Tauri uses ../out). Dev server needs full Next so API routes work.
 const nextConfig = {
   ...(process.env.NODE_ENV === "production" && { output: "export" }),
   images: {
     unoptimized: true,
   },
-  // Only use assetPrefix when running via Tauri dev (TAURI_DEV=1). In browser, relative URLs work and avoid Next.js 15 assetPrefix CSS issues.
-  assetPrefix: process.env.NODE_ENV === "development" && process.env.TAURI_DEV === "1" ? devOrigin : undefined,
+  // No assetPrefix in dev: layout.tsx <base href="http://127.0.0.1:4001/"> handles Tauri webview; assetPrefix can break CSS in Next 15.
+  assetPrefix: undefined,
   serverExternalPackages: ["ssh2"],
   // Force resolution of sonner and Next internal loaders from project node_modules
   webpack: (config, { isServer }) => {
