@@ -50,6 +50,7 @@ import type { Project } from "@/types/project";
 import { listProjectFiles } from "@/lib/api-projects";
 import { AGENTS_ROOT } from "@/lib/cursor-paths";
 import { invoke, isTauri, projectIdArgPayload, projectIdArgOptionalPayload } from "@/lib/tauri";
+import { getIdeasList } from "@/lib/api-ideas";
 import { fetchProjectMilestones } from "@/lib/fetch-project-milestones";
 import { useRunStore, registerRunCompleteHandler } from "@/store/run-store";
 import { fetchProjectTicketsAndKanban } from "@/lib/fetch-project-tickets-and-kanban";
@@ -368,9 +369,7 @@ export function ProjectTicketsTab({
     try {
       const [milestonesList, allIdeas] = await Promise.all([
         fetchProjectMilestones(projectId),
-        isTauri
-          ? invoke<{ id: number; title: string }[]>("get_ideas_list", projectIdArgOptionalPayload(projectId)).then((ideas) => ideas ?? [])
-          : fetch(`/api/data/ideas`).then((res) => (res.ok ? res.json() as Promise<{ id: number; title: string }[]> : [])),
+        getIdeasList(projectId),
       ]);
       const ideaIds = Array.isArray(project?.ideaIds) ? project.ideaIds : [];
       let ideasList = ideaIds.length > 0 ? allIdeas.filter((i) => ideaIds.includes(i.id)) : allIdeas;

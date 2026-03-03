@@ -9,6 +9,7 @@ import { readProjectFileOrEmpty, listProjectFiles, updateProject } from "@/lib/a
 import { debugIngest } from "@/lib/debug-ingest";
 import { fetchProjectTicketsAndKanban } from "@/lib/fetch-project-tickets-and-kanban";
 import { invoke, isTauri, projectIdArgPayload, projectIdArgOptionalPayload, createPlanTicketPayload, setPlanKanbanStatePayload } from "@/lib/tauri";
+import { getIdeasList } from "@/lib/api-ideas";
 import { fetchProjectMilestones } from "@/lib/fetch-project-milestones";
 import {
   buildKanbanFromTickets,
@@ -926,9 +927,7 @@ function WorkerNightShiftSection({
                   setIdeaDrivenTicketPhases({});
                   clearIdeaDrivenProgress();
                   let deleteErrors = false;
-                  const ideasList: Array<{ id: number }> = isTauri
-                    ? (await invoke("get_ideas_list", projectIdArgOptionalPayload(projectId))) ?? []
-                    : await fetch(`/api/data/ideas?projectId=${projectId}`).then((r) => (r.ok ? r.json() : [])).catch(() => []);
+                  const ideasList: Array<{ id: number }> = await getIdeasList(projectId).catch(() => []);
                   for (const idea of ideasList) {
                     try {
                       if (isTauri) {

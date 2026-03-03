@@ -42,8 +42,23 @@ export type FetchProjectTicketsAndKanbanResult = {
   inProgressIds: string[];
 };
 
+async function fetchTicketsAndKanbanViaApi(projectId: string): Promise<{ apiTickets: TicketRow[]; inProgressIds: string[] }> {
+  const [ticketsRes, stateRes] = await Promise.all([
+    fetch(`/api/data/projects/${projectId}/tickets`),
+    fetch(`/api/data/projects/${projectId}/kanban-state`),
+  ]);
+  if (!ticketsRes.ok || !stateRes.ok) {
+    const err = await ticketsRes.json().catch(() => ({}));
+    throw new Error((err as { error?: string }).error || "Failed to load tickets");
+  }
+  const apiTickets = (await ticketsRes.json()) as TicketRow[];
+  const state = (await stateRes.json()) as { inProgressIds: string[] };
+  return { apiTickets, inProgressIds: state.inProgressIds ?? [] };
+}
+
 /**
  * Fetches project tickets and kanban state (dual-mode: Tauri invoke or fetch API).
+ * If invoke is not available yet (e.g. Tauri bridge not ready), falls back to fetch.
  * Throws on error; callers handle setKanbanError and logging.
  */
 export async function fetchProjectTicketsAndKanban(
@@ -53,24 +68,27 @@ export async function fetchProjectTicketsAndKanban(
   let inProgressIds: string[];
 
   if (isTauri) {
-    const [ticketsList, kanbanState] = await Promise.all([
-      invoke<TicketRow[]>("get_project_tickets", projectIdArgPayload(projectId)),
-      invoke<{ inProgressIds: string[] }>("get_project_kanban_state", projectIdArgPayload(projectId)),
-    ]);
-    apiTickets = ticketsList ?? [];
-    inProgressIds = kanbanState?.inProgressIds ?? [];
-  } else {
-    const [ticketsRes, stateRes] = await Promise.all([
-      fetch(`/api/data/projects/${projectId}/tickets`),
-      fetch(`/api/data/projects/${projectId}/kanban-state`),
-    ]);
-    if (!ticketsRes.ok || !stateRes.ok) {
-      const err = await ticketsRes.json().catch(() => ({}));
-      throw new Error((err as { error?: string }).error || "Failed to load tickets");
+    try {
+      const [ticketsList, kanbanState] = await Promise.all([
+        invoke<TicketRow[]>("get_project_tickets", projectIdArgPayload(projectId)),
+        invoke<{ inProgressIds: string[] }>("get_project_kanban_state", projectIdArgPayload(projectId)),
+      ]);
+      apiTickets = ticketsList ?? [];
+      inProgressIds = kanbanState?.inProgressIds ?? [];
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes("invoke") && msg.includes("not available")) {
+        const fetched = await fetchTicketsAndKanbanViaApi(projectId);
+        apiTickets = fetched.apiTickets;
+        inProgressIds = fetched.inProgressIds;
+      } else {
+        throw err;
+      }
     }
-    apiTickets = (await ticketsRes.json()) as TicketRow[];
-    const state = (await stateRes.json()) as { inProgressIds: string[] };
-    inProgressIds = state.inProgressIds ?? [];
+  } else {
+    const fetched = await fetchTicketsAndKanbanViaApi(projectId);
+    apiTickets = fetched.apiTickets;
+    inProgressIds = fetched.inProgressIds;
   }
 
   const tickets = apiTickets.map(mapRowToParsedTicket);

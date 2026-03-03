@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { debugIngest } from "@/lib/debug-ingest";
 import { cn } from "@/lib/utils";
-import { invoke, isTauri, projectIdArgPayload, projectIdArgOptionalPayload } from "@/lib/tauri";
+import { invoke, isTauri, projectIdArgPayload } from "@/lib/tauri";
+import { getIdeasList } from "@/lib/api-ideas";
 import {
   fetchImplementationLogEntries,
   type ImplementationLogEntry,
@@ -52,9 +53,7 @@ export function ProjectControlTab({ projectId, refreshKey = 0 }: ProjectControlT
 
       const [milList, ideaList] = await Promise.all([
         fetchProjectMilestones(projectId),
-        isTauri
-          ? invoke<{ id: number; title: string }[]>("get_ideas_list", projectIdArgOptionalPayload(projectId)).then((ideas) => ideas ?? [])
-          : fetch(`/api/data/ideas`).then((res) => (res.ok ? res.json() as Promise<{ id: number; title: string }[]> : [])),
+        getIdeasList(projectId),
       ]);
       const milMap: Record<number, string> = {};
       milList.forEach((m) => { milMap[m.id] = m.name; });

@@ -7,6 +7,14 @@ import { getDesigns } from "@/lib/data/designs";
 
 export const dynamic = "force-static";
 
+/** Use a clear message so the client never sees generic "Internal Server Error". */
+function toDataErrorMessage(e: unknown): string {
+  const raw = e instanceof Error ? e.message : String(e ?? "Unknown error");
+  if (typeof raw !== "string" || !raw.trim()) return "Failed to load data";
+  if (raw.trim() === "Internal Server Error") return "Failed to load data (check data dir and terminal)";
+  return raw;
+}
+
 export async function GET() {
   try {
     const projects = getProjects();
@@ -30,7 +38,7 @@ export async function GET() {
       kvEntries,
     });
   } catch (e) {
-    const message = e instanceof Error ? e.message : "Failed to load data";
+    const message = toDataErrorMessage(e);
     console.error("API data load error:", message, e);
     return NextResponse.json(
       {

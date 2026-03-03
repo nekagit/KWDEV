@@ -36,7 +36,7 @@ async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
   return text ? (JSON.parse(text) as T) : (undefined as T);
 }
 
-/** Tauri: invoke(cmd, args). Browser: fetchJson(url, init). Use for CRUD endpoints that map 1:1. */
+/** Tauri: invoke(cmd, args). Browser: fetchJson(url, init). Use for CRUD endpoints that map 1:1. If invoke is not available yet (e.g. Tauri bridge not ready), falls back to fetch. */
 async function tauriOrFetch<T>(
   tauriCmd: string,
   tauriArgs: Record<string, unknown>,
@@ -44,7 +44,15 @@ async function tauriOrFetch<T>(
   fetchInit?: RequestInit
 ): Promise<T> {
   if (isTauri) {
-    return invoke<T>(tauriCmd, tauriArgs);
+    try {
+      return await invoke<T>(tauriCmd, tauriArgs);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes("invoke") && msg.includes("not available")) {
+        return fetchJson<T>(fetchUrl, fetchInit);
+      }
+      throw err;
+    }
   }
   return fetchJson<T>(fetchUrl, fetchInit);
 }

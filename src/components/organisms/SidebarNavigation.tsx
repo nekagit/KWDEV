@@ -1,9 +1,8 @@
 /** Sidebar Navigation component. */
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, MessageSquare, Folders, Settings, Moon, Keyboard, ScanSearch, Plug2, Github, Server, Bot, Building2 } from "lucide-react";
+import { LayoutDashboard, MessageSquare, Folders, Settings, Moon, Keyboard, ScanSearch, Plug2, Github, Building2 } from "lucide-react";
 import { NavLinkItem } from "@/components/molecules/Navigation/NavLinkItem";
 import { getOrganismClasses } from "./organism-classes";
-import { useBotStatusStore } from "@/store/bot-status-store";
 
 const c = getOrganismClasses("SidebarNavigation.tsx");
 
@@ -32,8 +31,6 @@ const getNavItems = (): {
   toolsNavItems: [
     { href: "/app-analyzer", label: "Analyzer", icon: ScanSearch, iconClassName: c["14"] },
     { href: "/integrations", label: "Integrations", icon: Plug2, iconClassName: c["14"] },
-    { href: "/ai-bots", label: "AI Bots", icon: Bot, iconClassName: c["14"] },
-    { href: "/server", label: "Server", icon: Server, iconClassName: c["14"] },
   ],
   workNavItems: [
     { href: "/projects", label: "Projects", icon: Folders, iconClassName: c["14"] },

@@ -150,7 +150,7 @@ function runMigrations(conn: Database.Database): void {
       description TEXT NOT NULL DEFAULT '',
       practices TEXT NOT NULL DEFAULT '',
       scenarios TEXT NOT NULL DEFAULT '',
-      references TEXT,
+      "references" TEXT,
       anti_patterns TEXT,
       examples TEXT,
       extra_inputs TEXT,
@@ -376,7 +376,7 @@ function migrateArchitecturesFromJson(conn: Database.Database, dataDir: string):
     const arr = JSON.parse(raw);
     if (!Array.isArray(arr)) return;
     const stmt = conn.prepare(
-      `INSERT INTO architectures (id, name, category, description, practices, scenarios, references, anti_patterns, examples, extra_inputs, created_at, updated_at)
+      `INSERT INTO architectures (id, name, category, description, practices, scenarios, "references", anti_patterns, examples, extra_inputs, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     );
     const now = new Date().toISOString();

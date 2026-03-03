@@ -22,8 +22,11 @@ const FRIENDLY_500 = "Server error loading data";
 export async function getApiErrorMessage(res: Response): Promise<string> {
   const text = await res.text();
   try {
-    const j = JSON.parse(text) as { error?: string; detail?: string };
-    const msg = (j?.error && typeof j.error === "string" ? j.error : null) ?? (j?.detail && typeof j.detail === "string" ? j.detail : null);
+    const j = JSON.parse(text) as { error?: string; detail?: string; message?: string };
+    const msg =
+      (j?.error && typeof j.error === "string" ? j.error : null) ??
+      (j?.detail && typeof j.detail === "string" ? j.detail : null) ??
+      (j?.message && typeof j.message === "string" ? j.message : null);
     if (msg) {
       // Normalize generic server message so UI never shows "Internal Server Error"
       if (msg.trim() === "Internal Server Error") return FRIENDLY_500;

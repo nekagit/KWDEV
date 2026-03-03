@@ -50,11 +50,11 @@ export function createOrUpdateArchitecture(data: Partial<ArchitectureRecord> & {
   const existing = db.prepare("SELECT * FROM architectures WHERE id = ?").get(id) as ArchitectureRow | undefined;
   if (existing) {
     db.prepare(
-      "UPDATE architectures SET name=?, category=?, description=?, practices=?, scenarios=?, references=?, anti_patterns=?, examples=?, extra_inputs=?, updated_at=? WHERE id=?"
+      'UPDATE architectures SET name=?, category=?, description=?, practices=?, scenarios=?, "references"=?, anti_patterns=?, examples=?, extra_inputs=?, updated_at=? WHERE id=?'
     ).run(name, category, description, practices, scenarios, references, anti_patterns, examples, extra_inputs, now, id);
   } else {
     db.prepare(
-      "INSERT INTO architectures (id, name, category, description, practices, scenarios, references, anti_patterns, examples, extra_inputs, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+      'INSERT INTO architectures (id, name, category, description, practices, scenarios, "references", anti_patterns, examples, extra_inputs, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
     ).run(id, name, category, description, practices, scenarios, references, anti_patterns, examples, extra_inputs, now, now);
   }
   const row = db.prepare("SELECT * FROM architectures WHERE id = ?").get(id) as ArchitectureRow;

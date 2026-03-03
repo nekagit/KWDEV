@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { ConvertToMilestonesDialog } from "@/components/molecules/FormsAndDialogs/ConvertToMilestonesDialog";
 import { invoke, isTauri, projectIdArgOptionalPayload } from "@/lib/tauri";
+import { getIdeasList } from "@/lib/api-ideas";
 import type { Project } from "@/types/project";
 import type { IdeaRecord, IdeaCategory } from "@/types/idea";
 import { SectionCard } from "@/components/molecules/Displays/DisplayPrimitives";
@@ -84,16 +85,9 @@ export function ProjectIdeasDocTab({ project, projectId, docsRefreshKey }: Proje
     setLoading(true);
     setError(null);
     try {
-      let ideasList: IdeaRecord[] = [];
-      if (isTauri) {
-        const rows = await invoke<IdeaRecord[]>("get_ideas_list", projectIdArgOptionalPayload(projectId));
-        ideasList = Array.isArray(rows) ? rows : [];
-      } else {
-        const res = await fetch(`/api/data/ideas?projectId=${projectId}`);
-        if (!res.ok) throw new Error(await res.text());
-        const data = await res.json();
-        ideasList = Array.isArray(data) ? data : [];
-      }
+      const ideasList: IdeaRecord[] = await getIdeasList(projectId).then((rows) =>
+        Array.isArray(rows) ? (rows as IdeaRecord[]) : []
+      );
       setIdeas(ideasList);
       setSelectedIdeaId((prev) => {
         if (ideasList.length === 0) return null;

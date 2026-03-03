@@ -5,17 +5,22 @@ import { getProjects, createProject } from "@/lib/data/projects";
 
 export const dynamic = "force-static";
 
+function toErrorMessage(e: unknown): string {
+  const raw = e instanceof Error ? e.message : String(e ?? "Unknown error");
+  if (typeof raw !== "string" || !raw.trim()) return "Failed to load projects";
+  if (raw.trim() === "Internal Server Error") return "Failed to load projects (check data dir and terminal)";
+  return raw;
+}
+
 /** GET: list all projects */
 export async function GET() {
   try {
     const projects = getProjects();
     return NextResponse.json(projects);
   } catch (e) {
-    console.error("Projects GET error:", e);
-    return NextResponse.json(
-      { error: e instanceof Error ? e.message : "Failed to load projects" },
-      { status: 500 }
-    );
+    const message = toErrorMessage(e);
+    console.error("Projects GET error:", message, e);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 

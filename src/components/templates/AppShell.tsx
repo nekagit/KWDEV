@@ -12,7 +12,6 @@ import { useRunState } from "@/context/run-state";
 import { PageTitleProvider } from "@/context/page-title-context";
 import { ErrorBoundary } from "@/components/organisms/ErrorBoundary";
 import { FloatingTerminalDialog } from "@/components/organisms/FloatingTerminalDialog";
-import { ServerFloatingTerminalDialog } from "@/components/organisms/ServerDashboard/ServerFloatingTerminalDialog";
 import { TerminalRunDock } from "@/components/organisms/TerminalRunDock";
 import { CommandPalette } from "@/components/organisms/CommandPalette";
 import { SkipToMainContent } from "@/components/molecules/Accessible/SkipToMainContent";
@@ -21,9 +20,6 @@ import { BackToTop } from "@/components/molecules/Buttons/BackToTop";
 import { SidebarVersion } from "@/components/molecules/Displays/SidebarVersion";
 import { SidebarThemeLabel } from "@/components/molecules/Theme/SidebarThemeLabel";
 import { SIDEBAR_TOGGLE_EVENT } from "@/lib/sidebar-toggle-event";
-import { ServerTerminalScrollButton } from "@/components/organisms/ServerDashboard/ServerTerminalScrollButton";
-import { hasValidSessionId } from "@/lib/server-session";
-import { useServerConnectionStore } from "@/store/server-connection-store";
 
 const SIDEBAR_STORAGE_KEY = "kwcode-sidebar-width";
 const SIDEBAR_COLLAPSED_STORAGE_KEY = "kwcode-sidebar-collapsed";
@@ -31,13 +27,6 @@ const SIDEBAR_MIN = 160;
 const SIDEBAR_MAX = 400;
 const SIDEBAR_DEFAULT = 192; // w-48
 const SIDEBAR_COLLAPSED = 52; // 3.25rem
-
-/** Renders the "View server terminal" button when connected so it appears on every page. */
-function ServerTerminalScrollButtonGlobal() {
-  const sessionId = useServerConnectionStore((s) => s.sessionId);
-  if (!hasValidSessionId(sessionId)) return null;
-  return <ServerTerminalScrollButton sessionId={sessionId} />;
-}
 
 function getStoredSidebarWidth(): number {
   if (typeof window === "undefined") return SIDEBAR_DEFAULT;
@@ -279,10 +268,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <TerminalRunDock />
       {/* Floating terminal dialog: shows output for the selected run */}
       <FloatingTerminalDialog />
-      {/* Small floating server terminal (worker-style), opened from Server page running button */}
-      <ServerFloatingTerminalDialog />
-      {/* View server terminal button: visible on all pages when connected so terminal persists across navigation */}
-      <ServerTerminalScrollButtonGlobal />
       {/* Global command palette: ⌘K / Ctrl+K */}
       <CommandPalette />
     </div>

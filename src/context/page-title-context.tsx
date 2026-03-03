@@ -32,7 +32,6 @@ const PATHNAME_TITLE_MAP: Record<string, string> = {
   "/app-analyzer": "Analyzer",
   "/integrations": "Integrations",
   "/github": "GitHub",
-  "/ai-bots": "AI Bots",
   "/configuration": "Configuration",
   "/loading-screen": "Loading",
 };
