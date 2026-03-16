@@ -74,4 +74,4 @@ _How it fits into the existing architecture. Which patterns/conventions you'll f
 | Run store | `src/store/run-store.ts`, `src/store/run-store-hydration.tsx` |
 
 ---
-*Edit `.cursor/worker/night-shift.prompt.md` to change what night shift agents do.*
+*Edit `data/prompts/night-shift.prompt.md` to change what night shift agents do.*
