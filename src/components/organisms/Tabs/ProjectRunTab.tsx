@@ -5,7 +5,7 @@ import { useState, useCallback, useEffect, useMemo, useRef, Fragment } from "rea
 import type { Project } from "@/types/project";
 import type { NightShiftCirclePhase, RunInfo } from "@/types/run";
 import { MAX_TERMINAL_SLOTS } from "@/types/run";
-import { readProjectFileOrEmpty, listProjectFiles, updateProject } from "@/lib/api-projects";
+import { readProjectFileOrEmpty, listProjectFiles, updateProject, loadWorkspaceAgentsContent } from "@/lib/api-projects";
 import { debugIngest } from "@/lib/debug-ingest";
 import { fetchProjectTicketsAndKanban } from "@/lib/fetch-project-tickets-and-kanban";
 import { invoke, isTauri, projectIdArgPayload, projectIdArgOptionalPayload, createPlanTicketPayload, setPlanKanbanStatePayload } from "@/lib/tauri";
@@ -39,7 +39,7 @@ import {
   buildKanbanContextBlock,
   combinePromptRecordWithKanban,
   buildTicketPromptBlock,
-} from "@/lib/analysis-prompt";
+} from "@/lib/kanban-prompt-blocks";
 import { STATIC_ANALYSIS_CHECKLIST } from "@/lib/static-analysis-checklist";
 
 const ANALYSIS_FIX_REPORT_FILE = "analysis-fix-report.txt";
@@ -153,8 +153,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-/** Load concatenated content of all .md files in .cursor/2. agents for appending to terminal-agent prompts. */
+/** Load concatenated content of all agent .md files for terminal-agent prompts. In Tauri prefers KWDEV workspace data/agents (@data) so the app is not dependent on the target project's .cursor; falls back to project data/agents. */
 async function loadAllAgentsContent(projectId: string, repoPath: string): Promise<string> {
+  if (isTauri) {
+    const fromWorkspace = await loadWorkspaceAgentsContent();
+    if (fromWorkspace) return fromWorkspace;
+  }
   if (!repoPath?.trim()) return "";
   try {
     const entries = await listProjectFiles(projectId, AGENTS_ROOT, repoPath);
@@ -165,7 +169,7 @@ async function loadAllAgentsContent(projectId: string, repoPath: string): Promis
       if (content?.trim()) parts.push(content.trim());
     }
     if (parts.length === 0) return "";
-    return "\n\n---\n\n## Agent instructions (from .cursor/2. agents)\n\n" + parts.join("\n\n---\n\n");
+    return "\n\n---\n\n## Agent instructions (from " + AGENTS_ROOT + ")\n\n" + parts.join("\n\n---\n\n");
   } catch {
     return "";
   }

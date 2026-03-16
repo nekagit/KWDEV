@@ -272,6 +272,39 @@ export async function listProjectFiles(
   return json.files;
 }
 
+/** Relative path for agents under the KWDEV workspace (data/agents). */
+const WORKSPACE_AGENTS_PATH = "data/agents";
+
+/**
+ * Load concatenated content of all .md files from the KWDEV workspace data/agents.
+ * Used in Tauri so terminal-agent prompts (e.g. Ask) use @data from this app, not the target project's .cursor.
+ * Returns "" if not in Tauri, workspace root is unavailable, or no agents found.
+ */
+export async function loadWorkspaceAgentsContent(): Promise<string> {
+  if (!isTauri) return "";
+  try {
+    const ws = await invoke<string>("get_workspace_root");
+    if (!ws?.trim()) return "";
+    const entries = await invoke<FileEntry[]>("list_files_under_root", {
+      root: ws,
+      path: WORKSPACE_AGENTS_PATH,
+    });
+    const mdFiles = (entries ?? []).filter((e) => !e.isDirectory && e.name.endsWith(".md"));
+    const parts: string[] = [];
+    for (const f of mdFiles) {
+      const content = await invoke<string>("read_file_text_under_root", {
+        root: ws,
+        path: `${WORKSPACE_AGENTS_PATH}/${f.name}`,
+      });
+      if (typeof content === "string" && content.trim()) parts.push(content.trim());
+    }
+    if (parts.length === 0) return "";
+    return "\n\n---\n\n## Agent instructions (from workspace data/agents)\n\n" + parts.join("\n\n---\n\n");
+  } catch {
+    return "";
+  }
+}
+
 const DEFAULT_MAX_RECURSIVE_FILES = 100_000;
 
 export type ListAllProjectFilePathsResult = {

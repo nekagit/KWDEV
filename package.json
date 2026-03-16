@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 4001 -H 127.0.0.1 --webpack",
+    "dev": "next dev -p 4000 -H 127.0.0.1 --webpack",
     "dev:tauri:wait": "node script/tauri/wait-dev-server.mjs",
     "dev:tauri": "npm run dev:tauri:wait && node script/tauri/tauri-with-local-target.mjs dev",
     "build": "next build --webpack",

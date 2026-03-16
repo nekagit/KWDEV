@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, MessageSquare, Folders, Folder, FolderOpen, FolderPlus, FolderSearch, FolderCog, Settings, Moon, Sun, Keyboard, Loader2, RefreshCw, RotateCw, X, Activity, Printer, ChevronUp, ChevronDown, Focus, Search, ClipboardList, Copy, HardDrive, Trash2, Square, Code2, Terminal, RotateCcw, PanelLeft, TestTube2, ExternalLink, Flag, FolderGit2, ListTodo, Palette, Building2, Download, FileSpreadsheet, FileText, Link, ScanSearch, Plug2 } from "lucide-react";
+import { MessageSquare, Folders, Folder, FolderOpen, FolderPlus, FolderSearch, FolderCog, Settings, Moon, Sun, Keyboard, Loader2, RefreshCw, RotateCw, X, Activity, Printer, ChevronUp, ChevronDown, Focus, Search, ClipboardList, Copy, HardDrive, Trash2, Square, Code2, Terminal, RotateCcw, PanelLeft, TestTube2, ExternalLink, Flag, FolderGit2, ListTodo, Palette, Building2, Download, FileSpreadsheet, FileText, Link } from "lucide-react";
 import { default as FileJson } from "lucide-react/dist/esm/icons/file-json";
 import { useQuickActions } from "@/context/quick-actions-context";
 import { useUITheme } from "@/context/ui-theme";
@@ -150,11 +150,8 @@ export type CommandPaletteEntry =
   | { href: string; label: string; icon: React.ComponentType<{ className?: string }>; onSelect?: never }
   | { href?: never; label: string; icon: React.ComponentType<{ className?: string }>; onSelect: () => void };
 
-/** Nav entries aligned with SidebarNavigation (Dashboard, Tools, Work, System). */
+/** Nav entries aligned with SidebarNavigation (Work, System). */
 const NAV_ENTRIES: CommandPaletteEntry[] = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/app-analyzer", label: "Analyzer", icon: ScanSearch },
-  { href: "/integrations", label: "Integrations", icon: Plug2 },
   { href: "/projects", label: "Projects", icon: Folders },
   { href: "/projects/new", label: "New project", icon: FolderPlus },
   { href: "/prompts", label: "Prompts", icon: MessageSquare },
@@ -1254,7 +1251,6 @@ export function CommandPalette() {
       { label: "Go to Architecture", icon: Building2, onSelect: () => { goToArchitecture(); closePalette(); } },
       { label: "Go to Control", icon: ClipboardList, onSelect: () => { goToControl(); closePalette(); } },
       { label: "Go to Shortcuts", icon: Keyboard, onSelect: () => { goToShortcuts(); closePalette(); } },
-      { label: "Go to Analyzer", icon: ScanSearch, onSelect: () => { router.push("/app-analyzer"); closePalette(); } },
       { label: "Go to first project Milestones", icon: Flag, onSelect: () => { goToFirstProjectMilestones(); closePalette(); } },
       { label: "Go to first project Planner", icon: ListTodo, onSelect: () => { goToFirstProjectPlanner(); closePalette(); } },
       { label: "Go to first project", icon: FolderOpen, onSelect: goToFirstProject },
@@ -1432,24 +1428,6 @@ export function CommandPalette() {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [openPalette]);
-
-  // Go to Dashboard: ⌘⇧H (Mac) / Ctrl+Alt+D (Windows/Linux); skip when palette open or focus in input/textarea/select
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (open) return;
-      const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
-      const isMac = typeof navigator !== "undefined" && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
-      const goDashboard =
-        isMac ? e.metaKey && e.shiftKey && e.key === "H" : e.ctrlKey && e.altKey && e.key === "d";
-      if (goDashboard) {
-        e.preventDefault();
-        router.push("/");
-      }
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [open, router]);
 
   // Go to Projects: ⌘⇧P (Mac) / Ctrl+Alt+P (Windows/Linux); same guards as Dashboard
   useEffect(() => {

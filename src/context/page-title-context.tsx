@@ -20,7 +20,7 @@ const APP_TITLE = "KWDEV";
 
 /** Pathname to default page title (without " — KWDEV"). */
 const PATHNAME_TITLE_MAP: Record<string, string> = {
-  "/": "Dashboard",
+  "/": "Home",
   "/shortcuts": "Shortcuts",
   "/planner": "Planner",
   "/versioning": "Versioning",
@@ -29,20 +29,9 @@ const PATHNAME_TITLE_MAP: Record<string, string> = {
   "/projects": "Projects",
   "/projects/new": "New project",
   "/prompts": "Prompts",
-  "/app-analyzer": "Analyzer",
-  "/integrations": "Integrations",
   "/github": "GitHub",
   "/configuration": "Configuration",
   "/loading-screen": "Loading",
-};
-
-/** Dashboard (/) tab param → document title and breadcrumb label. Used when pathname is "/". Exported for breadcrumb in HomePageContent. */
-export const DASHBOARD_TAB_TITLES: Record<string, string> = {
-  dashboard: "Dashboard",
-  projects: "Projects",
-  prompts: "Prompts",
-  all: "Database",
-  data: "Data",
 };
 
 function getTitleFromPathname(pathname: string | null): string {
@@ -62,10 +51,9 @@ export function useSetPageTitle(): (title: string | null) => void {
 }
 
 /**
- * Syncs document title when on Dashboard (/). Dashboard has no tabs; title is always "Dashboard".
- * Must run inside PageTitleProvider; useSearchParams requires Suspense.
+ * Syncs document title when on home (/). Must run inside PageTitleProvider.
  */
-function DashboardTitleSync() {
+function HomeTitleSync() {
   const pathname = usePathname();
   const setPageTitle = useSetPageTitle();
   useEffect(() => {
@@ -73,7 +61,7 @@ function DashboardTitleSync() {
       setPageTitle(null);
       return;
     }
-    setPageTitle("Dashboard");
+    setPageTitle("Home");
   }, [pathname, setPageTitle]);
   return null;
 }
@@ -102,7 +90,7 @@ export function PageTitleProvider({ children }: { children: ReactNode }) {
   return (
     <PageTitleContext.Provider value={value}>
       <Suspense fallback={null}>
-        <DashboardTitleSync />
+        <HomeTitleSync />
       </Suspense>
       {children}
     </PageTitleContext.Provider>

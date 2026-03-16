@@ -79,7 +79,7 @@ export function LoadingScreenPageContent() {
 
       <div className="absolute top-4 left-4 z-10 flex flex-col gap-3">
         <Breadcrumb
-          items={[{ label: "Dashboard", href: "/" }, { label: "Loading" }]}
+          items={[{ label: "Home", href: "/" }, { label: "Loading" }]}
           className={BREADCRUMB_DARK_CLASS}
         />
         <Link

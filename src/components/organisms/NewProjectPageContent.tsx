@@ -13,7 +13,7 @@ export function NewProjectPageContent() {
     <div>
       <Breadcrumb
         items={[
-          { label: "Dashboard", href: "/" },
+          { label: "Home", href: "/" },
           { label: "Projects", href: "/projects" },
           { label: "New project" },
         ]}

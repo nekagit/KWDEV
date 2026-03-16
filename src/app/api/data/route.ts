@@ -15,6 +15,15 @@ function toDataErrorMessage(e: unknown): string {
   return raw;
 }
 
+const emptyPayload = {
+  allProjects: [] as string[],
+  activeProjects: [] as string[],
+  prompts: [] as { id: number; title: string }[],
+  tickets: [] as unknown[],
+  designs: [] as unknown[],
+  kvEntries: [] as { key: string; value: string }[],
+};
+
 export async function GET() {
   try {
     const projects = getProjects();
@@ -40,17 +49,10 @@ export async function GET() {
   } catch (e) {
     const message = toDataErrorMessage(e);
     console.error("API data load error:", message, e);
-    return NextResponse.json(
-      {
-        allProjects: [],
-        activeProjects: [],
-        prompts: [],
-        tickets: [],
-        designs: [],
-        kvEntries: [],
-        error: message,
-      },
-      { status: 500 }
-    );
+    // Return 200 with empty data and warning so the app still loads; run store will set dataWarning when _warning is present.
+    return NextResponse.json({
+      ...emptyPayload,
+      _warning: message,
+    });
   }
 }

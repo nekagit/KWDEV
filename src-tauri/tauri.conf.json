@@ -4,7 +4,7 @@
   "identifier": "com.kwdev.app",
   "build": {
     "beforeDevCommand": "npm run dev:tauri:wait",
-    "devUrl": "http://127.0.0.1:4001/",
+    "devUrl": "http://127.0.0.1:4000/",
     "beforeBuildCommand": "node script/tauri/build-for-tauri.mjs",
     "frontendDist": "../out"
   },

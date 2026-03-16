@@ -150,8 +150,22 @@ export function ProjectsListPageContent() {
       .then((data: Project[]) => {
         if (!cancelled) setProjects(Array.isArray(data) ? data : []);
       })
-      .catch((e: any) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : String(e));
+      .catch((e: unknown) => {
+        const msg = e instanceof Error ? e.message : String(e);
+        if (!cancelled) setError(msg);
+        // #region agent log
+        fetch("http://127.0.0.1:7739/ingest/b5a1e027-c6b4-4953-afcc-05492ba259e6", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "8b7cf9" },
+          body: JSON.stringify({
+            sessionId: "8b7cf9",
+            location: "ProjectsListPageContent.tsx:listProjects_catch",
+            message: "list_projects failed",
+            data: { hypothesisId: "H2", errorMessage: msg },
+            timestamp: Date.now(),
+          }),
+        }).catch(() => {});
+        // #endregion
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -181,7 +195,7 @@ export function ProjectsListPageContent() {
     <div className={c["0"]}>
       <Breadcrumb
         items={[
-          { label: "Dashboard", href: "/" },
+          { label: "Home", href: "/" },
           { label: "Projects" },
         ]}
         className="mb-3"

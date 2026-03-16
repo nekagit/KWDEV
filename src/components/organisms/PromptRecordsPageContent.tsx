@@ -502,7 +502,7 @@ export function PromptRecordsPageContent({ projectId }: { projectId?: string }) 
     async (prompt: PromptRecordRecord) => {
       const projectPath = defaultProjectPath?.trim();
       if (!projectPath) {
-        toast.info("Select at least one project on the Dashboard first.");
+        toast.info("Select at least one project first.");
         return;
       }
       const content = prompt.content?.trim() ?? "";
@@ -551,7 +551,7 @@ export function PromptRecordsPageContent({ projectId }: { projectId?: string }) 
       {!projectId && (
         <Breadcrumb
           items={[
-            { label: "Dashboard", href: "/" },
+            { label: "Home", href: "/" },
             { label: "Prompts" },
           ]}
           className="mb-3"

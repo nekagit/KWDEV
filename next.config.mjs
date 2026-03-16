@@ -10,7 +10,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // No assetPrefix in dev: layout.tsx <base href="http://127.0.0.1:4001/"> handles Tauri webview; assetPrefix can break CSS in Next 15.
+  // No assetPrefix in dev: layout.tsx <base href="http://127.0.0.1:4000/"> handles Tauri webview; assetPrefix can break CSS in Next 15.
   assetPrefix: undefined,
   serverExternalPackages: ["ssh2"],
   // Force resolution of sonner and Next internal loaders from project node_modules

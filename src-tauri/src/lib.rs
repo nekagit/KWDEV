@@ -169,6 +169,28 @@ fn session_log_415745(location: &str, message: &str, data: &[(&str, &str)], hypo
     }
 }
 // #endregion
+// #region agent log (session 8b7cf9 - KWDEV)
+const DEBUG_LOG_8B7CF9: &str = "/Users/nenadkalicanin/Documents/KW/Products/KWDEV/.cursor/debug-8b7cf9.log";
+fn session_log_8b7cf9(location: &str, message: &str, data: &[(&str, &str)], hypothesis_id: &str) {
+    let data_obj: std::collections::HashMap<String, String> =
+        data.iter().map(|(k, v)| ((*k).to_string(), (*v).to_string())).collect();
+    let payload = serde_json::json!({
+        "sessionId": "8b7cf9",
+        "timestamp": SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_millis(),
+        "location": location,
+        "message": message,
+        "data": data_obj,
+        "hypothesisId": hypothesis_id
+    });
+    if let Ok(line) = serde_json::to_string(&payload) {
+        let _ = std::fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(DEBUG_LOG_8B7CF9)
+            .and_then(|mut f| std::io::Write::write_all(&mut f, format!("{}\n", line).as_bytes()));
+    }
+}
+// #endregion
 
 /// Returns true when the app is built for Windows. Used to branch script paths and spawn
 /// logic (shell, args) in subsequent tickets. Compile-time via `cfg!(target_os = "windows")`.
@@ -232,12 +254,29 @@ fn get_seed_designs() -> Vec<Design> {
 }
 
 fn seed_initial_data(conn: &rusqlite::Connection) -> Result<(), String> {
+    // #region agent log
+    session_log_8b7cf9(
+        "lib.rs:seed_initial_data",
+        "start",
+        &[("hypothesisId", "H7")],
+        "H7",
+    );
+    // #endregion
     // Seed Prompts
-    let prompts_count: i64 = conn.query_row(
-        "SELECT COUNT(*) FROM prompts",
-        [],
-        |row| row.get(0),
-    ).map_err(|e| e.to_string())?;
+    let prompts_count: i64 = conn
+        .query_row("SELECT COUNT(*) FROM prompts", [], |row| row.get(0))
+        .map_err(|e| {
+            let msg = e.to_string();
+            // #region agent log
+            session_log_8b7cf9(
+                "lib.rs:seed_initial_data",
+                "prompts_count_failed",
+                &[("err", &msg)],
+                "H7",
+            );
+            // #endregion
+            msg
+        })?;
 
     if prompts_count == 0 {
         println!("Seeding initial prompts...");
@@ -245,17 +284,34 @@ fn seed_initial_data(conn: &rusqlite::Connection) -> Result<(), String> {
     }
 
     // Seed Designs
-    let designs_count: i64 = conn.query_row(
-        "SELECT COUNT(*) FROM designs",
-        [],
-        |row| row.get(0),
-    ).map_err(|e| e.to_string())?;
+    let designs_count: i64 = conn
+        .query_row("SELECT COUNT(*) FROM designs", [], |row| row.get(0))
+        .map_err(|e| {
+            let msg = e.to_string();
+            // #region agent log
+            session_log_8b7cf9(
+                "lib.rs:seed_initial_data",
+                "designs_count_failed",
+                &[("err", &msg)],
+                "H7",
+            );
+            // #endregion
+            msg
+        })?;
 
     if designs_count == 0 {
         println!("Seeding initial designs...");
         db::save_designs(conn, &get_seed_designs())?;
     }
 
+    // #region agent log
+    session_log_8b7cf9(
+        "lib.rs:seed_initial_data",
+        "ok",
+        &[("hypothesisId", "H7")],
+        "H7",
+    );
+    // #endregion
     Ok(())
 }
 
@@ -1517,6 +1573,17 @@ pub struct DirListingEntry {
     pub updated_at: String,
 }
 
+/// Return the KWDEV workspace root (contains script/, data/). Used so the app can load prompts and agents from this repo instead of the target project's .cursor.
+#[tauri::command]
+fn get_workspace_root() -> Result<String, String> {
+    let ws = project_root()?;
+    ws.canonicalize()
+        .map_err(|e| e.to_string())?
+        .into_os_string()
+        .into_string()
+        .map_err(|_| "Invalid UTF-8 in workspace path".to_string())
+}
+
 /// List one level of files/dirs under a given root (e.g. project repo path). Used by Project Files in Stakeholder tab.
 #[tauri::command]
 fn list_files_under_root(root: String, path: String) -> Result<Vec<DirListingEntry>, String> {
@@ -2067,9 +2134,56 @@ fn with_db<F, T>(f: F) -> Result<T, String>
 where
     F: FnOnce(&rusqlite::Connection) -> Result<T, String>,
 {
+    // #region agent log
+    session_log_8b7cf9(
+        "lib.rs:with_db",
+        "with_db_start",
+        &[("hint", "before_open_db")],
+        "H6",
+    );
+    // #endregion
     let data = data_root()?;
-    let conn = db::open_db(&data.join("app.db"))?;
-    seed_initial_data(&conn)?; // New seeding call
+    let db_path = data.join("app.db");
+    let conn = db::open_db(&db_path).map_err(|e| {
+        let msg = e.to_string();
+        // #region agent log
+        session_log_8b7cf9(
+            "lib.rs:with_db",
+            "open_db_failed",
+            &[("err", &msg)],
+            "H6",
+        );
+        // #endregion
+        msg
+    })?;
+    // #region agent log
+    session_log_8b7cf9(
+        "lib.rs:with_db",
+        "open_db_ok",
+        &[("db_path", &db_path.to_string_lossy())],
+        "H6",
+    );
+    // #endregion
+    if let Err(e) = seed_initial_data(&conn) {
+        let msg = e.to_string();
+        // #region agent log
+        session_log_8b7cf9(
+            "lib.rs:with_db",
+            "seed_initial_data_failed_non_fatal",
+            &[("err", &msg)],
+            "H7",
+        );
+        // #endregion
+    } else {
+        // #region agent log
+        session_log_8b7cf9(
+            "lib.rs:with_db",
+            "seed_initial_data_ok",
+            &[("hint", "before_fn")],
+            "H7",
+        );
+        // #endregion
+    }
     f(&conn)
 }
 
@@ -4429,7 +4543,7 @@ pub fn run() {
             {
                 session_log("lib.rs:setup", "tauri_dev_workaround_start", &[], "H4");
                 session_log_8a3da1("lib.rs:setup", "tauri_dev_workaround_start", &[], "H3");
-                let app_url = "http://127.0.0.1:4001/".to_string();
+                let app_url = "http://127.0.0.1:4000/".to_string();
                 let app_handle = _app.handle().clone();
 
                 // Write loader to temp file so we can navigate to it (file:// works when devUrl fails).
@@ -4453,7 +4567,7 @@ pub fn run() {
                             session_log("lib.rs:workaround", "loader_nav", &[("window_count", &windows.len().to_string())], "H2");
                                 session_log_8a3da1("lib.rs:workaround", "loader_nav", &[("window_count", &windows.len().to_string())], "H3");
                             if let Some((_, w)) = windows.into_iter().next() {
-                                let _ = w.navigate(load_url.as_str().parse().unwrap_or_else(|_| "http://127.0.0.1:4001/".parse().unwrap()));
+                                let _ = w.navigate(load_url.as_str().parse().unwrap_or_else(|_| "http://127.0.0.1:4000/".parse().unwrap()));
                             }
                         });
                     }
@@ -4469,9 +4583,9 @@ pub fn run() {
                                 session_log_8a3da1("lib.rs:workaround", "dev_nav", &[("window_count", &windows.len().to_string()), ("attempt", &attempt.to_string())], "H3");
                             if let Some((_, w)) = windows.into_iter().next() {
                                 let _ = w.navigate(
-                                    url.parse().unwrap_or_else(|_| "http://127.0.0.1:4001/".parse().unwrap()),
+                                    url.parse().unwrap_or_else(|_| "http://127.0.0.1:4000/".parse().unwrap()),
                                 );
-                                let js = format!("window.location.href = {}", serde_json::to_string(&url).unwrap_or_else(|_| "\"http://127.0.0.1:4001/\"".into()));
+                                let js = format!("window.location.href = {}", serde_json::to_string(&url).unwrap_or_else(|_| "\"http://127.0.0.1:4000/\"".into()));
                                 let _ = w.eval(&js);
                             }
                         });
@@ -4484,6 +4598,7 @@ pub fn run() {
             read_file_as_base64,
             read_file_text,
             read_file_text_under_root,
+            get_workspace_root,
             list_files_under_root,
             list_scripts,
             list_cursor_folder,

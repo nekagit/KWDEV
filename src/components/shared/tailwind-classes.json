@@ -935,9 +935,6 @@
     "components/molecules/TabAndContentSections/ArchitectureTemplatesTabContent.tsx": [
       "mt-6"
     ],
-    "components/molecules/TabAndContentSections/DashboardTabContent.tsx": [
-      "mt-0 space-y-6"
-    ],
     "components/molecules/TabAndContentSections/DatabaseDataTabContent.tsx": [
       "h-5 w-5",
       "block",

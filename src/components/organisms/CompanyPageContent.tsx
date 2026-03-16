@@ -14,7 +14,7 @@ export function CompanyPageContent() {
     <div className="space-y-0">
       <Breadcrumb
         items={[
-          { label: "Dashboard", href: "/" },
+          { label: "Home", href: "/" },
           { label: "Company" },
         ]}
         className="mb-3"

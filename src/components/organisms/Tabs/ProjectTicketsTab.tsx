@@ -63,7 +63,7 @@ import {
 import {
   buildKanbanContextBlock,
   combinePromptRecordWithKanban,
-} from "@/lib/analysis-prompt";
+} from "@/lib/kanban-prompt-blocks";
 import { EmptyState, LoadingState } from "@/components/molecules/Display/EmptyState";
 import { ErrorDisplay } from "@/components/molecules/Display/ErrorDisplay";
 import { KanbanColumnCard } from "@/components/organisms/Kanban/KanbanColumnCard";

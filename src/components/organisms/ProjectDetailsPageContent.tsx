@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import {
   Loader2,
   AlertCircle,
-  AlertTriangle,
   FolderGit2,
   ListTodo,
   Trash2,
@@ -54,7 +53,7 @@ import {
 import { Dialog as SharedDialog } from "@/components/molecules/FormsAndDialogs/Dialog";
 import { ButtonGroup } from "@/components/molecules/ControlsAndButtons/ButtonGroup";
 import { Input } from "@/components/ui/input";
-import { initializeProjectRepo, applyStarterToProject } from "@/lib/api-projects";
+import { applyStarterToProject } from "@/lib/api-projects";
 import { recordProjectVisit } from "@/lib/recent-projects";
 import {
   getProjectDetailTabPreference,
@@ -65,7 +64,6 @@ import { useSetPageTitle } from "@/context/page-title-context";
 import { toast } from "sonner";
 import { Breadcrumb } from "@/components/molecules/Navigation/Breadcrumb";
 import { debugIngest } from "@/lib/debug-ingest";
-import { hasMissingCursorInitFiles } from "@/lib/cursor-init-status";
 import {
   Tooltip,
   TooltipContent,
@@ -145,7 +143,6 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
     const saved = getProjectDetailTabPreference(projectId);
     setActiveTab(saved);
   }, [projectId, tabFromUrl]);
-  const [initializing, setInitializing] = useState(false);
   const [startering, setStartering] = useState(false);
   const [viewRunningOpen, setViewRunningOpen] = useState(false);
   const [portEdit, setPortEdit] = useState(false);
@@ -157,34 +154,11 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
   const [projectIds, setProjectIds] = useState<string[]>([]);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [agentProvider, setAgentProviderState] = useState<AgentProvider>("cursor");
-  const [cursorMissingInitFiles, setCursorMissingInitFiles] = useState<boolean | null>(null);
 
   // Restore agent provider from localStorage on project change
   useEffect(() => {
     if (projectId) setAgentProviderState(getAgentProvider(projectId));
   }, [projectId]);
-
-  // Check if project .cursor is missing any init template files.
-  // Only run when the loaded project matches the current projectId so we never show
-  // another project's exclamation when switching (project can lag behind projectId).
-  useEffect(() => {
-    if (!projectId || !project || project.id !== projectId || !project.repoPath) {
-      setCursorMissingInitFiles(null);
-      return;
-    }
-    let cancelled = false;
-    const repoPath = project.repoPath;
-    hasMissingCursorInitFiles(projectId, repoPath)
-      .then((missing) => {
-        if (!cancelled) setCursorMissingInitFiles(missing);
-      })
-      .catch(() => {
-        if (!cancelled) setCursorMissingInitFiles(null);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [projectId, project?.id, project?.repoPath]);
 
   const handleProviderChange = useCallback((provider: AgentProvider) => {
     setAgentProviderState(provider);
@@ -457,20 +431,6 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
                   <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground leading-tight text-center">
                     {project.name}
                   </h1>
-                  {cursorMissingInitFiles === true && (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="inline-flex shrink-0 text-amber-500 dark:text-amber-400" aria-label="Some init template files are missing from .cursor">
-                            <AlertTriangle className="size-6" />
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" className="max-w-xs">
-                          <p>This project&apos;s .cursor folder is missing files from the init template. Run Initialize to add them.</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
                 </div>
                 <div className="flex justify-end">
                   {nextId ? (
@@ -543,40 +503,12 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
               </div>
             </div>
 
-            {/* Metadata: Initialize/Starter on left; port, View Running, badges on right */}
+            {/* Metadata: Starter on left; port, View Running, badges on right */}
             <div className="flex flex-wrap items-center justify-between gap-4 mt-1">
-              {/* Left: Initialize + Starter */}
+              {/* Left: Starter */}
               <div className="flex flex-wrap items-center gap-2">
                 {project.repoPath && (
                   <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-7 px-2.5 text-[10px] font-semibold uppercase tracking-wider gap-1.5 border-primary/20 hover:bg-primary/5 hover:border-primary/40 transition-all duration-300 shadow-sm"
-                      onClick={async () => {
-                        if (initializing) return;
-                        setInitializing(true);
-                        try {
-                          await initializeProjectRepo(projectId, project.repoPath!);
-                          setCursorMissingInitFiles(false);
-                          toast.success("Project initialized with .cursor from template.");
-                          fetchProject();
-                        } catch (err) {
-                          toast.error(err instanceof Error ? err.message : "Failed to initialize");
-                        } finally {
-                          setInitializing(false);
-                        }
-                      }}
-                      disabled={initializing}
-                      title="Copy cursor_init.zip / .cursor_init.zip or cursor_init/ into this project as .cursor (merge if .cursor exists)"
-                    >
-                      {initializing ? (
-                        <Loader2 className="size-3 animate-spin" />
-                      ) : (
-                        <Sparkles className="size-3 text-amber-400" />
-                      )}
-                      {initializing ? "Initializing..." : "Initialize"}
-                    </Button>
                     <Button
                       variant="outline"
                       size="sm"
