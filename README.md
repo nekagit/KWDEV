@@ -23,7 +23,7 @@ One dashboard for your repos, Planner, Ideas, and agent runs — Cursor today; m
 ## Features
 
 - **Dashboard** — Overview, active projects, quick links to Projects, Run, Prompts, Ideas, Design, Architecture, Testing, Planner, Versioning, Documentation, and Configuration.
-- **Projects** — Add repos by path; **Initialize** (seed `.cursor` from `.cursor_init.zip`); **Starter** (project template + `.cursor`); open in Cursor, terminal, or file manager.
+- **Projects** — Add repos by path; open in Cursor, terminal, or file manager.
 - **Worker (Run) tab** — Per-project: **Ask** (read-only), **Plan** (design first), **Fast development** (run agent), **Debug** (paste logs, fix). Uses Cursor CLI with `--mode=ask|plan|debug`; terminal output and history.
 - **Planner** — Kanban (tickets), milestones, sync with `.cursor/7. planner/tickets.md`.
 - **Ideas, Prompts, Design, Architecture, Testing, Versioning, Documentation** — Per-project or global views; export/copy as Markdown, JSON, or CSV where applicable.
@@ -109,7 +109,7 @@ We’re focusing on Cursor CLI today but want KWCode to be useful across tools a
 - **Claude Code / Claude CLI** — Optional integration so you can run Claude-based agents from the same UI (Ask, Plan, Debug) alongside or instead of Cursor.
 - **Other CLI integrations** — Support for more AI/IDE CLIs (e.g. Windsurf, Aider, or custom agents) so you can plug in your preferred tool and keep one dashboard.
 - **Cross-platform parity** — Smoother builds and docs for Windows and Linux, including installers and path handling.
-- **Templates & starters** — More project and `.cursor` templates (stacks, frameworks) for Initialize and Starter flows.
+- **Templates** — Optional project and `.cursor` templates (stacks, frameworks) for seeding new projects.
 
 **Ideas & improvements (optional):** Dark/light theme refinements, more export formats, keyboard shortcuts for every action, optional cloud sync for projects list, and better accessibility. If you have a “coming soon” you care about, open an issue or discuss in a PR.
 

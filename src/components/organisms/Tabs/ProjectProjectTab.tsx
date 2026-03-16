@@ -2,8 +2,8 @@
 
 /** Project Project Tab component. */
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Loader2, FileText, FolderOpen, RefreshCw, Play, Square, FolderGit2, Bot, Folder, Palette, Building2, MonitorUp } from "lucide-react";
-import { listProjectFiles, readProjectFileOrEmpty, updateProject, type FileEntry } from "@/lib/api-projects";
+import { Loader2, FileText, FolderOpen, FolderInput, RefreshCw, Play, Square, FolderGit2, Bot, Folder, MonitorUp } from "lucide-react";
+import { listProjectFiles, readProjectFileOrEmpty, updateProject, writeProjectFile, type FileEntry } from "@/lib/api-projects";
 import { isTauri } from "@/lib/tauri";
 import { useRunStore } from "@/store/run-store";
 import type { Project } from "@/types/project";
@@ -29,10 +29,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ProjectFilesTab } from "@/components/organisms/Tabs/ProjectFilesTab";
-import { SetupDocBlock } from "@/components/organisms/Tabs/SetupDocBlock";
-import { ProjectDesignTab } from "@/components/organisms/Tabs/ProjectDesignTab";
-import { ProjectArchitectureTab } from "@/components/organisms/Tabs/ProjectArchitectureTab";
-import { ArchitectureVisualization, type ResolvedArchitecture } from "@/components/organisms/Tabs/ArchitectureVisualization";
 import { ProjectAgentsSection } from "@/components/organisms/Tabs/ProjectAgentsSection";
 import {
   Accordion,
@@ -140,15 +136,16 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
   const [lastRunId, setLastRunId] = useState<string | null>(null);
   const [savingPort, setSavingPort] = useState(false);
   const [folderRefreshKey, setFolderRefreshKey] = useState(0);
+  const [initializeRulesLoading, setInitializeRulesLoading] = useState(false);
   const cancelledRef = useRef(false);
   const scriptsCancelledRef = useRef(false);
 
-  /** Accordion section open by default or from hash (#design, #architecture, etc.). */
-  const ACCORDION_VALUES = ["run", "project-files", "design", "architecture", "adr", "agents", "rules"] as const;
+  /** Accordion section open by default or from hash (#rules, #project-files, #run, etc.). */
+  const ACCORDION_VALUES = ["rules", "project-files", "run", "adr", "agents"] as const;
   const [openSection, setOpenSection] = useState<string>(() => {
-    if (typeof window === "undefined") return "run";
+    if (typeof window === "undefined") return "rules";
     const h = window.location.hash.slice(1).toLowerCase();
-    return ACCORDION_VALUES.includes(h as (typeof ACCORDION_VALUES)[number]) ? h : "run";
+    return ACCORDION_VALUES.includes(h as (typeof ACCORDION_VALUES)[number]) ? h : "rules";
   });
 
   useEffect(() => {
@@ -163,7 +160,7 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
     return () => window.removeEventListener("hashchange", syncFromHash);
   }, []);
 
-  // Sync accordion section to URL hash so the current view is shareable (e.g. #design, #architecture).
+  // Sync accordion section to URL hash so the current view is shareable (e.g. #rules, #project-files).
   useEffect(() => {
     if (typeof window === "undefined") return;
     const hash = openSection === "run" ? "" : openSection;
@@ -189,6 +186,39 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
       }
     }
   }, [projectId, project.repoPath]);
+
+  const handleInitializeRules = useCallback(async () => {
+    if (!project.repoPath) {
+      toast.error("Project has no repo path.");
+      return;
+    }
+    setInitializeRulesLoading(true);
+    try {
+      const res = await fetch("/api/data/cursor-rules-template");
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        toast.error(data.error ?? "Failed to load rules template");
+        return;
+      }
+      const data = await res.json();
+      const rules = Array.isArray(data.rules) ? data.rules : [];
+      if (rules.length === 0) {
+        toast.info("No rules to copy.");
+        return;
+      }
+      const base = RULES_DIR;
+      for (const rule of rules as { name: string; content: string }[]) {
+        const relativePath = base + (base.endsWith("/") ? "" : "/") + rule.name;
+        await writeProjectFile(projectId, relativePath, rule.content, project.repoPath);
+      }
+      await loadAdrAndRules();
+      toast.success(`Initialized ${rules.length} rule(s) in ${RULES_DIR}.`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to initialize rules");
+    } finally {
+      setInitializeRulesLoading(false);
+    }
+  }, [projectId, project.repoPath, loadAdrAndRules]);
 
   useEffect(() => {
     cancelledRef.current = false;
@@ -249,11 +279,86 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
 
   return (
     <div className="space-y-6">
-      <RebuildDesktopSection />
       <ScrollArea className="h-[calc(100vh-14rem)]">
         <div className="space-y-2 pr-4">
           <Accordion type="single" collapsible value={openSection} onValueChange={setOpenSection} className="w-full space-y-2">
-            {/* Run section: scripts from package.json + Play + terminal output — only one expanded by default */}
+            {/* Rules — first */}
+            <AccordionItem value="rules" className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden data-[state=open]:border-teal-500/30">
+              <AccordionTrigger className="px-5 py-3 hover:no-underline hover:bg-muted/20 [&[data-state=open]]:border-b [&[data-state=open]]:border-border/40">
+                <div className="flex items-center gap-2">
+                  <Folder className="h-4 w-4 text-teal-500" />
+                  <h3 className="text-sm font-semibold">Rules</h3>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-5 pb-5 pt-2">
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <p className="text-xs text-muted-foreground">
+                Cursor rules and conventions in <code className="rounded bg-muted px-1 py-0.5 font-mono text-[10px]">{RULES_DIR}</code>.
+              </p>
+              <Button
+                variant="default"
+                size="sm"
+                className="h-7 text-xs gap-1.5"
+                disabled={initializeRulesLoading || !project.repoPath}
+                onClick={() => void handleInitializeRules()}
+                title="Copy useful Cursor rules from this app (or built-in) into the project's .cursor/rules"
+              >
+                {initializeRulesLoading ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <FolderInput className="h-3.5 w-3.5" />
+                )}
+                Initialize
+              </Button>
+            </div>
+            {rulesEntries.length === 0 ? (
+              <p className="text-xs text-muted-foreground">No files in this folder.</p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-xs">Name</TableHead>
+                    <TableHead className="text-xs w-20">Size</TableHead>
+                    <TableHead className="text-xs w-24">Updated</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {rulesEntries.map((e) => (
+                    <TableRow key={e.name}>
+                      <TableCell className="font-mono text-xs">{e.name}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{formatSize(e.size)}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{formatUpdatedAt(e.updatedAt)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Project Files — .cursor directory browser */}
+            <AccordionItem
+              value="project-files" className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden data-[state=open]:border-rose-500/30">
+              <AccordionTrigger className="px-5 py-3 hover:no-underline hover:bg-muted/20 [&[data-state=open]]:border-b [&[data-state=open]]:border-border/40">
+                <div className="flex items-center gap-2">
+                  <FolderGit2 className="w-4 h-4 text-rose-500" />
+                  <h3 className="text-sm font-semibold">Project Files</h3>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-5 pb-5 pt-2">
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between gap-2">
+                <Button variant="ghost" size="sm" onClick={() => setFolderRefreshKey((k) => k + 1)} className="gap-1.5">
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  Refresh
+                </Button>
+              </div>
+              <ProjectFilesTab project={project} projectId={projectId} />
+            </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Run section: scripts from package.json + Play + terminal output */}
             <AccordionItem value="run" className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden data-[state=open]:border-sky-500/30">
               <AccordionTrigger className="px-5 py-3 hover:no-underline hover:bg-muted/20 [&[data-state=open]]:border-b [&[data-state=open]]:border-border/40">
                 <div className="flex items-center gap-2">
@@ -425,63 +530,6 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
               </AccordionContent>
             </AccordionItem>
 
-            {/* Project Files — .cursor directory browser */}
-            <AccordionItem
-              value="project-files" className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden data-[state=open]:border-rose-500/30">
-              <AccordionTrigger className="px-5 py-3 hover:no-underline hover:bg-muted/20 [&[data-state=open]]:border-b [&[data-state=open]]:border-border/40">
-                <div className="flex items-center gap-2">
-                  <FolderGit2 className="w-4 h-4 text-rose-500" />
-                  <h3 className="text-sm font-semibold">Project Files</h3>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-5 pb-5 pt-2">
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-between gap-2">
-                <Button variant="ghost" size="sm" onClick={() => setFolderRefreshKey((k) => k + 1)} className="gap-1.5">
-                  <RefreshCw className="h-3.5 w-3.5" />
-                  Refresh
-                </Button>
-              </div>
-              <ProjectFilesTab project={project} projectId={projectId} />
-            </div>
-              </AccordionContent>
-            </AccordionItem>
-
-            {/* Design */}
-            <AccordionItem value="design" className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden data-[state=open]:border-violet-500/30">
-              <AccordionTrigger className="px-5 py-3 hover:no-underline hover:bg-muted/20 [&[data-state=open]]:border-b [&[data-state=open]]:border-border/40">
-                <div className="flex items-center gap-2">
-                  <Palette className="h-4 w-4 text-violet-500" />
-                  <h3 className="text-sm font-semibold">Design</h3>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-5 pb-5 pt-2">
-            <SetupDocBlock project={project} projectId={projectId} setupKey="design" docsRefreshKey={docsRefreshKey} />
-            <ProjectDesignTab project={project} projectId={projectId} showHeader={false} />
-              </AccordionContent>
-            </AccordionItem>
-
-            {/* Architecture */}
-            <AccordionItem value="architecture" className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden data-[state=open]:border-blue-500/30">
-              <AccordionTrigger className="px-5 py-3 hover:no-underline hover:bg-muted/20 [&[data-state=open]]:border-b [&[data-state=open]]:border-border/40">
-                <div className="flex items-center gap-2">
-                  <Building2 className="h-4 w-4 text-blue-500" />
-                  <h3 className="text-sm font-semibold">Architecture</h3>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-5 pb-5 pt-2">
-            <SetupDocBlock project={project} projectId={projectId} setupKey="architecture" docsRefreshKey={docsRefreshKey} />
-            <ArchitectureVisualization
-              architectures={
-                Array.isArray((project as { architectures?: unknown[] }).architectures)
-                  ? (project as unknown as { architectures: ResolvedArchitecture[] }).architectures
-                  : []
-              }
-            />
-            <ProjectArchitectureTab project={project} projectId={projectId} showHeader={false} />
-              </AccordionContent>
-            </AccordionItem>
-
             {/* ADR — Architecture decision records */}
             <AccordionItem value="adr" className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden data-[state=open]:border-violet-500/30">
               <AccordionTrigger className="px-5 py-3 hover:no-underline hover:bg-muted/20 [&[data-state=open]]:border-b [&[data-state=open]]:border-border/40">
@@ -532,45 +580,10 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
               </AccordionContent>
             </AccordionItem>
 
-            {/* Rules */}
-            <AccordionItem value="rules" className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden data-[state=open]:border-teal-500/30">
-              <AccordionTrigger className="px-5 py-3 hover:no-underline hover:bg-muted/20 [&[data-state=open]]:border-b [&[data-state=open]]:border-border/40">
-                <div className="flex items-center gap-2">
-                  <Folder className="h-4 w-4 text-teal-500" />
-                  <h3 className="text-sm font-semibold">Rules</h3>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-5 pb-5 pt-2">
-            <p className="text-xs text-muted-foreground mb-3">
-              Cursor rules and conventions in <code className="rounded bg-muted px-1 py-0.5 font-mono text-[10px]">{RULES_DIR}</code>.
-            </p>
-            {rulesEntries.length === 0 ? (
-              <p className="text-xs text-muted-foreground">No files in this folder.</p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-xs">Name</TableHead>
-                    <TableHead className="text-xs w-20">Size</TableHead>
-                    <TableHead className="text-xs w-24">Updated</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {rulesEntries.map((e) => (
-                    <TableRow key={e.name}>
-                      <TableCell className="font-mono text-xs">{e.name}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{formatSize(e.size)}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{formatUpdatedAt(e.updatedAt)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-              </AccordionContent>
-            </AccordionItem>
           </Accordion>
         </div>
       </ScrollArea>
+      <RebuildDesktopSection />
     </div>
   );
 }

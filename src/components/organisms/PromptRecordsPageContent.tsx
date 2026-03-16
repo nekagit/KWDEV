@@ -32,7 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Copy, FileJson, FileText, Loader2, RefreshCw, RotateCcw, Search, X } from "lucide-react";
+import { Copy, FileJson, FileText, FolderInput, Loader2, RefreshCw, RotateCcw, Search, X } from "lucide-react";
 import { getOrganismClasses } from "./organism-classes";
 import {
   copyAllPromptsAsJsonToClipboard,
@@ -120,6 +120,7 @@ export function PromptRecordsPageContent({ projectId }: { projectId?: string }) 
     typeof window !== "undefined" ? getPromptsViewPreference().sort : "newest"
   );
   const [refreshing, setRefreshing] = useState(false);
+  const [initializeLoading, setInitializeLoading] = useState(false);
   const cancelledRef = useRef(false);
   const filterInputRef = useRef<HTMLInputElement>(null);
   usePromptsFocusFilterShortcut(filterInputRef);
@@ -199,6 +200,32 @@ export function PromptRecordsPageContent({ projectId }: { projectId?: string }) 
       setRefreshing(false);
     }
   }, [fetchFullPromptRecords, fetchProjects, fetchCursorPromptFiles, refreshData, setError]);
+
+  const handleInitialize = useCallback(async () => {
+    setInitializeLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/data/prompts/initialize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId: projectId ?? undefined }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast.error(data.error ?? "Initialize failed");
+        return;
+      }
+      await Promise.all([fetchFullPromptRecords(), fetchProjects()]);
+      const { created = 0, updated = 0, total = 0 } = data;
+      toast.success(
+        `Loaded ${total} prompt(s) from data/agents and data/prompts${created || updated ? ` (${created} created, ${updated} updated)` : ""}.`
+      );
+    } catch {
+      toast.error("Initialize failed");
+    } finally {
+      setInitializeLoading(false);
+    }
+  }, [projectId, fetchFullPromptRecords, fetchProjects, setError]);
 
   // Pre-select project tab when opening from project page (e.g. /prompts?projectId=...)
   useEffect(() => {
@@ -597,6 +624,22 @@ export function PromptRecordsPageContent({ projectId }: { projectId?: string }) 
                   size="sm"
                 />
               )}
+              {projectId && (
+                <Button
+                  variant="default"
+                  disabled={initializeLoading}
+                  onClick={() => void handleInitialize()}
+                  aria-label="Load data/agents and data/prompts into table"
+                  title="Load all data/agents and data/prompts files into the prompts table and link them to this project"
+                >
+                  {initializeLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <FolderInput className="h-4 w-4" />
+                  )}
+                  Initialize
+                </Button>
+              )}
               <Button
                 variant="outline"
                 disabled={refreshing}
@@ -641,6 +684,25 @@ export function PromptRecordsPageContent({ projectId }: { projectId?: string }) 
                   </TabsTrigger>
                 ))}
               </TabsList>
+              {projectId && (
+                <TabsContent value={projectId} className="mt-4 focus-visible:outline-none">
+                  <PromptRecordTable
+                    fullPromptRecords={fullPromptRecords.filter((r) =>
+                      (projects.find((p) => p.id === projectId)?.promptIds ?? []).includes(r.id)
+                    )}
+                    selectedPromptRecordIds={selectedPromptRecordIds}
+                    setSelectedPromptRecordIds={setSelectedPromptRecordIds}
+                    handleDelete={handleDelete}
+                    setEditOpen={setEditOpen}
+                    setFormId={setFormId}
+                    setFormTitle={setFormTitle}
+                    setFormContent={setFormContent}
+                    onViewPrompt={setViewingPrompt}
+                    onRunPrompt={handleRunPrompt}
+                    onDuplicatePrompt={handleDuplicatePrompt}
+                  />
+                </TabsContent>
+              )}
               <TabsContent value={CURSOR_PROMPTS_TAB} className="mt-4 focus-visible:outline-none">
                 <div className="flex flex-wrap items-center gap-2 mb-3">
                   <span className="text-sm text-muted-foreground mr-2">Export all .cursor prompts:</span>

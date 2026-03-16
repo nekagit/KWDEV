@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
       {
         code: "PROMPT_NOT_FOUND",
         error: `Prompt not found at ${promptPath}`,
-        hint: "Run Initialize on this project to unzip the Next.js starter, or add the prompt file manually.",
+        hint: "Add the prompt file to the project manually.",
       },
       { status: 400 }
     );

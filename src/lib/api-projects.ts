@@ -343,49 +343,6 @@ export async function listAllProjectFilePaths(
   return { paths: sorted, truncated: sorted.length >= maxFiles };
 }
 
-/**
- * Initializes a project: creates .cursor if missing; extracts all contents from cursor_init
- * (zip or folder) into .cursor; existing files in .cursor are left unchanged (merge).
- * In Tauri uses unzip_cursor_init; in browser fetches cursor-init-template and writes files.
- */
-export async function initializeProjectRepo(projectId: string, repoPath: string): Promise<void> {
-  if (isTauri) {
-    await invoke("unzip_cursor_init", { targetPath: repoPath, mergeIfExists: true });
-    return;
-  }
-  let files: Record<string, string>;
-  const base = typeof window !== "undefined" ? window.location.origin : "";
-  const res = await fetch(`${base}/api/data/cursor-init-template`);
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: res.statusText }));
-    throw new Error((err as { error?: string }).error || "Failed to load template");
-  }
-  const json = (await res.json()) as { files?: Record<string, string> };
-  files = json.files ?? {};
-  if (Object.keys(files).length === 0) {
-    throw new Error("Template folder is empty or not found");
-  }
-  for (const [relativePath, content] of Object.entries(files)) {
-    const normalized = relativePath.replace(/\\/g, "/");
-    if (!normalized || normalized.startsWith("..")) continue;
-    const cursorPath = `.cursor/${normalized}`;
-    await writeProjectFile(projectId, cursorPath, content, repoPath);
-  }
-}
-
-/**
- * Starter: in Tauri, unzips project_template.zip into the project root, then .cursor_init.zip as .cursor (merge).
- * In browser, same as Initialize (cursor-init-template only; no project template unzip).
- */
-export async function applyStarterToProject(projectId: string, repoPath: string): Promise<void> {
-  if (isTauri) {
-    await invoke("unzip_project_template", { targetPath: repoPath });
-    await invoke("unzip_cursor_init", { targetPath: repoPath, mergeIfExists: true });
-    return;
-  }
-  await initializeProjectRepo(projectId, repoPath);
-}
-
 const DEFAULT_TAURI_API_BASE = "http://127.0.0.1:4000";
 
 /** Base URL for API when using fetch (e.g. in Tauri, webview origin may not be the Next server). */

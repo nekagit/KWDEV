@@ -138,6 +138,8 @@ export interface RunActions {
   runStaticAnalysisChecklist: (projectPath: string) => Promise<string | null>;
   /** Run an npm script in the system Terminal (macOS only). Returns true if opened. */
   runNpmScriptInExternalTerminal: (projectPath: string, scriptName: string) => Promise<boolean>;
+  /** Run an arbitrary command in the system Terminal in the project directory (macOS only). Returns true if opened. */
+  runCommandInExternalTerminal: (projectPath: string, command: string) => Promise<boolean>;
   /** Open Terminal and run npm run build:desktop in current dir (macOS; use when running via tauri dev). */
   runBuildDesktop: () => Promise<boolean>;
   setFloatingTerminalRunId: (id: string | null) => void;
@@ -851,6 +853,23 @@ export const useRunStore = create<RunStore>()((set, get) => ({
       await invoke("run_npm_script_in_external_terminal", {
         projectPath: path,
         scriptName: name,
+      });
+      return true;
+    } catch (e) {
+      set({ error: e instanceof Error ? e.message : String(e) });
+      return false;
+    }
+  },
+
+  runCommandInExternalTerminal: async (projectPath, command) => {
+    const path = projectPath?.trim();
+    const cmd = command?.trim();
+    if (!path || !cmd) return false;
+    set({ error: null });
+    try {
+      await invoke("run_command_in_external_terminal", {
+        projectPath: path,
+        command: cmd,
       });
       return true;
     } catch (e) {

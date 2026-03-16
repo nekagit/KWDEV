@@ -1524,8 +1524,8 @@ export function ProjectRunTab({ project, projectId, agentProvider = "cursor" }: 
       try {
         if (isTauri) {
           await invoke("update_plan_ticket", {
-            project_id: projectId,
-            ticket_id: ticketId,
+            projectId,
+            ticketId,
             done: true,
             status: "Done",
           });
@@ -1556,8 +1556,8 @@ export function ProjectRunTab({ project, projectId, agentProvider = "cursor" }: 
       try {
         if (isTauri) {
           await invoke("update_plan_ticket", {
-            project_id: projectId,
-            ticket_id: ticketId,
+            projectId,
+            ticketId,
             done: false,
             status: "Todo",
           });
@@ -1590,7 +1590,7 @@ export function ProjectRunTab({ project, projectId, agentProvider = "cursor" }: 
       try {
         const inProgressIds = (kanbanData.columns.in_progress?.items.map((t) => t.id) ?? []).filter((id) => id !== ticketId);
         if (isTauri) {
-          await invoke("delete_plan_ticket", { project_id: projectId, ticket_id: ticketId });
+          await invoke("delete_plan_ticket", { projectId, ticketId });
           await invoke("set_plan_kanban_state", setPlanKanbanStatePayload(projectId, inProgressIds));
         } else {
           const res = await fetch(`/api/data/projects/${projectId}/tickets/${ticketId}`, { method: "DELETE" });
@@ -1617,8 +1617,8 @@ export function ProjectRunTab({ project, projectId, agentProvider = "cursor" }: 
     if (isTauri) {
       for (const ticketId of ids) {
         await invoke("update_plan_ticket", {
-          project_id: projectId,
-          ticket_id: ticketId,
+          projectId,
+          ticketId,
           done: true,
           status: "Done",
         });
@@ -3388,6 +3388,26 @@ function WorkerTerminalsSection({
   const stopAllImplementAll = useRunStore((s) => s.stopAllImplementAll);
   const clearImplementAllLogs = useRunStore((s) => s.clearImplementAllLogs);
   const archiveImplementAllLogs = useRunStore((s) => s.archiveImplementAllLogs);
+  const runCommandInExternalTerminal = useRunStore((s) => s.runCommandInExternalTerminal);
+  const [runCommand, setRunCommand] = useState("");
+  const [runningCommand, setRunningCommand] = useState(false);
+
+  const handleRunInTerminal = useCallback(async () => {
+    const cmd = runCommand.trim();
+    if (!cmd || !projectPath) return;
+    setRunningCommand(true);
+    try {
+      const opened = await runCommandInExternalTerminal(projectPath, cmd);
+      if (opened) {
+        toast.success("Opened in Terminal.");
+        setRunCommand("");
+      } else {
+        toast.error("Failed to open terminal. Only supported on macOS in the desktop app.");
+      }
+    } finally {
+      setRunningCommand(false);
+    }
+  }, [projectPath, runCommand, runCommandInExternalTerminal]);
 
   const implementAllRuns = runningRuns.filter(isImplementAllRun);
   const anyRunning = implementAllRuns.some((r) => r.status === "running");
@@ -3486,6 +3506,30 @@ function WorkerTerminalsSection({
           </div>
         </div>
       )}
+
+      {/* Run command in external terminal */}
+      <div className={cn("flex items-center gap-2 flex-wrap", embedded ? "px-0 pb-3" : "px-5 pb-4")}>
+        <Input
+          placeholder={projectPath ? "Enter command to run in project terminal (e.g. npm run dev)…" : "Set project repo path to run commands"}
+          value={runCommand}
+          onChange={(e) => setRunCommand(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleRunInTerminal()}
+          disabled={!projectPath || !isTauri}
+          className="flex-1 min-w-[200px] h-8 text-xs font-mono"
+          aria-label="Command to run in external terminal"
+        />
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 gap-1.5 text-xs shrink-0"
+          disabled={!runCommand.trim() || !projectPath || !isTauri || runningCommand}
+          onClick={handleRunInTerminal}
+          title={isTauri ? "Run this command in Terminal.app (project directory)" : "Run in terminal is only available in the desktop app (macOS)"}
+        >
+          {runningCommand ? <Loader2 className="size-3.5 animate-spin" /> : <Play className="size-3.5" />}
+          Run in terminal
+        </Button>
+      </div>
 
       {/* Command bar */}
       {!embedded ? <div className="px-5 pb-4">{commandBar}</div> : commandBar}

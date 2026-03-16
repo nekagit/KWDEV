@@ -20,7 +20,6 @@ import {
   Hash,
   Flag,
   ClipboardList,
-  Sparkles,
   Pencil,
   Lightbulb,
   Activity,
@@ -53,7 +52,6 @@ import {
 import { Dialog as SharedDialog } from "@/components/molecules/FormsAndDialogs/Dialog";
 import { ButtonGroup } from "@/components/molecules/ControlsAndButtons/ButtonGroup";
 import { Input } from "@/components/ui/input";
-import { applyStarterToProject } from "@/lib/api-projects";
 import { recordProjectVisit } from "@/lib/recent-projects";
 import {
   getProjectDetailTabPreference,
@@ -143,7 +141,6 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
     const saved = getProjectDetailTabPreference(projectId);
     setActiveTab(saved);
   }, [projectId, tabFromUrl]);
-  const [startering, setStartering] = useState(false);
   const [viewRunningOpen, setViewRunningOpen] = useState(false);
   const [portEdit, setPortEdit] = useState(false);
   const [portInput, setPortInput] = useState("");
@@ -503,43 +500,8 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
               </div>
             </div>
 
-            {/* Metadata: Starter on left; port, View Running, badges on right */}
+            {/* Metadata: port, View Running, badges */}
             <div className="flex flex-wrap items-center justify-between gap-4 mt-1">
-              {/* Left: Starter */}
-              <div className="flex flex-wrap items-center gap-2">
-                {project.repoPath && (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-7 px-2.5 text-[10px] font-semibold uppercase tracking-wider gap-1.5 border-primary/20 hover:bg-primary/5 hover:border-primary/40 transition-all duration-300 shadow-sm"
-                      onClick={async () => {
-                        if (startering) return;
-                        setStartering(true);
-                        try {
-                          await applyStarterToProject(projectId, project.repoPath!);
-                          toast.success("Starter applied: project template and .cursor.");
-                          fetchProject();
-                        } catch (err) {
-                          toast.error(err instanceof Error ? err.message : "Failed to apply starter");
-                        } finally {
-                          setStartering(false);
-                        }
-                      }}
-                      disabled={startering}
-                      title="Unzip project_template.zip then .cursor_init.zip as .cursor (merge)"
-                    >
-                      {startering ? (
-                        <Loader2 className="size-3 animate-spin" />
-                      ) : (
-                        <Sparkles className="size-3 text-amber-400" />
-                      )}
-                      {startering ? "Applying..." : "Starter"}
-                    </Button>
-                  </>
-                )}
-              </div>
-              {/* Right: port, View Running, badges */}
               <div className="flex flex-wrap items-center gap-2">
                 {/* Run port: display or set localhost port for View Running Project (always show so port can be set even without repo path) */}
                 <>

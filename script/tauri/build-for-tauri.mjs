@@ -14,18 +14,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..", "..");
 const apiDir = path.join(repoRoot, "src", "app", "api");
 const apiDirBak = path.join(repoRoot, ".api.tauri-bak");
-const cursorInitZip = path.join(repoRoot, "cursor_init.zip");
-const cursorInitZipDot = path.join(repoRoot, ".cursor_init.zip");
-
-/** Ensure cursor_init.zip exists for Tauri bundle (copy from .cursor_init.zip if needed). */
-function ensureCursorInitZip() {
-  if (fs.existsSync(cursorInitZip)) return;
-  if (fs.existsSync(cursorInitZipDot)) {
-    fs.copyFileSync(cursorInitZipDot, cursorInitZip);
-    console.log("[build-for-tauri] Copied .cursor_init.zip to cursor_init.zip for bundle");
-  }
-}
-
 function moveAside() {
   if (fs.existsSync(apiDir)) {
     fs.renameSync(apiDir, apiDirBak);
@@ -40,7 +28,6 @@ function restore() {
   }
 }
 
-ensureCursorInitZip();
 moveAside();
 const child = spawn("npm", ["run", "build"], {
   stdio: "inherit",

@@ -1689,289 +1689,6 @@ fn list_cursor_folder(project_path: String) -> Result<Vec<FileEntry>, String> {
     Ok(entries)
 }
 
-/// Read all files under the init template dir (relative to app/project root) and return a map of relative path -> content for Initialize.
-#[tauri::command]
-fn get_cursor_init_template() -> Result<std::collections::HashMap<String, String>, String> {
-    let root = project_root()?;
-    let template_dir = root.join(".cursor_template");
-    if !template_dir.exists() || !template_dir.is_dir() {
-        return Err("Template folder not found".to_string());
-    }
-    let mut out = std::collections::HashMap::new();
-    fn collect(
-        dir: &std::path::Path,
-        base: &std::path::Path,
-        out: &mut std::collections::HashMap<String, String>,
-    ) -> Result<(), String> {
-        for e in std::fs::read_dir(dir).map_err(|e| e.to_string())? {
-            let e = e.map_err(|e| e.to_string())?;
-            let path = e.path();
-            if path.is_file() {
-                let rel = path.strip_prefix(base).map_err(|e| e.to_string())?;
-                let rel_str = rel.to_string_lossy().replace('\\', "/");
-                let content = std::fs::read_to_string(&path).map_err(|e| e.to_string())?;
-                out.insert(rel_str, content);
-            } else if path.is_dir() {
-                collect(&path, base, out)?;
-            }
-        }
-        Ok(())
-    }
-    collect(&template_dir, &template_dir, &mut out)?;
-    Ok(out)
-}
-
-/// Resolve project_template.zip: try bundled resource first, then project root (for dev).
-fn resolve_project_template_zip(app: &AppHandle) -> Result<PathBuf, String> {
-    if let Ok(path) = app.path().resolve("project_template.zip", BaseDirectory::Resource) {
-        if path.exists() && path.is_file() {
-            return Ok(path);
-        }
-    }
-    let root = project_root()?;
-    let zip_path = root.join("project_template.zip");
-    if zip_path.exists() && zip_path.is_file() {
-        Ok(zip_path)
-    } else {
-        Err("project_template.zip not found (bundle resource or next to app)".to_string())
-    }
-}
-
-/// Unzip project_template.zip (from bundle resource or next to app) into target_path. Strips a single top-level
-/// directory (e.g. project_template/) so the template contents land at target_path root.
-#[tauri::command]
-fn unzip_project_template(app: AppHandle, target_path: String) -> Result<(), String> {
-    let zip_path = resolve_project_template_zip(&app)?;
-    let target = PathBuf::from(target_path.trim());
-    if !target.exists() || !target.is_dir() {
-        return Err("Target path does not exist or is not a directory".to_string());
-    }
-
-    let file = std::fs::File::open(&zip_path).map_err(|e| e.to_string())?;
-    let mut archive = zip::ZipArchive::new(file).map_err(|e| e.to_string())?;
-
-    // Detect single top-level dir: if every entry starts with the same segment (e.g. "project_template/"), strip it.
-    let mut prefix: Option<String> = None;
-    for i in 0..archive.len() {
-        let entry = archive.by_index(i).map_err(|e| e.to_string())?;
-        let name = entry.name().replace('\\', "/").trim_end_matches('/').to_string();
-        if name.is_empty() || name.contains("..") {
-            continue;
-        }
-        if let Some(first) = name.split('/').next() {
-            let seg = format!("{}/", first);
-            match &prefix {
-                None => prefix = Some(seg),
-                Some(p) if p == &seg => {}
-                _ => {
-                    prefix = None;
-                    break;
-                }
-            }
-        }
-    }
-    // If we have only one top-level segment for all, use it as prefix to strip
-    let strip_prefix = prefix.filter(|p| !p.is_empty());
-
-    for i in 0..archive.len() {
-        let mut entry = archive.by_index(i).map_err(|e| e.to_string())?;
-        let raw_name = entry.name().replace('\\', "/");
-        let name = raw_name.trim_end_matches('/');
-        if name.is_empty() || name.contains("..") {
-            continue;
-        }
-        let relative = match &strip_prefix {
-            Some(p) if name.starts_with(p) => name.strip_prefix(p).unwrap_or(name),
-            _ => name,
-        };
-        let relative = relative.trim_start_matches('/');
-        if relative.is_empty() {
-            continue;
-        }
-        let out_path = target.join(relative);
-        if entry.is_dir() {
-            std::fs::create_dir_all(&out_path).map_err(|e| e.to_string())?;
-        } else {
-            if let Some(parent) = out_path.parent() {
-                std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
-            }
-            let mut buf = Vec::new();
-            entry.read_to_end(&mut buf).map_err(|e| e.to_string())?;
-            std::fs::write(&out_path, &buf).map_err(|e| e.to_string())?;
-        }
-    }
-    Ok(())
-}
-
-/// Resolve cursor init zip: try bundled resource first (cursor_init.zip), then project root (.cursor_init.zip or cursor_init.zip).
-fn resolve_cursor_init_zip(app: &AppHandle) -> Result<PathBuf, String> {
-    if let Ok(path) = app.path().resolve("cursor_init.zip", BaseDirectory::Resource) {
-        if path.exists() && path.is_file() {
-            return Ok(path);
-        }
-    }
-    if let Ok(root) = project_root() {
-        for name in [".cursor_init.zip", "cursor_init.zip"] {
-            let zip_path = root.join(name);
-            if zip_path.exists() && zip_path.is_file() {
-                return Ok(zip_path);
-            }
-        }
-    }
-    Err(".cursor_init.zip / cursor_init.zip not found (bundle resource or repo root)".to_string())
-}
-
-/// Resolve cursor_init directory at project root (fallback when no zip).
-fn resolve_cursor_init_dir() -> Result<PathBuf, String> {
-    let root = project_root()?;
-    let dir_path = root.join("cursor_init");
-    if dir_path.exists() && dir_path.is_dir() {
-        return Ok(dir_path);
-    }
-    Err("cursor_init directory not found at repo root".to_string())
-}
-
-/// Copy directory contents into cursor_dir. Strips one top-level segment (e.g. cursor_init/) so contents land in .cursor.
-/// Respects merge_if_exists: skip existing files when true.
-fn copy_cursor_init_dir(
-    source_dir: &std::path::Path,
-    cursor_dir: &std::path::Path,
-    merge_if_exists: bool,
-) -> Result<(), String> {
-    let children: Vec<(std::ffi::OsString, std::path::PathBuf)> = std::fs::read_dir(source_dir)
-        .map_err(|e| e.to_string())?
-        .filter_map(|e| {
-            let e = e.ok()?;
-            let name = e.file_name();
-            let name_str = name.to_string_lossy();
-            if name_str == "." || name_str == ".." {
-                return None;
-            }
-            Some((name, e.path()))
-        })
-        .collect();
-    if children.len() == 1 {
-        let (_, only_path) = &children[0];
-        if only_path.is_dir() {
-            return copy_cursor_init_dir(only_path, cursor_dir, merge_if_exists);
-        }
-    }
-    for (_name, src_path) in children {
-        let name = src_path.file_name().unwrap_or_else(|| std::ffi::OsStr::new(""));
-        let name_str = name.to_string_lossy();
-        if name_str.starts_with('.') && (name_str == "." || name_str == "..") {
-            continue;
-        }
-        let dest_path = cursor_dir.join(&name);
-        let meta = std::fs::metadata(&src_path).map_err(|e| e.to_string())?;
-        if meta.is_dir() {
-            if !dest_path.exists() {
-                std::fs::create_dir_all(&dest_path).map_err(|e| e.to_string())?;
-            }
-            copy_cursor_init_dir(&src_path, &dest_path, merge_if_exists)?;
-        } else {
-            if merge_if_exists && dest_path.exists() {
-                continue;
-            }
-            if let Some(parent) = dest_path.parent() {
-                std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
-            }
-            std::fs::copy(&src_path, &dest_path).map_err(|e| e.to_string())?;
-        }
-    }
-    Ok(())
-}
-
-/// Unzip .cursor_init.zip (or cursor_init.zip) into target_path/.cursor/, or copy cursor_init/ folder if no zip.
-/// Strips a single top-level directory (e.g. cursor_init/). If merge_if_exists, skip existing destination files.
-#[tauri::command]
-fn unzip_cursor_init(app: AppHandle, target_path: String, merge_if_exists: bool) -> Result<(), String> {
-    let target_base = PathBuf::from(target_path.trim());
-    if !target_base.exists() || !target_base.is_dir() {
-        return Err("Target path does not exist or is not a directory".to_string());
-    }
-    let cursor_dir = target_base.join(".cursor");
-
-    // Prefer zip; fall back to cursor_init directory
-    let zip_path = match resolve_cursor_init_zip(&app) {
-        Ok(p) => p,
-        Err(_) => {
-            let dir_path = resolve_cursor_init_dir()?;
-            std::fs::create_dir_all(&cursor_dir).map_err(|e| e.to_string())?;
-            return copy_cursor_init_dir(&dir_path, &cursor_dir, merge_if_exists);
-        }
-    };
-
-    std::fs::create_dir_all(&cursor_dir).map_err(|e| e.to_string())?;
-    let file = std::fs::File::open(&zip_path).map_err(|e| e.to_string())?;
-    let mut archive = zip::ZipArchive::new(file).map_err(|e| e.to_string())?;
-
-    let mut prefix: Option<String> = None;
-    for i in 0..archive.len() {
-        let entry = archive.by_index(i).map_err(|e| e.to_string())?;
-        let name = entry.name().replace('\\', "/").trim_end_matches('/').to_string();
-        if name.is_empty() || name.contains("..") {
-            continue;
-        }
-        if name == "__MACOSX" || name.starts_with("__MACOSX/") {
-            continue;
-        }
-        if let Some(first) = name.split('/').next() {
-            let seg = format!("{}/", first);
-            match &prefix {
-                None => prefix = Some(seg),
-                Some(p) if p == &seg => {}
-                _ => {
-                    prefix = None;
-                    break;
-                }
-            }
-        }
-    }
-    let strip_prefix = prefix.filter(|p| !p.is_empty());
-
-    for i in 0..archive.len() {
-        let mut entry = archive.by_index(i).map_err(|e| e.to_string())?;
-        let raw_name = entry.name().replace('\\', "/");
-        let name = raw_name.trim_end_matches('/');
-        if name.is_empty() || name.contains("..") {
-            continue;
-        }
-        if name == "__MACOSX" || name.starts_with("__MACOSX/") {
-            continue;
-        }
-        let relative = match &strip_prefix {
-            Some(p) if name.starts_with(p) => name.strip_prefix(p).unwrap_or(name),
-            _ => name,
-        };
-        let relative = relative.trim_start_matches('/');
-        if relative.is_empty() {
-            continue;
-        }
-        let prefix_segment = strip_prefix.as_ref().map(|s| s.trim_end_matches('/'));
-        if prefix_segment.as_deref() == Some(relative) {
-            continue;
-        }
-        let out_path = cursor_dir.join(relative);
-        if entry.is_dir() {
-            if !out_path.exists() {
-                std::fs::create_dir_all(&out_path).map_err(|e| e.to_string())?;
-            }
-        } else {
-            if merge_if_exists && out_path.exists() {
-                continue;
-            }
-            if let Some(parent) = out_path.parent() {
-                std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
-            }
-            let mut buf = Vec::new();
-            entry.read_to_end(&mut buf).map_err(|e| e.to_string())?;
-            std::fs::write(&out_path, &buf).map_err(|e| e.to_string())?;
-        }
-    }
-    Ok(())
-}
-
 /// Write a spec file into the project directory (e.g. project_path + "/.cursor/design-x.md").
 /// Creates parent directories if needed. relative_path should be like ".cursor/design-abc.md".
 #[tauri::command]
@@ -3645,6 +3362,45 @@ async fn run_npm_script_in_external_terminal(project_path: String, script_name: 
     }
 }
 
+/// Opens Terminal.app (macOS) and runs an arbitrary shell command in the project directory.
+/// The command is executed with `sh -c` after changing to the project path.
+#[tauri::command]
+async fn run_command_in_external_terminal(project_path: String, command: String) -> Result<(), String> {
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = (project_path, command);
+        return Err("External terminal is only supported on macOS.".to_string());
+    }
+    #[cfg(target_os = "macos")]
+    {
+        let cmd = command.trim();
+        if cmd.is_empty() {
+            return Err("Command cannot be empty.".to_string());
+        }
+        let dir = Path::new(project_path.trim())
+            .canonicalize()
+            .map_err(|e| format!("Project path invalid: {}", e))?;
+        if !dir.is_dir() {
+            return Err("Project path is not a directory".to_string());
+        }
+        let path_str = dir.to_string_lossy();
+        let path_escaped = path_str.replace('\'', "'\\''");
+        let cmd_escaped = cmd.replace('\'', "'\\''");
+        let shell_cmd = format!("cd '{}' && sh -c '{}'", path_escaped, cmd_escaped);
+        let as_escaped = shell_cmd.replace('\\', "\\\\").replace('"', "\\\"");
+        let script = format!(
+            "tell application \"Terminal\" to do script \"{}\"",
+            as_escaped
+        );
+        Command::new("osascript")
+            .arg("-e")
+            .arg(&script)
+            .spawn()
+            .map_err(|e| format!("Failed to open Terminal: {}", e))?;
+        Ok(())
+    }
+}
+
 /// Opens Terminal.app (macOS) and runs `npm run build:desktop` in the current working directory.
 /// Use when running the app via `tauri dev` so the cwd is the project root.
 #[tauri::command]
@@ -4602,9 +4358,6 @@ pub fn run() {
             list_files_under_root,
             list_scripts,
             list_cursor_folder,
-            get_cursor_init_template,
-            unzip_project_template,
-            unzip_cursor_init,
             write_spec_file,
             archive_cursor_file,
             get_git_info,
@@ -4668,6 +4421,7 @@ pub fn run() {
             run_analysis_script,
             run_npm_script,
             run_npm_script_in_external_terminal,
+            run_command_in_external_terminal,
             run_build_desktop,
             run_implement_all,
             run_run_terminal_agent,
