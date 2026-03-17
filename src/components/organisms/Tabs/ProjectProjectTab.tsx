@@ -500,20 +500,26 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
                         setProjectFilesActionLoading("deleteAll");
                         try {
                           const base = projectFilesCurrentPath || "";
-                          // Delete files first, then directories (recursive)
+                          // Delete files first, then directories (recursive). Skip entries with empty or invalid path.
                           const filesFirst = [...toDelete].sort((a, b) =>
                             a.isDirectory === b.isDirectory ? 0 : a.isDirectory ? 1 : -1
                           );
+                          let deleted = 0;
                           for (const e of filesFirst) {
-                            const path = base ? `${base}/${e.name}` : e.name;
+                            const name = (e.name ?? "").trim();
+                            if (!name || name === "." || name === "..") continue;
+                            const relPath = base ? `${base}/${name}` : name;
+                            if (!relPath || relPath === "." || relPath === "..") continue;
                             await deleteProjectPath(
                               projectId,
-                              path,
+                              relPath,
                               project.repoPath ?? undefined,
                               e.isDirectory
                             );
+                            deleted += 1;
                           }
-                          toast.success(`Deleted ${toDelete.length} item(s).`);
+                          if (deleted > 0) toast.success(`Deleted ${deleted} item(s).`);
+                          else toast.error("No valid paths to delete.");
                           setFolderRefreshKey((k) => k + 1);
                         } catch (e) {
                           toast.error(e instanceof Error ? e.message : "Failed to delete some items");

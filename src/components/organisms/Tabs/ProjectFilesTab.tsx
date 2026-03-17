@@ -91,8 +91,14 @@ export function ProjectFilesTab({ project, projectId, onStateChange }: ProjectFi
 
     const handleNavigate = (entry: FileEntry) => {
         if (entry.isDirectory) {
-            // Normalize path to avoid double slashes, though for now simple join is okay
-            const newPath = currentPath ? `${currentPath}/${entry.name}` : entry.name;
+            const name = (entry.name ?? "").trim();
+            if (!name) return;
+            // Build path and normalize: collapse ".cursor/.cursor/..." to ".cursor" so we don't recurse into app .cursor when project repo is wrong
+            let newPath = currentPath ? `${currentPath}/${name}` : name;
+            while (newPath.includes(".cursor/.cursor")) {
+                newPath = newPath.replace(/\.cursor\/\.cursor(\/|$)/g, ".cursor$1");
+            }
+            if (newPath.endsWith("/")) newPath = newPath.slice(0, -1);
             setCurrentPath(newPath);
         } else {
             handleOpenFile(entry);

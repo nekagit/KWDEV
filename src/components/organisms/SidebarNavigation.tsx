@@ -1,34 +1,20 @@
 /** Sidebar Navigation component. */
 import { usePathname } from "next/navigation";
-import { MessageSquare, Folders, Settings, Moon, Keyboard, Github, Building2 } from "lucide-react";
 import { NavLinkItem } from "@/components/molecules/Navigation/NavLinkItem";
+import { getSidebarNavItemsStructured, type SidebarNavItem } from "@/lib/sidebar-nav-config";
 import { getOrganismClasses } from "./organism-classes";
 
 const c = getOrganismClasses("SidebarNavigation.tsx");
 
-type NavItem = { href: string; label: string; icon: typeof Github; tab?: string; iconClassName?: string };
-
-const getNavItems = (): {
-  githubNavItem: NavItem;
-  workNavItems: NavItem[];
-  bottomNavItems: NavItem[];
-} => ({
-  githubNavItem: {
-    href: "/github",
-    label: "GitHub",
-    icon: Github,
-    iconClassName: c["14"],
-  },
-  workNavItems: [
-    { href: "/projects", label: "Projects", icon: Folders, iconClassName: c["14"] },
-    { href: "/company", label: "Company", icon: Building2, iconClassName: c["14"] },
-  ],
-  bottomNavItems: [
-    { href: "/configuration", label: "Configuration", icon: Settings, iconClassName: c["14"] },
-    { href: "/shortcuts", label: "Shortcuts", icon: Keyboard, iconClassName: c["14"] },
-    { href: "/loading-screen", label: "Loading", icon: Moon, iconClassName: c["19"] },
-  ],
-});
+function getNavItems() {
+  const { githubNavItem, workNavItems, bottomNavItems } = getSidebarNavItemsStructured();
+  const withClass = (item: SidebarNavItem, cls: string) => ({ ...item, iconClassName: cls });
+  return {
+    githubNavItem: withClass(githubNavItem, c["14"]),
+    workNavItems: workNavItems.map((i) => withClass(i, c["14"])),
+    bottomNavItems: bottomNavItems.map((i, idx) => withClass(i, idx === bottomNavItems.length - 1 ? c["19"] : c["14"])),
+  };
+}
 
 function SidebarNavigationContent({
   pathname,

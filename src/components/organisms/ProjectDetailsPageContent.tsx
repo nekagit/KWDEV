@@ -5,7 +5,6 @@
  */
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Loader2,
@@ -335,11 +334,11 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
   return (
     <ErrorBoundary fallbackTitle="Project detail error">
       <div
-        className="flex flex-col gap-0 w-full"
+        className="flex flex-col gap-0 w-full flex-1 min-h-0"
         data-testid="project-detail-page"
       >
         {/* ═══════════════ HERO HEADER ═══════════════ */}
-        <div className="relative overflow-hidden rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-primary/[0.04] p-6 md:p-8 mb-8">
+        <div className="relative overflow-hidden rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-primary/[0.04] p-6 md:p-8 mb-8 mx-4 mt-4">
           {/* Decorative gradient orbs */}
           <div className="absolute -top-24 -right-24 size-48 rounded-full bg-primary/[0.07] blur-3xl pointer-events-none" />
           <div className="absolute -bottom-16 -left-16 size-36 rounded-full bg-info/[0.05] blur-3xl pointer-events-none" />
@@ -672,7 +671,7 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
           </div>
         </div>
 
-        {/* ═══════════════ TABS ═══════════════ */}
+        {/* ═══════════════ TABS: left sidebar (project sections) + main content ═══════════════ */}
         <Tabs
           value={activeTab}
           onValueChange={(v) => {
@@ -682,39 +681,39 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
             setActiveTab(v);
             if (projectId) setProjectDetailTabPreference(projectId, v);
           }}
-          className="w-full"
+          className="flex flex-row gap-6 w-full min-h-0 flex-1"
           data-testid="project-detail-tabs"
         >
-          {/* Tab Navigation — Single row, scroll on narrow screens */}
-          <div className="mb-8 flex justify-center w-full overflow-x-auto">
-            <TabsList
-              className="inline-flex h-auto flex-row flex-nowrap gap-1 rounded-xl bg-muted/30 border border-border/50 p-1.5 backdrop-blur-sm shadow-sm"
-              aria-label="Project sections"
-            >
-              {[...TAB_ROW_1, ...TAB_ROW_2].map((tab) => (
-                <TabsTrigger
-                  key={tab.value}
-                  value={tab.value}
-                  data-testid={`tab-${tab.value}`}
+          {/* Left sidebar: project section tabs (vertical) */}
+          <TabsList
+            className="inline-flex h-auto flex-col flex-nowrap gap-1 rounded-none rounded-r-xl border-r border-border/60 bg-sidebar p-2 w-52 shrink-0 min-h-0 overflow-y-auto"
+            aria-label="Project sections"
+          >
+            {[...TAB_ROW_1, ...TAB_ROW_2].map((tab) => (
+              <TabsTrigger
+                key={tab.value}
+                value={tab.value}
+                data-testid={`tab-${tab.value}`}
+                className={cn(
+                  "relative flex items-center gap-2 rounded-lg px-3 py-2.5 text-xs font-semibold transition-all duration-200 w-full justify-start",
+                  "data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:text-foreground data-[state=inactive]:hover:bg-muted/60",
+                  "data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-border/60",
+                  activeTab === tab.value && tab.activeGlow
+                )}
+              >
+                <tab.icon
                   className={cn(
-                    "relative flex items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-semibold transition-all duration-200 shrink-0",
-                    "data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:text-foreground data-[state=inactive]:hover:bg-muted/60",
-                    "data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-border/60",
-                    activeTab === tab.value && tab.activeGlow
+                    "size-4 shrink-0 transition-colors duration-200",
+                    activeTab === tab.value ? tab.color : ""
                   )}
-                >
-                  <tab.icon
-                    className={cn(
-                      "size-4 shrink-0 transition-colors duration-200",
-                      activeTab === tab.value ? tab.color : ""
-                    )}
-                  />
-                  {tab.label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </div>
+                />
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
 
+          {/* Main content: selected tab; horizontal padding so content does not touch viewport edge */}
+          <div className="flex-1 min-w-0 min-h-0 flex flex-col overflow-auto px-6">
           {/* ── Project Tab ── */}
           <TabsContent
             value="project"
@@ -795,6 +794,7 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
           >
             <ProjectGitTab project={project} projectId={projectId} />
           </TabsContent>
+          </div>
         </Tabs>
       </div>
 

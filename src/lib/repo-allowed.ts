@@ -19,7 +19,7 @@ function getAllowedPrefixes(): string[] {
  * Whether a project repo path is allowed for API access (read/write files, analyze, etc.).
  * Allows:
  * - Repo inside the app directory (resolvedRepo under cwd).
- * - Repo that is a sibling of the app directory (same parent, e.g. all projects in February folder).
+ * - Repo under the app's parent directory (e.g. other products in .../Products/ when app is .../Products/KWDEV).
  * - Repo under any path in ALLOWED_REPO_PREFIXES (semicolon-separated absolute prefixes).
  */
 export function repoAllowed(resolvedRepo: string, cwd: string): boolean {
@@ -27,7 +27,8 @@ export function repoAllowed(resolvedRepo: string, cwd: string): boolean {
   const cwdResolved = path.resolve(cwd);
 
   if (repoResolved.startsWith(cwdResolved)) return true;
-  if (path.dirname(repoResolved) === path.dirname(cwdResolved)) return true;
+  const appParent = path.dirname(cwdResolved) + path.sep;
+  if (repoResolved.startsWith(appParent)) return true;
 
   const prefixes = getAllowedPrefixes();
   for (const prefix of prefixes) {
