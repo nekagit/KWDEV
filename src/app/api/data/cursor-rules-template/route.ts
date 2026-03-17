@@ -40,14 +40,46 @@ function walkRuleFiles(dir: string, prefix: string): { name: string; content: st
   return results;
 }
 
-export async function GET() {
+/** Category key for rules at root of data/rules. */
+const GENERAL_CATEGORY = "general";
+
+/** Group rules by category: first path segment, or "general" for root-level files. */
+function groupRulesByCategory(rules: { name: string; content: string }[]): Record<string, { name: string; content: string }[]> {
+  const byCategory: Record<string, { name: string; content: string }[]> = {};
+  for (const rule of rules) {
+    const segs = rule.name.split("/");
+    const category = segs.length > 1 ? segs[0]! : GENERAL_CATEGORY;
+    if (!byCategory[category]) byCategory[category] = [];
+    byCategory[category].push(rule);
+  }
+  return byCategory;
+}
+
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const category = searchParams.get("category")?.toLowerCase().trim() || null;
+
     const dataDir = findDataDir();
     const rulesDir = path.join(dataDir, "rules");
     const rules = walkRuleFiles(rulesDir, "");
+    const rulesByCategory = groupRulesByCategory(rules);
+    const categories = Array.from(new Set(Object.keys(rulesByCategory))).sort((a, b) => (a === GENERAL_CATEGORY ? 1 : b === GENERAL_CATEGORY ? -1 : a.localeCompare(b)));
+
+    if (category) {
+      const list = rulesByCategory[category] ?? [];
+      return NextResponse.json({
+        rules: list,
+        rulesByCategory,
+        categories,
+        source: list.length > 0 ? `data/rules/${category === GENERAL_CATEGORY ? "" : category}` : "none",
+      });
+    }
 
     return NextResponse.json({
       rules,
+      rulesByCategory,
+      categories,
       source: rules.length > 0 ? "data/rules" : "none",
     });
   } catch (e) {

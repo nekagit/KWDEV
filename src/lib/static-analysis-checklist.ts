@@ -172,9 +172,14 @@ export const STATIC_ANALYSIS_CHECKLIST: StaticAnalysisChecklistConfig = {
 /**
  * Builds the agent prompt to run the static analysis checklist in the project.
  * Agent runs from repo root; runs each tool's install (if needed) and runCommand, appends output to reportFile.
+ * @param selectedToolIds - When provided, only these tool IDs are included; when undefined or empty, all tools are used.
  */
-export function buildStaticAnalysisPrompt(): string {
+export function buildStaticAnalysisPrompt(selectedToolIds?: string[]): string {
   const c = STATIC_ANALYSIS_CHECKLIST;
+  const toolsToInclude =
+    selectedToolIds?.length && selectedToolIds.length > 0
+      ? c.tools.filter((t) => selectedToolIds.includes(t.id))
+      : c.tools;
   const lines: string[] = [
     `You are in the project repository. Apply the following static analysis checklist and write a single report.`,
     ``,
@@ -194,7 +199,7 @@ export function buildStaticAnalysisPrompt(): string {
     `**Checklist (${c.name} v${c.version}):**`,
     ``,
   ];
-  for (const t of c.tools) {
+  for (const t of toolsToInclude) {
     const categoryNote = t.category === "backend" ? " [backend-only — skip if no Python backend]" : t.category === "both" ? " [run on frontend only if no backend]" : "";
     lines.push(`### ${t.name} (id: ${t.id})${t.optional ? " [optional]" : ""}${categoryNote}`);
     lines.push(`- install: ${t.installCommand}`);

@@ -12,6 +12,8 @@ const DATA = "data";
 export const WORKER_ROOT = `${DATA}/prompts`;
 /** Agent definitions folder (*.md files). */
 export const AGENTS_ROOT = `${DATA}/agents`;
+/** Project's .cursor agents folder (after Initialize from workspace data/agents). */
+export const CURSOR_AGENTS_ROOT = `${CURSOR}/agents`;
 
 // ─── Legacy paths (deprecated, kept for migration compatibility) ───────────
 /** @deprecated Use database instead. Will be removed after migration. */

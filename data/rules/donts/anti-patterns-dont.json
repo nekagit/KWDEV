@@ -1,0 +1,6 @@
+{
+  "description": "Practices to avoid (don't)",
+  "globs": null,
+  "alwaysApply": true,
+  "content": "Don't: commit commented-out code; use any or untyped escape hatches without a short comment; ignore linter/type errors; add dependencies without need; mutate shared state; leave TODOs without a ticket or short rationale."
+}

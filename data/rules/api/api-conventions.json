@@ -1,0 +1,6 @@
+{
+  "description": "API and contract conventions",
+  "globs": ["**/api/**", "**/routes/**", "**/*-api*"],
+  "alwaysApply": false,
+  "content": "Keep API contracts clear and stable. Use consistent request/response shapes and status codes. Version APIs when breaking changes are needed. Validate inputs and return clear errors. Document endpoints (e.g. OpenAPI or inline) for public or cross-team APIs."
+}

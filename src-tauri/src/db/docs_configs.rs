@@ -80,7 +80,7 @@ pub fn get_all_project_docs(
 }
 
 /// Valid config_type values for project_configs table.
-pub const PROJECT_CONFIG_TYPES: &[&str] = &["frontend", "backend"];
+pub const PROJECT_CONFIG_TYPES: &[&str] = &["frontend", "backend", "static_analysis_tools"];
 
 pub fn get_project_config(
     conn: &Connection,

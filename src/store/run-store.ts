@@ -134,8 +134,8 @@ export interface RunActions {
   addPlaceholderAskRun: (label: string) => string | null;
   /** Run an npm script in the project directory (e.g. npm run dev). Tauri only. */
   runNpmScript: (projectPath: string, scriptName: string) => Promise<string | null>;
-  /** Run static analysis checklist directly (no agent). Runs each tool in project dir, writes report. Tauri only. */
-  runStaticAnalysisChecklist: (projectPath: string) => Promise<string | null>;
+  /** Run static analysis checklist directly (no agent). Runs each tool in project dir, writes report. Tauri only. When selectedToolIds is provided, only those tools run; otherwise all. */
+  runStaticAnalysisChecklist: (projectPath: string, selectedToolIds?: string[]) => Promise<string | null>;
   /** Run an npm script in the system Terminal (macOS only). Returns true if opened. */
   runNpmScriptInExternalTerminal: (projectPath: string, scriptName: string) => Promise<boolean>;
   /** Run an arbitrary command in the system Terminal in the project directory (macOS only). Returns true if opened. */
@@ -796,7 +796,7 @@ export const useRunStore = create<RunStore>()((set, get) => ({
     }
   },
 
-  runStaticAnalysisChecklist: async (projectPath) => {
+  runStaticAnalysisChecklist: async (projectPath, selectedToolIds) => {
     if (!isTauri) {
       set({ error: "Static analysis checklist requires the desktop app (Tauri)." });
       toast.error("Static analysis checklist requires the desktop app.");
@@ -809,7 +809,11 @@ export const useRunStore = create<RunStore>()((set, get) => ({
     }
     set({ error: null });
     try {
-      const tools = STATIC_ANALYSIS_CHECKLIST.tools.map((t) => ({
+      const sourceTools =
+        selectedToolIds?.length && selectedToolIds.length > 0
+          ? STATIC_ANALYSIS_CHECKLIST.tools.filter((t) => selectedToolIds.includes(t.id))
+          : STATIC_ANALYSIS_CHECKLIST.tools;
+      const tools = sourceTools.map((t) => ({
         id: t.id,
         name: t.name,
         category: t.category,

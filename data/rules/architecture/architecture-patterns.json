@@ -1,0 +1,6 @@
+{
+  "description": "Architecture and structure",
+  "globs": null,
+  "alwaysApply": true,
+  "content": "Respect the existing architecture: layers, boundaries, and data flow. Prefer clear separation of concerns (e.g. UI, domain, data). Do not bypass established patterns (e.g. store, API layer). Document non-obvious architectural decisions in code or ADRs."
+}

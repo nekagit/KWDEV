@@ -1705,6 +1705,40 @@ fn write_spec_file(project_path: String, relative_path: String, content: String)
     Ok(())
 }
 
+/// Copy all .md files from the KWDEV workspace data/agents into the project's .cursor/agents.
+/// Returns the number of files copied.
+#[tauri::command]
+fn copy_workspace_agents_to_project(project_path: String) -> Result<usize, String> {
+    let ws = project_root()?;
+    let agents_src = ws.join("data").join("agents");
+    if !agents_src.is_dir() {
+        return Ok(0);
+    }
+    let base = PathBuf::from(project_path.trim());
+    if !base.exists() || !base.is_dir() {
+        return Err("Project path does not exist or is not a directory".to_string());
+    }
+    let agents_dst = base.join(".cursor").join("agents");
+    std::fs::create_dir_all(&agents_dst).map_err(|e| e.to_string())?;
+    let mut count = 0usize;
+    for e in std::fs::read_dir(&agents_src).map_err(|e| e.to_string())? {
+        let e = e.map_err(|e| e.to_string())?;
+        let path = e.path();
+        if !path.is_file() {
+            continue;
+        }
+        let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+        if name.is_empty() || !name.ends_with(".md") {
+            continue;
+        }
+        let content = std::fs::read_to_string(&path).map_err(|e| e.to_string())?;
+        let dest = agents_dst.join(name);
+        std::fs::write(&dest, content).map_err(|e| e.to_string())?;
+        count += 1;
+    }
+    Ok(count)
+}
+
 /// Delete a file under the project root. relative_path should be like ".cursor/foo.md". Only files are deleted, not directories.
 #[tauri::command]
 fn delete_file_under_root(root: String, relative_path: String) -> Result<(), String> {
@@ -4430,6 +4464,7 @@ pub fn run() {
             list_scripts,
             list_cursor_folder,
             write_spec_file,
+            copy_workspace_agents_to_project,
             delete_file_under_root,
             delete_path_under_root,
             archive_cursor_file,

@@ -1,0 +1,6 @@
+{
+  "description": "Recommended practices (do)",
+  "globs": null,
+  "alwaysApply": true,
+  "content": "Do: write small, testable units; use type safety; handle errors explicitly; keep dependencies minimal; prefer immutable updates; add tests for critical paths; document public APIs and non-obvious behavior."
+}

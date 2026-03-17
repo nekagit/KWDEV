@@ -1,0 +1,6 @@
+{
+  "description": "Design system and UI consistency",
+  "globs": ["**/*.tsx", "**/*.jsx", "**/*.css"],
+  "alwaysApply": false,
+  "content": "Follow the project design system. Use design tokens for colors, spacing, and typography. Keep components visually consistent; reuse existing UI primitives before introducing new patterns. Prefer accessibility (semantic HTML, ARIA when needed, keyboard and screen-reader friendly)."
+}

@@ -1,0 +1,6 @@
+{
+  "description": "Security and safety",
+  "globs": null,
+  "alwaysApply": true,
+  "content": "Never log or expose secrets, tokens, or PII. Validate and sanitize user input. Prefer parameterized queries and safe APIs. Avoid eval and dynamic code execution on user data. Follow principle of least privilege for permissions and access."
+}

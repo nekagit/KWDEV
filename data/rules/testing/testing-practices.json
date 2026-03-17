@@ -1,0 +1,6 @@
+{
+  "description": "Testing practices",
+  "globs": ["**/*.test.*", "**/*.spec.*", "**/__tests__/**"],
+  "alwaysApply": false,
+  "content": "Write tests that are stable and meaningful. Prefer testing behavior over implementation. Use the project's test framework and conventions. Cover critical paths and edge cases. Avoid flaky tests (no time-dependent or non-deterministic assertions without control)."
+}

@@ -1,0 +1,6 @@
+{
+  "description": "Coding standards and style",
+  "globs": null,
+  "alwaysApply": true,
+  "content": "Use consistent formatting (run the project formatter/linter). Prefer clarity over cleverness. Name things by intent. Keep functions and files focused. Prefer early returns and guard clauses over deep nesting. Comment why, not what."
+}

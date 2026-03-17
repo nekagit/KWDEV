@@ -2,14 +2,17 @@
 
 /** Project Agents Section component. */
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Bot, Loader2, FileText } from "lucide-react";
-import { listProjectFiles, readProjectFile, type FileEntry } from "@/lib/api-projects";
+import { Bot, Loader2, FileText, FolderInput } from "lucide-react";
+import { listProjectFiles, readProjectFile, initializeProjectAgents, type FileEntry } from "@/lib/api-projects";
 import type { Project } from "@/types/project";
 import { SectionCard } from "@/components/molecules/Displays/DisplayPrimitives";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { AGENTS_ROOT } from "@/lib/cursor-paths";
+import { toast } from "sonner";
+import { CURSOR_AGENTS_ROOT } from "@/lib/cursor-paths";
+import { isTauri } from "@/lib/tauri";
 
 interface ProjectAgentsSectionProps {
   project: Project;
@@ -41,6 +44,7 @@ export function ProjectAgentsSection({ project, projectId }: ProjectAgentsSectio
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<{ path: string; name: string; content: string } | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [initializeLoading, setInitializeLoading] = useState(false);
 
   const cancelledRef = useRef(false);
 
@@ -53,7 +57,7 @@ export function ProjectAgentsSection({ project, projectId }: ProjectAgentsSectio
     if (!getIsCancelled?.()) setLoading(true);
     if (!getIsCancelled?.()) setError(null);
     try {
-      const list = await listProjectFiles(projectId, AGENTS_ROOT, project.repoPath);
+      const list = await listProjectFiles(projectId, CURSOR_AGENTS_ROOT, project.repoPath);
       if (getIsCancelled?.()) return;
       const mdFiles = list
         .filter((e) => !e.isDirectory && e.name.toLowerCase().endsWith(".md"))
@@ -78,7 +82,7 @@ export function ProjectAgentsSection({ project, projectId }: ProjectAgentsSectio
   }, [fetchAgents]);
 
   const openPreview = async (entry: FileEntry) => {
-    const path = `${AGENTS_ROOT}/${entry.name}`;
+    const path = `${CURSOR_AGENTS_ROOT}/${entry.name}`;
     setPreviewLoading(true);
     try {
       const content = await readProjectFile(projectId, path, project.repoPath);
@@ -95,12 +99,26 @@ export function ProjectAgentsSection({ project, projectId }: ProjectAgentsSectio
     }
   };
 
+  const handleInitialize = async () => {
+    if (!project.repoPath || !isTauri) return;
+    setInitializeLoading(true);
+    try {
+      const count = await initializeProjectAgents(project.repoPath);
+      toast.success(`Copied ${count} agent file(s) from workspace data/agents to .cursor/agents.`);
+      await fetchAgents();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to initialize agents");
+    } finally {
+      setInitializeLoading(false);
+    }
+  };
+
   if (!project.repoPath) {
     return (
       <SectionCard accentColor="violet" tint={1} className="w-full">
         <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
           <Bot className="h-10 w-10 mb-3 opacity-50" />
-          <p className="text-sm">Set a repository path to view agents in <code className="text-xs bg-muted px-1 rounded">{AGENTS_ROOT}</code>.</p>
+          <p className="text-sm">Set a repository path to view agents in <code className="text-xs bg-muted px-1 rounded">{CURSOR_AGENTS_ROOT}</code>.</p>
         </div>
       </SectionCard>
     );
@@ -110,14 +128,33 @@ export function ProjectAgentsSection({ project, projectId }: ProjectAgentsSectio
     <>
       <SectionCard accentColor="violet" tint={2} className="w-full lg:col-span-2">
         <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-2">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-violet-500/10 text-violet-500">
-              <Bot className="w-4 h-4" />
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-violet-500/10 text-violet-500">
+                <Bot className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">Agents</h3>
+                <p className="text-xs text-muted-foreground">One column per file in {CURSOR_AGENTS_ROOT}</p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-sm font-semibold text-foreground">Agents</h3>
-              <p className="text-xs text-muted-foreground">One column per file in {AGENTS_ROOT}</p>
-            </div>
+            {isTauri && (
+              <Button
+                variant="default"
+                size="sm"
+                className="h-7 text-xs gap-1.5"
+                disabled={initializeLoading}
+                onClick={() => void handleInitialize()}
+                title="Copy workspace data/agents into this project's .cursor/agents"
+              >
+                {initializeLoading ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <FolderInput className="h-3.5 w-3.5" />
+                )}
+                Initialize
+              </Button>
+            )}
           </div>
 
           {loading ? (
@@ -131,7 +168,7 @@ export function ProjectAgentsSection({ project, projectId }: ProjectAgentsSectio
           ) : entries.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
               <FileText className="h-8 w-8 mb-2 opacity-50" />
-              <p className="text-sm">No .md files in <code className="text-xs bg-muted px-1 rounded">{AGENTS_ROOT}</code>.</p>
+              <p className="text-sm">No .md files in <code className="text-xs bg-muted px-1 rounded">{CURSOR_AGENTS_ROOT}</code>. Use Initialize to copy from workspace data/agents.</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 w-full">

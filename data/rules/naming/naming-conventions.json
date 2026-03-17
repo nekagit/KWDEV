@@ -1,0 +1,6 @@
+{
+  "description": "Naming conventions",
+  "globs": null,
+  "alwaysApply": true,
+  "content": "Use consistent naming: camelCase for variables and functions, PascalCase for types and components, UPPER_SNAKE for constants. Names should reflect intent and domain. Avoid abbreviations unless widely known. Boolean variables/handlers: use is/has/can prefix or on/handle for events."
+}

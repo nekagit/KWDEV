@@ -5,7 +5,7 @@ import { useState, useCallback, useEffect, useMemo, useRef, Fragment } from "rea
 import type { Project } from "@/types/project";
 import type { NightShiftCirclePhase, RunInfo } from "@/types/run";
 import { MAX_TERMINAL_SLOTS } from "@/types/run";
-import { readProjectFileOrEmpty, listProjectFiles, updateProject, loadWorkspaceAgentsContent } from "@/lib/api-projects";
+import { readProjectFileOrEmpty, listProjectFiles, updateProject, loadWorkspaceAgentsContent, getProjectConfig, setProjectConfig } from "@/lib/api-projects";
 import { debugIngest } from "@/lib/debug-ingest";
 import { fetchProjectTicketsAndKanban } from "@/lib/fetch-project-tickets-and-kanban";
 import { invoke, isTauri, projectIdArgPayload, projectIdArgOptionalPayload, createPlanTicketPayload, setPlanKanbanStatePayload } from "@/lib/tauri";
@@ -100,7 +100,11 @@ import {
   Sparkles,
   FileOutput,
   Wrench,
+  Settings2,
+  FileCode,
+  Plug,
 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -1783,6 +1787,13 @@ export function ProjectRunTab({ project, projectId, agentProvider = "cursor" }: 
         agentProvider={agentProvider}
       />
 
+      {/* ═══ Enhancements — Tools + Context ═══ */}
+      <WorkerEnhancementsSection
+        projectId={projectId}
+        repoPath={project.repoPath ?? ""}
+        project={project}
+      />
+
       {/* ═══ Terminal Output + Queue + History (tabbed) ═══ */}
       <div className="rounded-2xl border border-border/50 overflow-hidden bg-teal-500/[0.08]">
         <div className="px-5 pt-5 pb-5">
@@ -2952,13 +2963,18 @@ function WorkerDebuggingSection({
     setChecklistModalOpen(false);
     setLoadingChecklist(true);
     try {
+      let selectedToolIds: string[] | undefined;
+      if (isTauri) {
+        const res = await getProjectConfig(projectId, "static_analysis_tools");
+        selectedToolIds = Array.isArray(res.config?.toolIds) ? (res.config.toolIds as string[]) : undefined;
+      }
       if (isTauriEnv) {
-        const runId = await runStaticAnalysisChecklist(projectPath.trim());
+        const runId = await runStaticAnalysisChecklist(projectPath.trim(), selectedToolIds);
         if (runId) {
           toast.success("Static analysis checklist started. Commands run directly in the project — check the terminal below.");
         }
       } else {
-        const prompt = buildStaticAnalysisPrompt();
+        const prompt = buildStaticAnalysisPrompt(selectedToolIds);
         const runId = await runTempTicket(projectPath.trim(), prompt, "Static analysis checklist", {
           provider: agentProvider,
         });
@@ -3273,6 +3289,254 @@ function WorkerDebuggingSection({
         </DialogContent>
       </Dialog>
     </WorkerAgentCard>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Enhancements — Tools (static analysis selection) + Context (prompts, rules, MCPs)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+const RULES_DIR = ".cursor/rules";
+
+/** Worker prompt paths included when running Asking, Planning, Fast, Debugging, or Night shift. */
+const WORKER_CONTEXT_PROMPT_PATHS = [
+  { path: AGENTS_ROOT, label: "Agent instructions (all .md)", modes: "Asking, Planning, Fast, Debugging, Night shift" },
+  { path: WORKER_FIX_BUG_PROMPT_PATH, label: "Fix bug", modes: "Debugging" },
+  { path: WORKER_NIGHT_SHIFT_PROMPT_PATH, label: "Night shift", modes: "Night shift" },
+  { path: WORKER_NIGHT_SHIFT_PHASE_PROMPT_PATHS.create, label: "Create phase", modes: "Night shift Circle" },
+  { path: WORKER_NIGHT_SHIFT_PHASE_PROMPT_PATHS.implement, label: "Implement phase", modes: "Night shift Circle" },
+  { path: WORKER_NIGHT_SHIFT_PHASE_PROMPT_PATHS.test, label: "Test phase", modes: "Night shift Circle" },
+  { path: WORKER_NIGHT_SHIFT_PHASE_PROMPT_PATHS.debugging, label: "Debugging phase", modes: "Night shift Circle" },
+  { path: WORKER_NIGHT_SHIFT_PHASE_PROMPT_PATHS.refactor, label: "Refactor phase", modes: "Night shift Circle" },
+] as const;
+
+function WorkerEnhancementsSection({
+  projectId,
+  repoPath,
+  project,
+}: {
+  projectId: string;
+  repoPath: string;
+  project: Project | null;
+}) {
+  const allToolIds = useMemo(() => STATIC_ANALYSIS_CHECKLIST.tools.map((t) => t.id), []);
+  const [selectedToolIds, setSelectedToolIds] = useState<string[]>(allToolIds);
+  const [configLoaded, setConfigLoaded] = useState(false);
+  const [savingTools, setSavingTools] = useState(false);
+  const [agentsEntries, setAgentsEntries] = useState<{ name: string }[]>([]);
+  const [rulesEntries, setRulesEntries] = useState<{ name: string }[]>([]);
+  const [contextLoading, setContextLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isTauri) {
+      setSelectedToolIds(allToolIds);
+      setConfigLoaded(true);
+      return;
+    }
+    let cancelled = false;
+    getProjectConfig(projectId, "static_analysis_tools")
+      .then((res) => {
+        if (cancelled) return;
+        const ids = res.config?.toolIds;
+        if (Array.isArray(ids) && ids.length > 0) {
+          setSelectedToolIds(ids.filter((id) => allToolIds.includes(id)));
+        }
+        setConfigLoaded(true);
+      })
+      .catch(() => setConfigLoaded(true));
+    return () => {
+      cancelled = true;
+    };
+  }, [projectId, allToolIds]);
+
+  const handleToolToggle = useCallback(
+    (id: string, checked: boolean) => {
+      const next = checked
+        ? [...selectedToolIds, id].filter((x) => allToolIds.includes(x))
+        : selectedToolIds.filter((x) => x !== id);
+      setSelectedToolIds(next);
+      if (isTauri) {
+        setSavingTools(true);
+        setProjectConfig(projectId, "static_analysis_tools", { toolIds: next })
+          .then(() => toast.success("Static analysis tools saved for this project."))
+          .catch((e) => toast.error(e instanceof Error ? e.message : "Failed to save"))
+          .finally(() => setSavingTools(false));
+      }
+    },
+    [projectId, selectedToolIds, allToolIds]
+  );
+
+  useEffect(() => {
+    if (!repoPath?.trim()) {
+      setAgentsEntries([]);
+      setRulesEntries([]);
+      return;
+    }
+    setContextLoading(true);
+    Promise.all([
+      listProjectFiles(projectId, AGENTS_ROOT, repoPath).catch(() => []),
+      listProjectFiles(projectId, RULES_DIR, repoPath).catch(() => []),
+    ])
+      .then(([agents, rules]) => {
+        setAgentsEntries(Array.isArray(agents) ? agents.filter((e) => !e.isDirectory && e.name.endsWith(".md")) : []);
+        setRulesEntries(Array.isArray(rules) ? rules.filter((e) => !e.isDirectory) : []);
+      })
+      .finally(() => setContextLoading(false));
+  }, [projectId, repoPath]);
+
+  return (
+    <div className="rounded-2xl border border-border/50 overflow-hidden bg-violet-500/[0.08]">
+      <div className="px-5 pt-5 pb-3">
+        <div className="flex items-center gap-2.5">
+          <div className="flex items-center justify-center size-7 shrink-0 rounded-lg bg-violet-500/10">
+            <Settings2 className="size-3.5 text-violet-400" />
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-xs font-semibold text-foreground tracking-tight">
+              Enhancements
+            </h3>
+            <p className="text-[10px] text-muted-foreground normal-case">
+              Static analysis tools and task context
+            </p>
+          </div>
+        </div>
+      </div>
+      <div className="px-5 pb-5">
+        <Tabs defaultValue="tools" className="w-full">
+          <TabsList className="flex w-full h-9 rounded-lg bg-violet-500/[0.12] p-1 gap-0.5">
+            <TabsTrigger value="tools" className="flex-1 min-w-0 text-xs rounded-md truncate">
+              Tools
+            </TabsTrigger>
+            <TabsTrigger value="context" className="flex-1 min-w-0 text-xs rounded-md truncate">
+              Context
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="tools" className="mt-4 px-0 pt-0">
+            {!configLoaded ? (
+              <div className="flex items-center gap-2 text-muted-foreground text-xs py-2">
+                <Loader2 className="size-4 animate-spin" />
+                Loading…
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {!isTauri && (
+                  <p className="text-xs text-amber-600 dark:text-amber-400">
+                    Tool selection is saved only in the desktop app. In browser, selection is for display.
+                  </p>
+                )}
+                {savingTools && (
+                  <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                    <Loader2 className="size-3 animate-spin" />
+                    Saving…
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Choose which static analysis tools to run for this project. Used when you run « Apply static analysis checklist » in Debugging.
+                </p>
+                <ScrollArea className="h-[min(320px,45vh)] border rounded-md">
+                  <ul className="p-3 space-y-2">
+                    {STATIC_ANALYSIS_CHECKLIST.tools.map((t) => (
+                      <li key={t.id} className="flex items-start gap-2">
+                        <Checkbox
+                          id={`enh-tool-${t.id}`}
+                          checked={selectedToolIds.includes(t.id)}
+                          onCheckedChange={(checked) => handleToolToggle(t.id, checked === true)}
+                          className="mt-0.5"
+                        />
+                        <label htmlFor={`enh-tool-${t.id}`} className="text-xs cursor-pointer flex-1 min-w-0">
+                          <span className="font-medium">{t.name}</span>
+                          {t.optional && (
+                            <Badge variant="secondary" className="ml-1.5 text-[10px] px-1 py-0">
+                              optional
+                            </Badge>
+                          )}
+                          <span className="text-muted-foreground ml-1">({t.category})</span>
+                          <p className="text-muted-foreground mt-0.5 text-[10px]">{t.description}</p>
+                        </label>
+                      </li>
+                    ))}
+                  </ul>
+                </ScrollArea>
+              </div>
+            )}
+          </TabsContent>
+          <TabsContent value="context" className="mt-4 px-0 pt-0">
+            {!repoPath?.trim() ? (
+              <p className="text-xs text-muted-foreground">Set project repo path to see project rules and agents.</p>
+            ) : contextLoading ? (
+              <div className="flex items-center gap-2 text-muted-foreground text-xs py-2">
+                <Loader2 className="size-4 animate-spin" />
+                Loading…
+              </div>
+            ) : (
+              <div className="space-y-4 text-xs">
+                <div>
+                  <h4 className="font-medium flex items-center gap-1.5 mb-1.5">
+                    <FileCode className="size-3.5 text-violet-400" />
+                    Prompts
+                  </h4>
+                  <p className="text-muted-foreground mb-2">
+                    Included when running Night shift, Debugging, Planning, or Fast as applicable.
+                  </p>
+                  <ul className="list-disc list-inside space-y-0.5 text-muted-foreground">
+                    {WORKER_CONTEXT_PROMPT_PATHS.map(({ path, label, modes }) => (
+                      <li key={path}>
+                        <code className="text-[10px] bg-muted/70 px-0.5 rounded">{path}</code>
+                        <span className="text-muted-foreground"> — {label}</span>
+                        <span className="block text-[10px] mt-0.5">({modes})</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-medium flex items-center gap-1.5 mb-1.5">
+                    <FileCode className="size-3.5 text-violet-400" />
+                    Agent instructions
+                  </h4>
+                  {agentsEntries.length > 0 ? (
+                    <ul className="list-disc list-inside text-muted-foreground">
+                      {agentsEntries.map((e) => (
+                        <li key={e.name}>
+                          <code className="text-[10px] bg-muted/70 px-0.5 rounded">{AGENTS_ROOT}/{e.name}</code>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-muted-foreground">No .md files in {AGENTS_ROOT} (or workspace data/agents in desktop app).</p>
+                  )}
+                </div>
+                <div>
+                  <h4 className="font-medium flex items-center gap-1.5 mb-1.5">
+                    <FileCode className="size-3.5 text-violet-400" />
+                    Rules
+                  </h4>
+                  {rulesEntries.length > 0 ? (
+                    <ul className="list-disc list-inside text-muted-foreground">
+                      {rulesEntries.map((e) => (
+                        <li key={e.name}>
+                          <code className="text-[10px] bg-muted/70 px-0.5 rounded">{RULES_DIR}/{e.name}</code>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-muted-foreground">No files in {RULES_DIR}.</p>
+                  )}
+                </div>
+                <div>
+                  <h4 className="font-medium flex items-center gap-1.5 mb-1.5">
+                    <Plug className="size-3.5 text-violet-400" />
+                    MCPs
+                  </h4>
+                  <p className="text-muted-foreground">
+                    MCPs are determined by your Cursor/workspace settings and apply when the agent runs in the desktop app.
+                  </p>
+                </div>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
   );
 }
 

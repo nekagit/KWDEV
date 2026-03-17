@@ -348,6 +348,19 @@ export async function listProjectFiles(
 const WORKSPACE_AGENTS_PATH = "data/agents";
 
 /**
+ * Copy all .md files from the KWDEV workspace data/agents into the project's .cursor/agents.
+ * Only available in Tauri. Returns the number of files copied.
+ */
+export async function initializeProjectAgents(projectPath: string): Promise<number> {
+  if (!isTauri) {
+    throw new Error("Initialize agents is only available in the desktop app");
+  }
+  return invoke<number>("copy_workspace_agents_to_project", {
+    projectPath,
+  });
+}
+
+/**
  * Load concatenated content of all .md files from the KWDEV workspace data/agents.
  * Used in Tauri so terminal-agent prompts (e.g. Ask) use @data from this app, not the target project's .cursor.
  * Returns "" if not in Tauri, workspace root is unavailable, or no agents found.
@@ -702,7 +715,7 @@ export async function getAllProjectDocs(projectId: string): Promise<Array<{ doc_
 
 // --- Project Configs (database storage) ---
 
-export type ProjectConfigType = "frontend" | "backend";
+export type ProjectConfigType = "frontend" | "backend" | "static_analysis_tools";
 
 export interface ProjectConfigResult {
   config: Record<string, unknown>;
