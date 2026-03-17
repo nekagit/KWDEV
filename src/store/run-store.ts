@@ -142,6 +142,8 @@ export interface RunActions {
   runCommandInExternalTerminal: (projectPath: string, command: string) => Promise<boolean>;
   /** Open Terminal and run npm run build:desktop in current dir (macOS; use when running via tauri dev). */
   runBuildDesktop: () => Promise<boolean>;
+  /** Open Terminal and run node script/tauri/copy-build-to-desktop.mjs in current dir (macOS). */
+  runCopyBuildToDesktop: () => Promise<boolean>;
   setFloatingTerminalRunId: (id: string | null) => void;
   setFloatingTerminalMinimized: (minimized: boolean) => void;
   clearFloatingTerminal: () => void;
@@ -882,6 +884,17 @@ export const useRunStore = create<RunStore>()((set, get) => ({
     set({ error: null });
     try {
       await invoke("run_build_desktop");
+      return true;
+    } catch (e) {
+      set({ error: e instanceof Error ? e.message : String(e) });
+      return false;
+    }
+  },
+
+  runCopyBuildToDesktop: async () => {
+    set({ error: null });
+    try {
+      await invoke("run_copy_build_to_desktop");
       return true;
     } catch (e) {
       set({ error: e instanceof Error ? e.message : String(e) });

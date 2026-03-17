@@ -114,6 +114,12 @@ pub struct ProjectRow {
     pub updated_at: String,
 }
 
+/// Read id from row; SQLite may store as TEXT or INTEGER (legacy), so we accept both.
+fn get_id_string(row: &rusqlite::Row, idx: usize) -> rusqlite::Result<String> {
+    row.get::<_, String>(idx)
+        .or_else(|_| row.get::<_, i64>(idx).map(|n| n.to_string()))
+}
+
 /// Read run_port from row; SQLite may store as INTEGER or TEXT (legacy), so we accept both.
 fn get_run_port(row: &rusqlite::Row, idx: usize) -> rusqlite::Result<Option<i32>> {
     if let Ok(Some(n)) = row.get::<_, Option<i64>>(idx) {
@@ -151,7 +157,7 @@ pub fn get_projects_from_table(conn: &Connection) -> Result<Vec<ProjectRow>, Str
     let col_names = ["id", "name", "description", "repo_path", "run_port", "prompt_ids", "ticket_ids", "idea_ids", "design_ids", "architecture_ids", "entity_categories", "spec_files", "spec_files_tickets", "created_at", "updated_at"];
     let rows = stmt
         .query_map([], |row| {
-            let id: String = row.get(0).map_err(|e| {
+            let id: String = get_id_string(&row, 0).map_err(|e| {
                 let msg = e.to_string();
                 debug_agent_log("db/projects.rs:get_projects_from_table", "col_failed", &[("hypothesisId", "H1"), ("col", "0"), ("name", col_names[0]), ("err", &msg)]);
                 e

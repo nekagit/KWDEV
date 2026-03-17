@@ -112,18 +112,6 @@ export const PromptTableRow: React.FC<PromptTableRowProps> = ({
       <TableCell className="font-medium max-w-[180px] truncate" title={p.title}>
         {p.title}
       </TableCell>
-      <TableCell className="hidden sm:table-cell text-muted-foreground">
-        {p.category ?? "—"}
-      </TableCell>
-      <TableCell className="hidden md:table-cell text-muted-foreground max-w-[120px] truncate">
-        {Array.isArray(p.tags) && p.tags.length > 0 ? p.tags.join(", ") : "—"}
-      </TableCell>
-      <TableCell className="hidden lg:table-cell text-muted-foreground text-xs whitespace-nowrap">
-        {p.created_at ?? "—"}
-      </TableCell>
-      <TableCell className="hidden lg:table-cell text-muted-foreground text-xs whitespace-nowrap">
-        {p.updated_at ?? "—"}
-      </TableCell>
       <TableCell className="max-w-[200px] text-muted-foreground text-xs truncate" title={p.content ?? ""}>
         {(p.content ?? "").replace(/\s+/g, " ").slice(0, 60)}
         {(p.content ?? "").length > 60 ? "…" : ""}

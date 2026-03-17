@@ -1,0 +1,6 @@
+{
+  "description": "Use exhaustive switch handling for TypeScript unions and enums",
+  "globs": "**/*.ts",
+  "alwaysApply": false,
+  "content": "Use exhaustive switch handling for TypeScript unions and enums. When switching on a union or enum, handle every variant or add a default that narrows to never (e.g. `default: { const _: never = x; return _; }`). Avoid falling through to a generic default without type safety."
+}

@@ -2,6 +2,10 @@
 
 This directory holds app data. **Entity storage is in the database**, not in JSON files here.
 
+## data/rules
+
+**data/rules** holds JSON Cursor rule files. The project Rules tab **Initialize** button copies only from this folder into a project’s `.cursor/rules` (JSON format, not .mdc). Add `.json` files here to make them available for Initialize.
+
 ## Database (source of truth)
 
 - **`app.db`** (created at runtime in the app data directory, e.g. `data/app.db` when running from repo) is the single source of truth for:

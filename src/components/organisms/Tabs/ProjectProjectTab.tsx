@@ -2,7 +2,7 @@
 
 /** Project Project Tab component. */
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Loader2, FileText, FolderOpen, FolderInput, RefreshCw, Play, Square, FolderGit2, Bot, Folder, MonitorUp, MessageSquare } from "lucide-react";
+import { Loader2, FileText, FolderOpen, FolderInput, RefreshCw, Play, Square, FolderGit2, Bot, Folder, MonitorUp, MessageSquare, Hammer } from "lucide-react";
 import { listProjectFiles, readProjectFileOrEmpty, updateProject, writeProjectFile, type FileEntry } from "@/lib/api-projects";
 import { isTauri } from "@/lib/tauri";
 import { useRunStore } from "@/store/run-store";
@@ -128,6 +128,8 @@ interface ProjectProjectTabProps {
 export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjectUpdate }: ProjectProjectTabProps) {
   const runNpmScript = useRunStore((s) => s.runNpmScript);
   const runNpmScriptInExternalTerminal = useRunStore((s) => s.runNpmScriptInExternalTerminal);
+  const runBuildDesktop = useRunStore((s) => s.runBuildDesktop);
+  const runCopyBuildToDesktop = useRunStore((s) => s.runCopyBuildToDesktop);
   const stopRun = useRunStore((s) => s.stopRun);
   const runningRuns = useRunStore((s) => s.runningRuns);
   const [adrEntries, setAdrEntries] = useState<FileEntry[]>([]);
@@ -138,24 +140,25 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
   const [lastRunId, setLastRunId] = useState<string | null>(null);
   const [savingPort, setSavingPort] = useState(false);
   const [folderRefreshKey, setFolderRefreshKey] = useState(0);
+  const [projectFilesActionLoading, setProjectFilesActionLoading] = useState<"rebuild" | "desktop" | null>(null);
   const [initializeRulesLoading, setInitializeRulesLoading] = useState(false);
   const cancelledRef = useRef(false);
   const scriptsCancelledRef = useRef(false);
 
-  /** Inner tabs: All (accordion) or a single section (Rules, ADR, Prompts, etc.). */
-  const INNER_TAB_VALUES = ["all", "rules", "adr", "prompts", "project-files", "run", "agents"] as const;
+  /** Inner tabs: Project Files first, then Run, Prompts, Rules, then the rest. */
+  const INNER_TAB_VALUES = ["project-files", "run", "prompts", "rules", "all", "adr", "agents"] as const;
   const [innerTab, setInnerTab] = useState<string>(() => {
     if (typeof window === "undefined") return "all";
     const h = window.location.hash.slice(1).toLowerCase();
     return INNER_TAB_VALUES.includes(h as (typeof INNER_TAB_VALUES)[number]) ? h : "all";
   });
 
-  /** Accordion section open by default or from hash (#rules, #project-files, #run, etc.) when inner tab is "all". */
-  const ACCORDION_VALUES = ["rules", "project-files", "run", "adr", "agents"] as const;
+  /** Accordion section open by default or from hash when inner tab is "all". Order: project-files, run, rules, adr, agents. */
+  const ACCORDION_VALUES = ["project-files", "run", "rules", "adr", "agents"] as const;
   const [openSection, setOpenSection] = useState<string>(() => {
-    if (typeof window === "undefined") return "rules";
+    if (typeof window === "undefined") return "project-files";
     const h = window.location.hash.slice(1).toLowerCase();
-    return ACCORDION_VALUES.includes(h as (typeof ACCORDION_VALUES)[number]) ? h : "rules";
+    return ACCORDION_VALUES.includes(h as (typeof ACCORDION_VALUES)[number]) ? h : "project-files";
   });
 
   useEffect(() => {
@@ -293,22 +296,6 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
     <div className="space-y-6">
       <Tabs value={innerTab} onValueChange={setInnerTab} className="w-full">
         <TabsList className="flex flex-wrap gap-1 bg-muted/50 border border-border/40 rounded-lg p-1 mb-4">
-          <TabsTrigger value="all" className="gap-1.5 text-xs data-[state=active]:bg-background">
-            <FolderOpen className="size-3.5" />
-            All
-          </TabsTrigger>
-          <TabsTrigger value="rules" className="gap-1.5 text-xs data-[state=active]:bg-background">
-            <Folder className="size-3.5" />
-            Rules
-          </TabsTrigger>
-          <TabsTrigger value="adr" className="gap-1.5 text-xs data-[state=active]:bg-background">
-            <FileText className="size-3.5" />
-            ADR
-          </TabsTrigger>
-          <TabsTrigger value="prompts" className="gap-1.5 text-xs data-[state=active]:bg-background">
-            <MessageSquare className="size-3.5" />
-            Prompts
-          </TabsTrigger>
           <TabsTrigger value="project-files" className="gap-1.5 text-xs data-[state=active]:bg-background">
             <FolderGit2 className="size-3.5" />
             Project Files
@@ -316,6 +303,22 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
           <TabsTrigger value="run" className="gap-1.5 text-xs data-[state=active]:bg-background">
             <Play className="size-3.5" />
             Run
+          </TabsTrigger>
+          <TabsTrigger value="prompts" className="gap-1.5 text-xs data-[state=active]:bg-background">
+            <MessageSquare className="size-3.5" />
+            Prompts
+          </TabsTrigger>
+          <TabsTrigger value="rules" className="gap-1.5 text-xs data-[state=active]:bg-background">
+            <Folder className="size-3.5" />
+            Rules
+          </TabsTrigger>
+          <TabsTrigger value="all" className="gap-1.5 text-xs data-[state=active]:bg-background">
+            <FolderOpen className="size-3.5" />
+            All
+          </TabsTrigger>
+          <TabsTrigger value="adr" className="gap-1.5 text-xs data-[state=active]:bg-background">
+            <FileText className="size-3.5" />
+            ADR
           </TabsTrigger>
           <TabsTrigger value="agents" className="gap-1.5 text-xs data-[state=active]:bg-background">
             <Bot className="size-3.5" />
@@ -327,60 +330,6 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
           <ScrollArea className="h-[calc(100vh-14rem)]">
             <div className="space-y-2 pr-4">
               <Accordion type="single" collapsible value={openSection} onValueChange={setOpenSection} className="w-full space-y-2">
-            {/* Rules — first */}
-            <AccordionItem value="rules" className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden data-[state=open]:border-teal-500/30">
-              <AccordionTrigger className="px-5 py-3 hover:no-underline hover:bg-muted/20 [&[data-state=open]]:border-b [&[data-state=open]]:border-border/40">
-                <div className="flex items-center gap-2">
-                  <Folder className="h-4 w-4 text-teal-500" />
-                  <h3 className="text-sm font-semibold">Rules</h3>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-5 pb-5 pt-2">
-            <div className="flex flex-wrap items-center gap-2 mb-3">
-              <p className="text-xs text-muted-foreground">
-                Cursor rules and conventions in <code className="rounded bg-muted px-1 py-0.5 font-mono text-[10px]">{RULES_DIR}</code>.
-              </p>
-              <Button
-                variant="default"
-                size="sm"
-                className="h-7 text-xs gap-1.5"
-                disabled={initializeRulesLoading || !project.repoPath}
-                onClick={() => void handleInitializeRules()}
-                title="Copy useful Cursor rules from this app (or built-in) into the project's .cursor/rules"
-              >
-                {initializeRulesLoading ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <FolderInput className="h-3.5 w-3.5" />
-                )}
-                Initialize
-              </Button>
-            </div>
-            {rulesEntries.length === 0 ? (
-              <p className="text-xs text-muted-foreground">No files in this folder.</p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-xs">Name</TableHead>
-                    <TableHead className="text-xs w-20">Size</TableHead>
-                    <TableHead className="text-xs w-24">Updated</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {rulesEntries.map((e) => (
-                    <TableRow key={e.name}>
-                      <TableCell className="font-mono text-xs">{e.name}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{formatSize(e.size)}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{formatUpdatedAt(e.updatedAt)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-              </AccordionContent>
-            </AccordionItem>
-
             {/* Project Files — .cursor directory browser */}
             <AccordionItem
               value="project-files" className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden data-[state=open]:border-rose-500/30">
@@ -575,6 +524,60 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
               </AccordionContent>
             </AccordionItem>
 
+            {/* Rules */}
+            <AccordionItem value="rules" className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden data-[state=open]:border-teal-500/30">
+              <AccordionTrigger className="px-5 py-3 hover:no-underline hover:bg-muted/20 [&[data-state=open]]:border-b [&[data-state=open]]:border-border/40">
+                <div className="flex items-center gap-2">
+                  <Folder className="h-4 w-4 text-teal-500" />
+                  <h3 className="text-sm font-semibold">Rules</h3>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-5 pb-5 pt-2">
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <p className="text-xs text-muted-foreground">
+                Cursor rules and conventions in <code className="rounded bg-muted px-1 py-0.5 font-mono text-[10px]">{RULES_DIR}</code>.
+              </p>
+              <Button
+                variant="default"
+                size="sm"
+                className="h-7 text-xs gap-1.5"
+                disabled={initializeRulesLoading || !project.repoPath}
+                onClick={() => void handleInitializeRules()}
+                title="Copy JSON rules from data/rules into the project's .cursor/rules"
+              >
+                {initializeRulesLoading ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <FolderInput className="h-3.5 w-3.5" />
+                )}
+                Initialize
+              </Button>
+            </div>
+            {rulesEntries.length === 0 ? (
+              <p className="text-xs text-muted-foreground">No files in this folder.</p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-xs">Name</TableHead>
+                    <TableHead className="text-xs w-20">Size</TableHead>
+                    <TableHead className="text-xs w-24">Updated</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {rulesEntries.map((e) => (
+                    <TableRow key={e.name}>
+                      <TableCell className="font-mono text-xs">{e.name}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{formatSize(e.size)}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{formatUpdatedAt(e.updatedAt)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+              </AccordionContent>
+            </AccordionItem>
+
             {/* ADR — Architecture decision records */}
             <AccordionItem value="adr" className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden data-[state=open]:border-violet-500/30">
               <AccordionTrigger className="px-5 py-3 hover:no-underline hover:bg-muted/20 [&[data-state=open]]:border-b [&[data-state=open]]:border-border/40">
@@ -643,7 +646,7 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
                   className="h-7 text-xs gap-1.5"
                   disabled={initializeRulesLoading || !project.repoPath}
                   onClick={() => void handleInitializeRules()}
-                  title="Copy useful Cursor rules from this app (or built-in) into the project's .cursor/rules"
+                  title="Copy JSON rules from data/rules into the project's .cursor/rules"
                 >
                   {initializeRulesLoading ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -726,6 +729,56 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
                     <RefreshCw className="h-3.5 w-3.5" />
                     Refresh
                   </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5"
+                      disabled={!isTauri || projectFilesActionLoading != null}
+                      onClick={async () => {
+                        setProjectFilesActionLoading("rebuild");
+                        try {
+                          const ok = await runBuildDesktop();
+                          if (ok) toast.success("Rebuild started in Terminal.");
+                          else toast.error(useRunStore.getState().error ?? "Failed to rebuild.");
+                        } finally {
+                          setProjectFilesActionLoading(null);
+                        }
+                      }}
+                      title="Runs npm run build:desktop (desktop app only)"
+                    >
+                      {projectFilesActionLoading === "rebuild" ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Hammer className="h-3.5 w-3.5" />
+                      )}
+                      Rebuild
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5"
+                      disabled={!isTauri || projectFilesActionLoading != null}
+                      onClick={async () => {
+                        setProjectFilesActionLoading("desktop");
+                        try {
+                          const ok = await runCopyBuildToDesktop();
+                          if (ok) toast.success("Copy-to-Desktop started in Terminal.");
+                          else toast.error(useRunStore.getState().error ?? "Failed to put on Desktop.");
+                        } finally {
+                          setProjectFilesActionLoading(null);
+                        }
+                      }}
+                      title="Runs script/tauri/copy-build-to-desktop.mjs (desktop app only)"
+                    >
+                      {projectFilesActionLoading === "desktop" ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <MonitorUp className="h-3.5 w-3.5" />
+                      )}
+                      Put on Desktop
+                    </Button>
+                  </div>
                 </div>
                 <ProjectFilesTab project={project} projectId={projectId} />
               </div>

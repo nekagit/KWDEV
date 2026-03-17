@@ -3429,6 +3429,38 @@ fn run_build_desktop() -> Result<(), String> {
     }
 }
 
+/// Opens Terminal.app (macOS) and runs `node script/tauri/copy-build-to-desktop.mjs` in the current working directory.
+/// Use when running the app via `tauri dev` so the cwd is the project root.
+#[tauri::command]
+fn run_copy_build_to_desktop() -> Result<(), String> {
+    #[cfg(not(target_os = "macos"))]
+    {
+        return Err("Put on Desktop is only supported on macOS.".to_string());
+    }
+    #[cfg(target_os = "macos")]
+    {
+        let dir =
+            std::env::current_dir().map_err(|e| format!("Could not get current directory: {}", e))?;
+        let path_str = dir.to_string_lossy();
+        let path_escaped = path_str.replace('\'', "'\\''");
+        let shell_cmd = format!(
+            "cd '{}' && node script/tauri/copy-build-to-desktop.mjs",
+            path_escaped
+        );
+        let as_escaped = shell_cmd.replace('\\', "\\\\").replace('"', "\\\"");
+        let script = format!(
+            "tell application \"Terminal\" to do script \"{}\"",
+            as_escaped
+        );
+        Command::new("osascript")
+            .arg("-e")
+            .arg(&script)
+            .spawn()
+            .map_err(|e| format!("Failed to open Terminal: {}", e))?;
+        Ok(())
+    }
+}
+
 /// Opens one system terminal (Terminal.app on macOS) with the project path as the current working directory.
 /// On non-macOS returns an error; same as open_implement_all_in_system_terminal and run_npm_script_in_external_terminal.
 #[tauri::command]
@@ -4423,6 +4455,7 @@ pub fn run() {
             run_npm_script_in_external_terminal,
             run_command_in_external_terminal,
             run_build_desktop,
+            run_copy_build_to_desktop,
             run_implement_all,
             run_run_terminal_agent,
             run_static_analysis_checklist,

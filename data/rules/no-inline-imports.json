@@ -1,0 +1,6 @@
+{
+  "description": "Keep imports at top of file and avoid inline imports",
+  "globs": "**/*.{ts,tsx,js,jsx}",
+  "alwaysApply": false,
+  "content": "Keep imports at the top of the file. Do not use dynamic or inline imports (e.g. inside callbacks or conditionally) unless required for code-splitting or runtime loading. Prefer static imports for clarity and tooling."
+}

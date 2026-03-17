@@ -2,6 +2,12 @@
 
 use rusqlite::{Connection, params};
 
+/// Read id from row; SQLite may store as TEXT or INTEGER (legacy), so we accept both.
+fn get_id_string(row: &rusqlite::Row, idx: usize) -> rusqlite::Result<String> {
+    row.get::<_, String>(idx)
+        .or_else(|_| row.get::<_, i64>(idx).map(|n| n.to_string()))
+}
+
 /// Get all tickets from the tickets table.
 pub fn get_tickets(conn: &Connection) -> Result<Vec<crate::Ticket>, String> {
     let mut stmt = conn
@@ -117,7 +123,7 @@ pub fn get_prompts(conn: &Connection) -> Result<Vec<crate::Prompt>, String> {
     let rows = stmt
         .query_map([], |row| {
             Ok(crate::Prompt {
-                id: row.get(0)?,
+                id: get_id_string(row, 0)?,
                 title: row.get(1)?,
                 content: row.get(2)?,
                 created_at: row.get(3)?,

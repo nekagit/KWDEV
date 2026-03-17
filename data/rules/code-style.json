@@ -1,0 +1,6 @@
+{
+  "description": "General code style and clarity",
+  "globs": null,
+  "alwaysApply": true,
+  "content": "Prefer clarity over cleverness. Use consistent naming (camelCase for variables/functions, PascalCase for types/components). Keep functions small and focused. Avoid deep nesting; early returns are preferred. Comment why, not what."
+}

@@ -48,13 +48,10 @@ export function PromptRecordTable({
     <Table>
       <TableHeader>
         <TableRow>
-          {[{ key: "select", label: "Select", className: "w-10" },
+          {[
+            { key: "select", label: "Select", className: "w-10" },
             { key: "id", label: "ID", className: "w-16" },
             { key: "title", label: "Title" },
-            { key: "category", label: "Category", className: "hidden sm:table-cell" },
-            { key: "tags", label: "Tags", className: "hidden md:table-cell" },
-            { key: "created_at", label: "Created", className: "hidden lg:table-cell" },
-            { key: "updated_at", label: "Updated", className: "hidden lg:table-cell" },
             { key: "content", label: "Content", className: "max-w-[200px]" },
             { key: "actions", label: "Actions", className: "w-36 text-right" },
           ].map((header) => (
@@ -67,7 +64,7 @@ export function PromptRecordTable({
       <TableBody>
         {fullPromptRecords.length === 0 ? (
           <TableRow>
-            <TableCell colSpan={9} className={classes[0]}>
+            <TableCell colSpan={5} className={classes[0]}>
               No prompts. Create one above.
             </TableCell>
           </TableRow>
