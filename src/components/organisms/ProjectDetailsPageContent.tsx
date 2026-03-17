@@ -25,7 +25,6 @@ import {
   Activity,
   ExternalLink,
   Monitor,
-  MessageSquare,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Project } from "@/types/project";
@@ -38,7 +37,6 @@ import { ProjectProjectTab } from "@/components/organisms/Tabs/ProjectProjectTab
 import { ProjectControlTab } from "@/components/organisms/Tabs/ProjectControlTab";
 import { ProjectIdeasDocTab } from "@/components/organisms/Tabs/ProjectIdeasDocTab";
 import { ProjectRunTab } from "@/components/organisms/Tabs/ProjectRunTab";
-import { PromptRecordsPageContent } from "@/components/organisms/PromptRecordsPageContent";
 import { ErrorBoundary } from "@/components/organisms/ErrorBoundary";
 import { cn } from "@/lib/utils";
 import { SectionCard, MetadataBadge, CountBadge } from "@/components/molecules/Displays/DisplayPrimitives";
@@ -78,7 +76,6 @@ const TAB_ROW_2 = [
   { value: "milestones", label: "Milestones", icon: Flag, color: "text-fuchsia-400", activeGlow: "shadow-fuchsia-500/10" },
   { value: "todo", label: "Planner", icon: ListTodo, color: "text-blue-400", activeGlow: "shadow-blue-500/10" },
   { value: "worker", label: "Worker", icon: Activity, color: "text-sky-500", activeGlow: "shadow-sky-500/10" },
-  { value: "prompts", label: "Prompts", icon: MessageSquare, color: "text-indigo-400", activeGlow: "shadow-indigo-500/10" },
   { value: "control", label: "Control", icon: ClipboardList, color: "text-slate-400", activeGlow: "shadow-slate-500/10" },
   { value: "git", label: "Versioning", icon: FolderGit2, color: "text-amber-400", activeGlow: "shadow-amber-500/10" },
 ] as const;
@@ -688,58 +685,33 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
           className="w-full"
           data-testid="project-detail-tabs"
         >
-          {/* Tab Navigation — Two Rows (Rounded & Centered) */}
-          <div className="mb-8 flex justify-center w-full">
+          {/* Tab Navigation — Single row, scroll on narrow screens */}
+          <div className="mb-8 flex justify-center w-full overflow-x-auto">
             <TabsList
-              className="inline-flex h-auto flex-col gap-1.5 rounded-xl bg-muted/30 border border-border/50 p-1.5 backdrop-blur-sm shadow-sm"
+              className="inline-flex h-auto flex-row flex-nowrap gap-1 rounded-xl bg-muted/30 border border-border/50 p-1.5 backdrop-blur-sm shadow-sm"
               aria-label="Project sections"
             >
-              <div className="flex flex-wrap justify-center gap-1">
-                {TAB_ROW_1.map((tab) => (
-                  <TabsTrigger
-                    key={tab.value}
-                    value={tab.value}
-                    data-testid={`tab-${tab.value}`}
+              {[...TAB_ROW_1, ...TAB_ROW_2].map((tab) => (
+                <TabsTrigger
+                  key={tab.value}
+                  value={tab.value}
+                  data-testid={`tab-${tab.value}`}
+                  className={cn(
+                    "relative flex items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-semibold transition-all duration-200 shrink-0",
+                    "data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:text-foreground data-[state=inactive]:hover:bg-muted/60",
+                    "data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-border/60",
+                    activeTab === tab.value && tab.activeGlow
+                  )}
+                >
+                  <tab.icon
                     className={cn(
-                      "relative flex items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-semibold transition-all duration-200",
-                      "data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:text-foreground data-[state=inactive]:hover:bg-muted/60",
-                      "data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-border/60",
-                      activeTab === tab.value && tab.activeGlow
+                      "size-4 shrink-0 transition-colors duration-200",
+                      activeTab === tab.value ? tab.color : ""
                     )}
-                  >
-                    <tab.icon
-                      className={cn(
-                        "size-4 shrink-0 transition-colors duration-200",
-                        activeTab === tab.value ? tab.color : ""
-                      )}
-                    />
-                    {tab.label}
-                  </TabsTrigger>
-                ))}
-              </div>
-              <div className="flex flex-wrap justify-center gap-1">
-                {TAB_ROW_2.map((tab) => (
-                  <TabsTrigger
-                    key={tab.value}
-                    value={tab.value}
-                    data-testid={`tab-${tab.value}`}
-                    className={cn(
-                      "relative flex items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-semibold transition-all duration-200",
-                      "data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:text-foreground data-[state=inactive]:hover:bg-muted/60",
-                      "data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-border/60",
-                      activeTab === tab.value && tab.activeGlow
-                    )}
-                  >
-                    <tab.icon
-                      className={cn(
-                        "size-4 shrink-0 transition-colors duration-200",
-                        activeTab === tab.value ? tab.color : ""
-                      )}
-                    />
-                    {tab.label}
-                  </TabsTrigger>
-                ))}
-              </div>
+                  />
+                  {tab.label}
+                </TabsTrigger>
+              ))}
             </TabsList>
           </div>
 
@@ -775,17 +747,6 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
                 projectId={projectId}
                 fetchProject={fetchProject}
               />
-            </div>
-          </TabsContent>
-
-          {/* ── Prompts Tab ── */}
-          <TabsContent
-            value="prompts"
-            key={`${projectId}-prompts`}
-            className="mt-0 animate-in fade-in-0 slide-in-from-bottom-2 duration-300"
-          >
-            <div className="rounded-xl border border-border/40 bg-card/50 backdrop-blur-sm p-4 md:p-6 min-h-0 min-w-0">
-              <PromptRecordsPageContent projectId={projectId} />
             </div>
           </TabsContent>
 

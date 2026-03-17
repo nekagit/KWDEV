@@ -2,7 +2,7 @@
 
 /** Project Project Tab component. */
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Loader2, FileText, FolderOpen, FolderInput, RefreshCw, Play, Square, FolderGit2, Bot, Folder, MonitorUp } from "lucide-react";
+import { Loader2, FileText, FolderOpen, FolderInput, RefreshCw, Play, Square, FolderGit2, Bot, Folder, MonitorUp, MessageSquare } from "lucide-react";
 import { listProjectFiles, readProjectFileOrEmpty, updateProject, writeProjectFile, type FileEntry } from "@/lib/api-projects";
 import { isTauri } from "@/lib/tauri";
 import { useRunStore } from "@/store/run-store";
@@ -36,6 +36,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PromptRecordsPageContent } from "@/components/organisms/PromptRecordsPageContent";
 
 function formatSize(bytes: number): string {
   if (bytes === 0) return "0 B";
@@ -140,7 +142,15 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
   const cancelledRef = useRef(false);
   const scriptsCancelledRef = useRef(false);
 
-  /** Accordion section open by default or from hash (#rules, #project-files, #run, etc.). */
+  /** Inner tabs: All (accordion) or a single section (Rules, ADR, Prompts, etc.). */
+  const INNER_TAB_VALUES = ["all", "rules", "adr", "prompts", "project-files", "run", "agents"] as const;
+  const [innerTab, setInnerTab] = useState<string>(() => {
+    if (typeof window === "undefined") return "all";
+    const h = window.location.hash.slice(1).toLowerCase();
+    return INNER_TAB_VALUES.includes(h as (typeof INNER_TAB_VALUES)[number]) ? h : "all";
+  });
+
+  /** Accordion section open by default or from hash (#rules, #project-files, #run, etc.) when inner tab is "all". */
   const ACCORDION_VALUES = ["rules", "project-files", "run", "adr", "agents"] as const;
   const [openSection, setOpenSection] = useState<string>(() => {
     if (typeof window === "undefined") return "rules";
@@ -151,7 +161,9 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
   useEffect(() => {
     const syncFromHash = () => {
       const h = window.location.hash.slice(1).toLowerCase();
-      if (ACCORDION_VALUES.includes(h as (typeof ACCORDION_VALUES)[number])) {
+      if (INNER_TAB_VALUES.includes(h as (typeof INNER_TAB_VALUES)[number])) {
+        setInnerTab(h);
+      } else if (ACCORDION_VALUES.includes(h as (typeof ACCORDION_VALUES)[number])) {
         setOpenSection(h);
       }
     };
@@ -160,13 +172,13 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
     return () => window.removeEventListener("hashchange", syncFromHash);
   }, []);
 
-  // Sync accordion section to URL hash so the current view is shareable (e.g. #rules, #project-files).
+  // Sync inner tab / accordion section to URL hash so the current view is shareable.
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const hash = openSection === "run" ? "" : openSection;
+    const hash = innerTab !== "all" ? innerTab : openSection === "run" ? "" : openSection;
     const url = window.location.pathname + window.location.search + (hash ? `#${hash}` : "");
     window.history.replaceState(null, "", url);
-  }, [openSection]);
+  }, [innerTab, openSection]);
 
   const loadAdrAndRules = useCallback(async () => {
     if (!project.repoPath) return;
@@ -279,9 +291,42 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
 
   return (
     <div className="space-y-6">
-      <ScrollArea className="h-[calc(100vh-14rem)]">
-        <div className="space-y-2 pr-4">
-          <Accordion type="single" collapsible value={openSection} onValueChange={setOpenSection} className="w-full space-y-2">
+      <Tabs value={innerTab} onValueChange={setInnerTab} className="w-full">
+        <TabsList className="flex flex-wrap gap-1 bg-muted/50 border border-border/40 rounded-lg p-1 mb-4">
+          <TabsTrigger value="all" className="gap-1.5 text-xs data-[state=active]:bg-background">
+            <FolderOpen className="size-3.5" />
+            All
+          </TabsTrigger>
+          <TabsTrigger value="rules" className="gap-1.5 text-xs data-[state=active]:bg-background">
+            <Folder className="size-3.5" />
+            Rules
+          </TabsTrigger>
+          <TabsTrigger value="adr" className="gap-1.5 text-xs data-[state=active]:bg-background">
+            <FileText className="size-3.5" />
+            ADR
+          </TabsTrigger>
+          <TabsTrigger value="prompts" className="gap-1.5 text-xs data-[state=active]:bg-background">
+            <MessageSquare className="size-3.5" />
+            Prompts
+          </TabsTrigger>
+          <TabsTrigger value="project-files" className="gap-1.5 text-xs data-[state=active]:bg-background">
+            <FolderGit2 className="size-3.5" />
+            Project Files
+          </TabsTrigger>
+          <TabsTrigger value="run" className="gap-1.5 text-xs data-[state=active]:bg-background">
+            <Play className="size-3.5" />
+            Run
+          </TabsTrigger>
+          <TabsTrigger value="agents" className="gap-1.5 text-xs data-[state=active]:bg-background">
+            <Bot className="size-3.5" />
+            Agents
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="all" className="mt-0">
+          <ScrollArea className="h-[calc(100vh-14rem)]">
+            <div className="space-y-2 pr-4">
+              <Accordion type="single" collapsible value={openSection} onValueChange={setOpenSection} className="w-full space-y-2">
             {/* Rules — first */}
             <AccordionItem value="rules" className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden data-[state=open]:border-teal-500/30">
               <AccordionTrigger className="px-5 py-3 hover:no-underline hover:bg-muted/20 [&[data-state=open]]:border-b [&[data-state=open]]:border-border/40">
@@ -583,6 +628,286 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
           </Accordion>
         </div>
       </ScrollArea>
+        </TabsContent>
+
+        <TabsContent value="rules" className="mt-0">
+          <ScrollArea className="h-[calc(100vh-14rem)]">
+            <div className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden data-[state=open]:border-teal-500/30 p-5 pr-4">
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <p className="text-xs text-muted-foreground">
+                  Cursor rules and conventions in <code className="rounded bg-muted px-1 py-0.5 font-mono text-[10px]">{RULES_DIR}</code>.
+                </p>
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="h-7 text-xs gap-1.5"
+                  disabled={initializeRulesLoading || !project.repoPath}
+                  onClick={() => void handleInitializeRules()}
+                  title="Copy useful Cursor rules from this app (or built-in) into the project's .cursor/rules"
+                >
+                  {initializeRulesLoading ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <FolderInput className="h-3.5 w-3.5" />
+                  )}
+                  Initialize
+                </Button>
+              </div>
+              {rulesEntries.length === 0 ? (
+                <p className="text-xs text-muted-foreground">No files in this folder.</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-xs">Name</TableHead>
+                      <TableHead className="text-xs w-20">Size</TableHead>
+                      <TableHead className="text-xs w-24">Updated</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {rulesEntries.map((e) => (
+                      <TableRow key={e.name}>
+                        <TableCell className="font-mono text-xs">{e.name}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">{formatSize(e.size)}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">{formatUpdatedAt(e.updatedAt)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </div>
+          </ScrollArea>
+        </TabsContent>
+
+        <TabsContent value="adr" className="mt-0">
+          <ScrollArea className="h-[calc(100vh-14rem)]">
+            <div className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden p-5 pr-4">
+              <p className="text-xs text-muted-foreground mb-3">
+                Architecture decision records in <code className="rounded bg-muted px-1 py-0.5 font-mono text-[10px]">{ADR_DIR}</code>.
+              </p>
+              {adrEntries.length === 0 ? (
+                <p className="text-xs text-muted-foreground">No files in this folder.</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-xs">Name</TableHead>
+                      <TableHead className="text-xs w-20">Size</TableHead>
+                      <TableHead className="text-xs w-24">Updated</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {adrEntries.map((e) => (
+                      <TableRow key={e.name}>
+                        <TableCell className="font-mono text-xs">{e.name}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">{formatSize(e.size)}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">{formatUpdatedAt(e.updatedAt)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </div>
+          </ScrollArea>
+        </TabsContent>
+
+        <TabsContent value="prompts" className="mt-0">
+          <div className="rounded-xl border border-border/40 bg-card/50 backdrop-blur-sm p-4 md:p-6 min-h-0 min-w-0">
+            <PromptRecordsPageContent projectId={projectId} />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="project-files" className="mt-0">
+          <ScrollArea className="h-[calc(100vh-14rem)]">
+            <div className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden p-5 pr-4">
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center justify-between gap-2">
+                  <Button variant="ghost" size="sm" onClick={() => setFolderRefreshKey((k) => k + 1)} className="gap-1.5">
+                    <RefreshCw className="h-3.5 w-3.5" />
+                    Refresh
+                  </Button>
+                </div>
+                <ProjectFilesTab project={project} projectId={projectId} />
+              </div>
+            </div>
+          </ScrollArea>
+        </TabsContent>
+
+        <TabsContent value="run" className="mt-0">
+          <ScrollArea className="h-[calc(100vh-14rem)]">
+            <div className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden p-5 pr-4 space-y-3">
+              <div className="flex items-start justify-between gap-3 mb-4">
+                <p className="text-xs text-muted-foreground flex-1 min-w-0">
+                  Run npm scripts from the project directory. On macOS, each script opens in Terminal.app; on other platforms output appears below (localhost URL becomes &quot;Open app&quot;).
+                </p>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="shrink-0 gap-1.5 text-xs"
+                        disabled={loadingScripts || !project.repoPath}
+                        onClick={() => {
+                          loadScripts().then(() => toast.success("Scripts refreshed")).catch(() => toast.error("Failed to load scripts"));
+                        }}
+                        aria-label="Reload scripts from package.json"
+                      >
+                        <RefreshCw className={cn("size-3.5", loadingScripts && "animate-spin")} />
+                        Refresh
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Reload scripts from package.json
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+              {loadingScripts ? (
+                <div className="flex items-center gap-2 py-4 text-muted-foreground">
+                  <Loader2 className="size-4 animate-spin" />
+                  <span className="text-xs">Loading package.json…</span>
+                </div>
+              ) : Object.keys(scripts).length === 0 ? (
+                <p className="text-xs text-muted-foreground py-4 rounded-lg border border-border/40 bg-muted/10 px-4">
+                  No package.json or no scripts found. Add a package.json with a <code className="rounded bg-muted px-1 font-mono">scripts</code> section to run commands from here.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex flex-wrap gap-2">
+                    {Object.entries(scripts).map(([name]) => {
+                      const canRun = isTauri && project.repoPath;
+                      return (
+                        <TooltipProvider key={name}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="inline-flex">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="gap-1.5 text-xs"
+                                  disabled={!canRun}
+                                  onClick={async () => {
+                                    if (!canRun || !project.repoPath) return;
+                                    try {
+                                      const opened = await runNpmScriptInExternalTerminal(project.repoPath, name);
+                                      if (opened) {
+                                        toast.success("Opened in Terminal.");
+                                        return;
+                                      }
+                                      const err = useRunStore.getState().error ?? "";
+                                      if (err.includes("only supported on macOS")) {
+                                        const runId = await runNpmScript(project.repoPath, name);
+                                        if (runId) {
+                                          setLastRunId(runId);
+                                          toast.success("Running. Output below.");
+                                        }
+                                      } else {
+                                        toast.error(err || "Failed to open terminal");
+                                      }
+                                    } catch (e) {
+                                      toast.error(e instanceof Error ? e.message : "Failed to start");
+                                    }
+                                  }}
+                                >
+                                  <Play className="size-3" />
+                                  {name}
+                                </Button>
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {canRun ? `npm run ${name} (opens Terminal on Mac)` : "Run scripts in Tauri app"}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      );
+                    })}
+                  </div>
+                  {!isTauri && Object.keys(scripts).length > 0 && (
+                    <p className="text-[11px] text-muted-foreground">
+                      Run scripts from the Tauri desktop app to see output here.
+                    </p>
+                  )}
+                  {lastRunId && (() => {
+                    const run = runningRuns.find((r) => r.runId === lastRunId);
+                    if (!run) return null;
+                    const isRunning = run.status === "running";
+                    const portFromUrl = run.localUrl ? getPortFromLocalUrl(run.localUrl) : null;
+                    const canSavePort =
+                      portFromUrl != null &&
+                      (project.runPort == null || project.runPort !== portFromUrl);
+                    return (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <span className="text-xs font-medium text-muted-foreground">{run.label}</span>
+                          <div className="flex items-center gap-2">
+                            {canSavePort && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="gap-1.5 text-xs"
+                                disabled={savingPort}
+                                onClick={async () => {
+                                  if (portFromUrl == null) return;
+                                  setSavingPort(true);
+                                  try {
+                                    await updateProject(projectId, { runPort: portFromUrl });
+                                    onProjectUpdate?.();
+                                    toast.success("Run port saved. Use View Running Project in the top bar.");
+                                  } catch (e) {
+                                    toast.error(e instanceof Error ? e.message : "Failed to save port");
+                                  } finally {
+                                    setSavingPort(false);
+                                  }
+                                }}
+                              >
+                                {savingPort ? <Loader2 className="size-3 animate-spin" /> : null}
+                                Use as project URL
+                              </Button>
+                            )}
+                            {isRunning && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="gap-1.5 text-xs text-destructive hover:bg-destructive/10"
+                                onClick={() => stopRun(lastRunId)}
+                              >
+                                <Square className="size-3" />
+                                Stop
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                        <TerminalSlot
+                          run={{
+                            runId: run.runId,
+                            label: run.label,
+                            logLines: run.logLines,
+                            status: run.status,
+                            startedAt: run.startedAt,
+                            doneAt: run.doneAt,
+                            localUrl: run.localUrl,
+                          }}
+                          slotIndex={0}
+                          heightClass="h-[240px]"
+                        />
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </TabsContent>
+
+        <TabsContent value="agents" className="mt-0">
+          <ScrollArea className="h-[calc(100vh-14rem)]">
+            <div className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden p-5 pr-4">
+              <ProjectAgentsSection project={project} projectId={projectId} />
+            </div>
+          </ScrollArea>
+        </TabsContent>
+      </Tabs>
       <RebuildDesktopSection />
     </div>
   );

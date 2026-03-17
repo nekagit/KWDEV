@@ -203,7 +203,7 @@ export async function readCursorDocFromServer(pathUnderCursor: string): Promise<
   }
 }
 
-/** Write a file under the project repo. In Tauri pass repoPath; in browser uses projectId. */
+/** Write a file under the project repo. In Tauri pass repoPath; in browser uses projectId. Falls back to fetch when invoke is not available (e.g. Tauri not ready or running in browser). */
 export async function writeProjectFile(
   projectId: string,
   relativePath: string,
@@ -211,12 +211,21 @@ export async function writeProjectFile(
   repoPath?: string
 ): Promise<void> {
   if (isTauri && repoPath) {
-    await invoke("write_spec_file", {
-      projectPath: repoPath,
-      relativePath,
-      content,
-    });
-    return;
+    try {
+      await invoke("write_spec_file", {
+        projectPath: repoPath,
+        relativePath,
+        content,
+      });
+      return;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes("invoke") && msg.includes("not available")) {
+        // Fall through to fetch when Tauri invoke API is not available
+      } else {
+        throw err;
+      }
+    }
   }
   const res = await fetch(`/api/data/projects/${projectId}/file`, {
     method: "POST",
@@ -249,15 +258,19 @@ export async function listProjectFiles(
   repoPath?: string
 ): Promise<FileEntry[]> {
   if (isTauri && repoPath) {
-    // Attempting invoke call, might fail if not implemented in Rust backend yet
     try {
       return await invoke<FileEntry[]>("list_files_under_root", {
         root: repoPath,
         path: relativePath,
       });
     } catch (e) {
-      console.warn("Tauri list_files_under_root failed:", e);
-      throw new Error(e instanceof Error ? e.message : "File listing failed.");
+      const msg = e instanceof Error ? e.message : String(e);
+      if (msg.includes("invoke") && msg.includes("not available")) {
+        // Fall through to fetch when Tauri invoke API is not available
+      } else {
+        console.warn("Tauri list_files_under_root failed:", e);
+        throw new Error(msg || "File listing failed.");
+      }
     }
   }
 

@@ -659,6 +659,25 @@ export function PromptRecordsPageContent({ projectId }: { projectId?: string }) 
         <CardContent className={projectId ? "px-0 pb-0" : ""}>
           {tableLoading ? (
             <p className={c["7"]}>Loading prompts…</p>
+          ) : projectId ? (
+            /* Project Prompts tab: single table for this project's prompts (no sub-tabs) */
+            <div className="mt-4">
+              <PromptRecordTable
+                fullPromptRecords={fullPromptRecords.filter((r) =>
+                  (projects.find((p) => p.id === projectId)?.promptIds ?? []).includes(r.id)
+                )}
+                selectedPromptRecordIds={selectedPromptRecordIds}
+                setSelectedPromptRecordIds={setSelectedPromptRecordIds}
+                handleDelete={handleDelete}
+                setEditOpen={setEditOpen}
+                setFormId={setFormId}
+                setFormTitle={setFormTitle}
+                setFormContent={setFormContent}
+                onViewPrompt={setViewingPrompt}
+                onRunPrompt={handleRunPrompt}
+                onDuplicatePrompt={handleDuplicatePrompt}
+              />
+            </div>
           ) : (
             <Tabs
               value={activeTab}
@@ -671,38 +690,14 @@ export function PromptRecordsPageContent({ projectId }: { projectId?: string }) 
               className="w-full"
             >
               <TabsList className="flex w-full flex-wrap gap-1 bg-muted/50">
-                {projectId && (
-                  <TabsTrigger value={projectId}>
-                    {projects.find((p) => p.id === projectId)?.name || "Project"}
-                  </TabsTrigger>
-                )}
                 <TabsTrigger value={CURSOR_PROMPTS_TAB}>.cursor prompts</TabsTrigger>
                 <TabsTrigger value={GENERAL_TAB}>General</TabsTrigger>
-                {!projectId && projectsWithPrompts.map((p) => (
+                {projectsWithPrompts.map((p) => (
                   <TabsTrigger key={p.id} value={p.id}>
                     {p.name}
                   </TabsTrigger>
                 ))}
               </TabsList>
-              {projectId && (
-                <TabsContent value={projectId} className="mt-4 focus-visible:outline-none">
-                  <PromptRecordTable
-                    fullPromptRecords={fullPromptRecords.filter((r) =>
-                      (projects.find((p) => p.id === projectId)?.promptIds ?? []).includes(r.id)
-                    )}
-                    selectedPromptRecordIds={selectedPromptRecordIds}
-                    setSelectedPromptRecordIds={setSelectedPromptRecordIds}
-                    handleDelete={handleDelete}
-                    setEditOpen={setEditOpen}
-                    setFormId={setFormId}
-                    setFormTitle={setFormTitle}
-                    setFormContent={setFormContent}
-                    onViewPrompt={setViewingPrompt}
-                    onRunPrompt={handleRunPrompt}
-                    onDuplicatePrompt={handleDuplicatePrompt}
-                  />
-                </TabsContent>
-              )}
               <TabsContent value={CURSOR_PROMPTS_TAB} className="mt-4 focus-visible:outline-none">
                 <div className="flex flex-wrap items-center gap-2 mb-3">
                   <span className="text-sm text-muted-foreground mr-2">Export all .cursor prompts:</span>

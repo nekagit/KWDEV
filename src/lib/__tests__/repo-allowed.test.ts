@@ -47,4 +47,18 @@ describe("repoAllowed", () => {
     const repo = path.resolve("/opt/var/other");
     expect(repoAllowed(repo, cwd)).toBe(false);
   });
+
+  it("returns true when repo is under ALLOWED_REPO_PREFIXES", () => {
+    const cwd = path.resolve("/app/kwcode");
+    const repo = path.resolve("/Users/nenad/Documents/KW/OtherProduct");
+    expect(repoAllowed(repo, cwd)).toBe(false);
+    const prev = process.env.ALLOWED_REPO_PREFIXES;
+    try {
+      process.env.ALLOWED_REPO_PREFIXES = "/Users/nenad/Documents/KW";
+      expect(repoAllowed(repo, cwd)).toBe(true);
+    } finally {
+      if (prev !== undefined) process.env.ALLOWED_REPO_PREFIXES = prev;
+      else delete process.env.ALLOWED_REPO_PREFIXES;
+    }
+  });
 });
