@@ -13,7 +13,7 @@ import {
     FileJson,
     FileImage,
     MoreVertical,
-    Download
+    Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -23,7 +23,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { listProjectFiles, type FileEntry, readProjectFile } from "@/lib/api-projects";
+import { listProjectFiles, type FileEntry, readProjectFile, deleteProjectPath } from "@/lib/api-projects";
 import type { Project } from "@/types/project";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -32,17 +32,24 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 interface ProjectFilesTabProps {
     project: Project;
     projectId: string;
+    /** Called when current path or file list changes (e.g. for parent to enable "Delete all"). */
+    onStateChange?: (currentPath: string, files: FileEntry[]) => void;
 }
 
-export function ProjectFilesTab({ project, projectId }: ProjectFilesTabProps) {
+export function ProjectFilesTab({ project, projectId, onStateChange }: ProjectFilesTabProps) {
     const [currentPath, setCurrentPath] = useState(".cursor");
     const [files, setFiles] = useState<FileEntry[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [previewFile, setPreviewFile] = useState<{ path: string; content: string } | null>(null);
     const [previewLoading, setPreviewLoading] = useState(false);
+    const [deletingPath, setDeletingPath] = useState<string | null>(null);
 
     const cancelledRef = useRef(false);
+
+    useEffect(() => {
+        onStateChange?.(currentPath, files);
+    }, [currentPath, files, onStateChange]);
 
     const fetchFiles = useCallback(async (getIsCancelled?: () => boolean) => {
         if (!project.repoPath) {
@@ -97,6 +104,26 @@ export function ProjectFilesTab({ project, projectId }: ProjectFilesTabProps) {
         const parts = currentPath.split("/");
         parts.pop();
         setCurrentPath(parts.join("/"));
+    };
+
+    const fullPathFor = (entry: FileEntry) => currentPath ? `${currentPath}/${entry.name}` : entry.name;
+
+    const handleDeleteFile = async (entry: FileEntry, e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (entry.isDirectory) return;
+        const path = fullPathFor(entry);
+        setDeletingPath(path);
+        try {
+            await deleteProjectPath(projectId, path, project.repoPath ?? undefined, false);
+            toast.success(`Deleted ${entry.name}`);
+            // Refresh list: optimistic update then refetch from server
+            setFiles((prev) => prev.filter((f) => f.name !== entry.name));
+            await fetchFiles();
+        } catch (e) {
+            toast.error(e instanceof Error ? e.message : "Failed to delete file");
+        } finally {
+            setDeletingPath(null);
+        }
     };
 
     const handleOpenFile = async (entry: FileEntry) => {
@@ -233,6 +260,18 @@ export function ProjectFilesTab({ project, projectId }: ProjectFilesTabProps) {
                                                 <DropdownMenuContent align="end">
                                                     <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleOpenFile(file); }}>
                                                         View
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        className="text-destructive focus:text-destructive"
+                                                        onClick={(e) => handleDeleteFile(file, e)}
+                                                        disabled={deletingPath === fullPathFor(file)}
+                                                    >
+                                                        {deletingPath === fullPathFor(file) ? (
+                                                            <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" />
+                                                        ) : (
+                                                            <Trash2 className="h-3.5 w-3.5 mr-2" />
+                                                        )}
+                                                        Delete
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>

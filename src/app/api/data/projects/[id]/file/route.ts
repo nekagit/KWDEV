@@ -120,3 +120,68 @@ export async function POST(
     );
   }
 }
+
+/** DELETE: remove a file or directory under the project's repo. Same path/security checks as GET. Use ?recursive=1 to delete directories and their contents. */
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const project = getProjectById(id);
+    if (!project) {
+      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+    }
+    const repoPath = project.repoPath?.trim();
+    if (!repoPath) {
+      return NextResponse.json(
+        { error: "Project has no repo path; cannot delete repo files" },
+        { status: 400 }
+      );
+    }
+    const { searchParams } = new URL(request.url);
+    const relativePath = searchParams.get("path");
+    const recursive = searchParams.get("recursive") === "1" || searchParams.get("recursive") === "true";
+    if (!relativePath || typeof relativePath !== "string") {
+      return NextResponse.json({ error: "Missing path" }, { status: 400 });
+    }
+    const normalized = path.normalize(relativePath.trim());
+    if (normalized.startsWith("..") || path.isAbsolute(normalized) || normalized === "." || normalized === "") {
+      return NextResponse.json({ error: "Invalid path" }, { status: 400 });
+    }
+    const cwd = process.cwd();
+    const resolvedRepo = path.resolve(repoPath);
+    if (!repoAllowed(resolvedRepo, cwd)) {
+      return NextResponse.json(
+        { error: "Project repo is outside app directory; file delete not allowed" },
+        { status: 403 }
+      );
+    }
+    const resolved = path.resolve(resolvedRepo, normalized);
+    if (!resolved.startsWith(resolvedRepo)) {
+      return NextResponse.json({ error: "Invalid path" }, { status: 400 });
+    }
+    if (!fs.existsSync(resolved)) {
+      return NextResponse.json({ error: "File not found" }, { status: 404 });
+    }
+    const stat = fs.statSync(resolved);
+    if (stat.isDirectory()) {
+      if (!recursive) {
+        return NextResponse.json(
+          { error: "Use recursive=1 to delete directories" },
+          { status: 400 }
+        );
+      }
+      fs.rmSync(resolved, { recursive: true });
+    } else {
+      fs.unlinkSync(resolved);
+    }
+    return NextResponse.json({ ok: true });
+  } catch (e) {
+    console.error("Project file delete error:", e);
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : "Failed to delete file" },
+      { status: 500 }
+    );
+  }
+}

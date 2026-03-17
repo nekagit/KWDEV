@@ -2,8 +2,8 @@
 
 /** Project Project Tab component. */
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Loader2, FileText, FolderOpen, FolderInput, RefreshCw, Play, Square, FolderGit2, Bot, Folder, MonitorUp, MessageSquare, Hammer } from "lucide-react";
-import { listProjectFiles, readProjectFileOrEmpty, updateProject, writeProjectFile, type FileEntry } from "@/lib/api-projects";
+import { Loader2, FileText, FolderOpen, FolderInput, RefreshCw, Play, Square, FolderGit2, Bot, Folder, MonitorUp, MessageSquare, Hammer, Trash2, Plug } from "lucide-react";
+import { listProjectFiles, readProjectFile, readProjectFileOrEmpty, updateProject, writeProjectFile, deleteProjectPath, type FileEntry } from "@/lib/api-projects";
 import { isTauri } from "@/lib/tauri";
 import { useRunStore } from "@/store/run-store";
 import type { Project } from "@/types/project";
@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/tooltip";
 import { ProjectFilesTab } from "@/components/organisms/Tabs/ProjectFilesTab";
 import { ProjectAgentsSection } from "@/components/organisms/Tabs/ProjectAgentsSection";
+import { ProjectMcpSection } from "@/components/organisms/Tabs/ProjectMcpSection";
 import {
   Accordion,
   AccordionContent,
@@ -37,6 +38,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PromptRecordsPageContent } from "@/components/organisms/PromptRecordsPageContent";
 
 function formatSize(bytes: number): string {
@@ -140,21 +142,25 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
   const [lastRunId, setLastRunId] = useState<string | null>(null);
   const [savingPort, setSavingPort] = useState(false);
   const [folderRefreshKey, setFolderRefreshKey] = useState(0);
-  const [projectFilesActionLoading, setProjectFilesActionLoading] = useState<"rebuild" | "desktop" | null>(null);
+  const [projectFilesActionLoading, setProjectFilesActionLoading] = useState<"rebuild" | "desktop" | "deleteAll" | null>(null);
+  const [projectFilesCurrentPath, setProjectFilesCurrentPath] = useState(".cursor");
+  const [projectFilesEntries, setProjectFilesEntries] = useState<FileEntry[]>([]);
   const [initializeRulesLoading, setInitializeRulesLoading] = useState(false);
+  const [rulePreview, setRulePreview] = useState<{ name: string; content: string } | null>(null);
+  const [rulePreviewLoading, setRulePreviewLoading] = useState(false);
   const cancelledRef = useRef(false);
   const scriptsCancelledRef = useRef(false);
 
-  /** Inner tabs: Project Files first, then Run, Prompts, Rules, then the rest. */
-  const INNER_TAB_VALUES = ["project-files", "run", "prompts", "rules", "all", "adr", "agents"] as const;
+  /** Inner tabs: Project Files first, then Run, Prompts, Rules, MCP, then the rest. */
+  const INNER_TAB_VALUES = ["project-files", "run", "prompts", "rules", "mcp", "all", "adr", "agents"] as const;
   const [innerTab, setInnerTab] = useState<string>(() => {
     if (typeof window === "undefined") return "all";
     const h = window.location.hash.slice(1).toLowerCase();
     return INNER_TAB_VALUES.includes(h as (typeof INNER_TAB_VALUES)[number]) ? h : "all";
   });
 
-  /** Accordion section open by default or from hash when inner tab is "all". Order: project-files, run, rules, adr, agents. */
-  const ACCORDION_VALUES = ["project-files", "run", "rules", "adr", "agents"] as const;
+  /** Accordion section open by default or from hash when inner tab is "all". Order: project-files, run, rules, mcp, adr, agents. */
+  const ACCORDION_VALUES = ["project-files", "run", "rules", "mcp", "adr", "agents"] as const;
   const [openSection, setOpenSection] = useState<string>(() => {
     if (typeof window === "undefined") return "project-files";
     const h = window.location.hash.slice(1).toLowerCase();
@@ -235,6 +241,32 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
     }
   }, [projectId, project.repoPath, loadAdrAndRules]);
 
+  const handleOpenRulePreview = useCallback(
+    async (entry: FileEntry) => {
+      if (entry.isDirectory || !project.repoPath) return;
+      const relativePath = `${RULES_DIR}/${entry.name}`;
+      setRulePreview({ name: entry.name, content: "" });
+      setRulePreviewLoading(true);
+      try {
+        const raw = await readProjectFile(projectId, relativePath, project.repoPath);
+        let content: string;
+        try {
+          const parsed = JSON.parse(raw) as unknown;
+          content = JSON.stringify(parsed, null, 2);
+        } catch {
+          content = raw;
+        }
+        setRulePreview({ name: entry.name, content });
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Failed to read rule");
+        setRulePreview(null);
+      } finally {
+        setRulePreviewLoading(false);
+      }
+    },
+    [projectId, project.repoPath]
+  );
+
   useEffect(() => {
     cancelledRef.current = false;
     loadAdrAndRules();
@@ -311,6 +343,10 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
           <TabsTrigger value="rules" className="gap-1.5 text-xs data-[state=active]:bg-background">
             <Folder className="size-3.5" />
             Rules
+          </TabsTrigger>
+          <TabsTrigger value="mcp" className="gap-1.5 text-xs data-[state=active]:bg-background">
+            <Plug className="size-3.5" />
+            MCP
           </TabsTrigger>
           <TabsTrigger value="all" className="gap-1.5 text-xs data-[state=active]:bg-background">
             <FolderOpen className="size-3.5" />
@@ -566,7 +602,11 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
                 </TableHeader>
                 <TableBody>
                   {rulesEntries.map((e) => (
-                    <TableRow key={e.name}>
+                    <TableRow
+                      key={e.name}
+                      className={cn(!e.isDirectory && "cursor-pointer hover:bg-muted/50")}
+                      onClick={() => !e.isDirectory && void handleOpenRulePreview(e)}
+                    >
                       <TableCell className="font-mono text-xs">{e.name}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">{formatSize(e.size)}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">{formatUpdatedAt(e.updatedAt)}</TableCell>
@@ -575,6 +615,19 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
                 </TableBody>
               </Table>
             )}
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* MCP — .cursor/mcp.json and addable MCPs */}
+            <AccordionItem value="mcp" className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden data-[state=open]:border-amber-500/30">
+              <AccordionTrigger className="px-5 py-3 hover:no-underline hover:bg-muted/20 [&[data-state=open]]:border-b [&[data-state=open]]:border-border/40">
+                <div className="flex items-center gap-2">
+                  <Plug className="h-4 w-4 text-amber-500" />
+                  <h3 className="text-sm font-semibold">MCP</h3>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-5 pb-5 pt-2">
+                <ProjectMcpSection project={project} projectId={projectId} />
               </AccordionContent>
             </AccordionItem>
 
@@ -669,7 +722,11 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
                   </TableHeader>
                   <TableBody>
                     {rulesEntries.map((e) => (
-                      <TableRow key={e.name}>
+                      <TableRow
+                        key={e.name}
+                        className={cn(!e.isDirectory && "cursor-pointer hover:bg-muted/50")}
+                        onClick={() => !e.isDirectory && void handleOpenRulePreview(e)}
+                      >
                         <TableCell className="font-mono text-xs">{e.name}</TableCell>
                         <TableCell className="text-xs text-muted-foreground">{formatSize(e.size)}</TableCell>
                         <TableCell className="text-xs text-muted-foreground">{formatUpdatedAt(e.updatedAt)}</TableCell>
@@ -678,6 +735,20 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
                   </TableBody>
                 </Table>
               )}
+              {rulePreviewLoading && (
+                <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1.5">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  Loading…
+                </p>
+              )}
+            </div>
+          </ScrollArea>
+        </TabsContent>
+
+        <TabsContent value="mcp" className="mt-0">
+          <ScrollArea className="h-[calc(100vh-14rem)]">
+            <div className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden p-5 pr-4">
+              <ProjectMcpSection project={project} projectId={projectId} />
             </div>
           </ScrollArea>
         </TabsContent>
@@ -757,6 +828,49 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
                     <Button
                       variant="outline"
                       size="sm"
+                      className="gap-1.5 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                      disabled={projectFilesActionLoading != null || projectFilesEntries.filter((e) => e.name !== "." && e.name !== "..").length === 0}
+                      onClick={async () => {
+                        const toDelete = projectFilesEntries.filter(
+                          (e) => e.name !== "." && e.name !== ".."
+                        );
+                        if (toDelete.length === 0) return;
+                        setProjectFilesActionLoading("deleteAll");
+                        try {
+                          const base = projectFilesCurrentPath || "";
+                          // Delete files first, then directories (recursive)
+                          const filesFirst = [...toDelete].sort((a, b) =>
+                            a.isDirectory === b.isDirectory ? 0 : a.isDirectory ? 1 : -1
+                          );
+                          for (const e of filesFirst) {
+                            const path = base ? `${base}/${e.name}` : e.name;
+                            await deleteProjectPath(
+                              projectId,
+                              path,
+                              project.repoPath ?? undefined,
+                              e.isDirectory
+                            );
+                          }
+                          toast.success(`Deleted ${toDelete.length} item(s).`);
+                          setFolderRefreshKey((k) => k + 1);
+                        } catch (e) {
+                          toast.error(e instanceof Error ? e.message : "Failed to delete some items");
+                        } finally {
+                          setProjectFilesActionLoading(null);
+                        }
+                      }}
+                      title="Delete all files and folders in the current project files folder"
+                    >
+                      {projectFilesActionLoading === "deleteAll" ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-3.5 w-3.5" />
+                      )}
+                      Delete all
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className="gap-1.5"
                       disabled={!isTauri || projectFilesActionLoading != null}
                       onClick={async () => {
@@ -780,7 +894,14 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
                     </Button>
                   </div>
                 </div>
-                <ProjectFilesTab project={project} projectId={projectId} />
+                <ProjectFilesTab
+                  project={project}
+                  projectId={projectId}
+                  onStateChange={(path, entries) => {
+                    setProjectFilesCurrentPath(path);
+                    setProjectFilesEntries(entries);
+                  }}
+                />
               </div>
             </div>
           </ScrollArea>
@@ -962,6 +1083,26 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
         </TabsContent>
       </Tabs>
       <RebuildDesktopSection />
+
+      <Dialog open={!!rulePreview || rulePreviewLoading} onOpenChange={(open) => !open && setRulePreview(null)}>
+        <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="text-sm font-mono truncate pr-8">{rulePreview?.name ?? "Rule"}</DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="flex-1 min-h-0 rounded-md border bg-muted/10 p-4">
+            {rulePreviewLoading && !rulePreview ? (
+              <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading…
+              </div>
+            ) : (
+              <pre className="text-xs font-mono whitespace-pre-wrap break-words">
+                {rulePreview?.content ?? ""}
+              </pre>
+            )}
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

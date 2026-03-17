@@ -245,6 +245,65 @@ export async function writeProjectFile(
   }
 }
 
+/** Delete a file under the project repo. In Tauri pass repoPath; in browser uses projectId. Only files (not directories) can be deleted. */
+export async function deleteProjectFile(
+  projectId: string,
+  relativePath: string,
+  repoPath?: string
+): Promise<void> {
+  return deleteProjectPath(projectId, relativePath, repoPath, false);
+}
+
+/** Delete a file or directory under the project repo. When recursive is true, directories and all contents are removed. */
+export async function deleteProjectPath(
+  projectId: string,
+  relativePath: string,
+  repoPath?: string,
+  recursive = false
+): Promise<void> {
+  if (isTauri && repoPath) {
+    try {
+      if (recursive) {
+        await invoke("delete_path_under_root", {
+          root: repoPath,
+          relativePath,
+          recursive: true,
+        });
+      } else {
+        await invoke("delete_file_under_root", {
+          root: repoPath,
+          relativePath,
+        });
+      }
+      return;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes("invoke") && msg.includes("not available")) {
+        // Fall through to fetch
+      } else {
+        throw err;
+      }
+    }
+  }
+  const q = new URLSearchParams({ path: relativePath });
+  if (recursive) q.set("recursive", "1");
+  const res = await fetch(
+    `/api/data/projects/${projectId}/file?${q.toString()}`,
+    { method: "DELETE" }
+  );
+  if (!res.ok) {
+    const text = await res.text();
+    let msg = res.statusText;
+    try {
+      const j = JSON.parse(text) as { error?: string };
+      if (j.error) msg = j.error;
+    } catch {
+      if (text) msg = text;
+    }
+    throw new Error(msg);
+  }
+}
+
 export type FileEntry = {
   name: string;
   isDirectory: boolean;

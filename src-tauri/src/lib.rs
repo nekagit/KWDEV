@@ -1705,6 +1705,45 @@ fn write_spec_file(project_path: String, relative_path: String, content: String)
     Ok(())
 }
 
+/// Delete a file under the project root. relative_path should be like ".cursor/foo.md". Only files are deleted, not directories.
+#[tauri::command]
+fn delete_file_under_root(root: String, relative_path: String) -> Result<(), String> {
+    delete_path_under_root_impl(root, relative_path, false)
+}
+
+/// Delete a file or directory under the project root. relative_path like ".cursor/foo.md" or ".cursor/subdir".
+/// If recursive is true, directories are removed with all contents; otherwise only files can be deleted.
+#[tauri::command]
+fn delete_path_under_root(root: String, relative_path: String, recursive: bool) -> Result<(), String> {
+    delete_path_under_root_impl(root, relative_path, recursive)
+}
+
+fn delete_path_under_root_impl(root: String, relative_path: String, recursive: bool) -> Result<(), String> {
+    let base = PathBuf::from(root.trim());
+    if !base.exists() || !base.is_dir() {
+        return Err("Project path does not exist or is not a directory".to_string());
+    }
+    let base_canonical = base.canonicalize().map_err(|e| e.to_string())?;
+    let normalized = relative_path.trim().trim_start_matches('/');
+    if normalized.is_empty() || normalized == "." || normalized == ".." || normalized.contains("/..") || normalized.starts_with("..") {
+        return Err("Invalid path".to_string());
+    }
+    let full = base_canonical.join(normalized);
+    let full_canonical = full.canonicalize().map_err(|e| e.to_string())?;
+    if !full_canonical.starts_with(&base_canonical) {
+        return Err("Path escapes project root".to_string());
+    }
+    if full_canonical.is_dir() {
+        if !recursive {
+            return Err("Cannot delete a directory; use recursive delete".to_string());
+        }
+        std::fs::remove_dir_all(&full_canonical).map_err(|e| e.to_string())?;
+    } else {
+        std::fs::remove_file(&full_canonical).map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
 /// Archive .cursor/7. planner/tickets.md or .cursor/7. planner/features.md to .cursor/legacy/{file}-YYYY-MM-DD.md and create a new empty file.
 /// file_kind must be "tickets" or "features".
 #[tauri::command]
@@ -4391,6 +4430,8 @@ pub fn run() {
             list_scripts,
             list_cursor_folder,
             write_spec_file,
+            delete_file_under_root,
+            delete_path_under_root,
             archive_cursor_file,
             get_git_info,
             get_git_head,
