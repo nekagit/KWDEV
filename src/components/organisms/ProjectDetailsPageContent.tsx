@@ -686,7 +686,7 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
         >
           {/* Left sidebar: project section tabs (vertical) */}
           <TabsList
-            className="inline-flex h-auto flex-col flex-nowrap gap-1 rounded-none rounded-r-xl border-r border-border/60 bg-sidebar p-2 w-52 shrink-0 min-h-0 overflow-y-auto"
+            className="inline-flex self-stretch min-h-0 flex-col flex-nowrap gap-1 rounded-none rounded-r-xl border-r border-border/60 bg-sidebar p-2 w-52 shrink-0 overflow-y-auto"
             aria-label="Project sections"
           >
             {[...TAB_ROW_1, ...TAB_ROW_2].map((tab) => (
