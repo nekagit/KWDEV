@@ -101,7 +101,6 @@ import {
   FileOutput,
   Wrench,
   Settings2,
-  FileCode,
   Plug,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -120,6 +119,13 @@ import { downloadAllRunHistoryMarkdown, copyAllRunHistoryMarkdownToClipboard } f
 import { PrintButton } from "@/components/molecules/Buttons/PrintButton";
 import { RelativeTimeWithTooltip } from "@/components/molecules/Displays/RelativeTimeWithTooltip";
 import { buildStaticAnalysisPrompt } from "@/lib/static-analysis-checklist";
+import {
+  getWorkerEnhancementToolLabelsByIds,
+  getWorkerEnhancementToolIds,
+  sanitizeWorkerEnhancementToolIds,
+  WORKER_ENHANCEMENT_TOOL_CATEGORIES,
+} from "@/lib/worker-enhancements-tools";
+import { buildWorkerEnhancementsTestingPrompt } from "@/lib/worker-enhancements-testing-prompt";
 import { getRunHistoryPreferences, setRunHistoryPreferences, DEFAULT_RUN_HISTORY_PREFERENCES, RUN_HISTORY_FILTER_QUERY_MAX_LEN, RUN_HISTORY_PREFERENCES_RESTORED_EVENT, type StoredSlotFilter, VALID_SLOT_OPTIONS } from "@/lib/run-history-preferences";
 import { groupRunHistoryByDate, RUN_HISTORY_DATE_GROUP_LABELS, getRunHistoryDateGroupOrder, getRunHistoryDateGroupTitle } from "@/lib/run-history-date-groups";
 import { useRunHistoryFocusFilterShortcut } from "@/lib/run-history-focus-filter-shortcut";
@@ -131,6 +137,19 @@ import { downloadRunHistoryStatsAsCsv, copyRunHistoryStatsAsCsvToClipboard } fro
 import { StatusPill } from "@/components/molecules/Displays/DisplayPrimitives";
 import { TerminalSlot } from "@/components/molecules/Display/TerminalSlot";
 import { WorkerAgentCard } from "@/components/molecules/CardsAndDisplay/WorkerAgentCard";
+import { ProjectWorkerAgentsSection } from "@/components/organisms/Tabs/ProjectWorkerAgentsSection";
+import { toggleWorkerRunSection } from "@/lib/worker-run-sections";
+import {
+  getWorkerRunSectionsGridClassName,
+  WORKER_RUN_SECTION_CARD_CLASSNAME,
+  WORKER_RUN_SECTION_SURFACE_CLASSNAME,
+} from "@/lib/worker-run-layout";
+import {
+  getWorkerTopAppButtonClassName,
+  TERMINAL_TOP_APP_LABEL,
+  WORKER_TOP_APP_IDS,
+  WORKER_TOP_APPS_ROW_CLASSNAME,
+} from "@/lib/worker-run-top-apps";
 import { KanbanTicketCard } from "@/components/organisms/Kanban/KanbanTicketCard";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -1188,7 +1207,7 @@ function WorkerNightShiftSection({
   }, [setNightShiftActive, setNightShiftReplenishCallback, setNightShiftCircleState, setNightShiftIdeaDrivenState, setIdeaDrivenAutoState, setIdeaDrivenTicketPhases, clearIdeaDrivenProgress]);
 
   return (
-    <div className="rounded-2xl surface-card border border-border/50 overflow-hidden bg-purple-500/[0.06]">
+    <div className={cn("surface-card", WORKER_RUN_SECTION_SURFACE_CLASSNAME["night-shift"])}>
       <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
         <div className="flex items-center gap-2.5">
           <div className="flex items-center justify-center size-7 rounded-lg bg-purple-500/10">
@@ -1204,9 +1223,8 @@ function WorkerNightShiftSection({
         <div className="flex items-center gap-2">
           {nightShiftActive ? (
             <Button
-              variant="outline"
               size="sm"
-              className="h-8 text-xs gap-1.5 border-amber-500/50 text-amber-600 hover:bg-amber-500/10"
+              className="h-8 text-xs gap-1.5 bg-gradient-to-r from-amber-500/85 to-orange-500/85 text-white hover:from-amber-400 hover:to-orange-400"
               onClick={handleStop}
               title="Stop night shift (no new runs)"
             >
@@ -1218,7 +1236,7 @@ function WorkerNightShiftSection({
               <Button
                 variant="default"
                 size="sm"
-                className="h-8 text-xs gap-1.5 bg-indigo-600 hover:bg-indigo-700"
+                className="h-8 text-xs gap-1.5 bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:from-indigo-400 hover:to-violet-400"
                 disabled={!projectPath?.trim() || starting}
                 onClick={handleStart}
                 title="Start 3 agents with same prompt in a loop"
@@ -1227,9 +1245,8 @@ function WorkerNightShiftSection({
                 Start
               </Button>
               <Button
-                variant="outline"
                 size="sm"
-                className="h-8 text-xs gap-1.5 border-indigo-500/50 text-indigo-600 hover:bg-indigo-500/10"
+                className="h-8 text-xs gap-1.5 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white hover:from-violet-400 hover:to-fuchsia-400"
                 disabled={!projectPath?.trim() || starting}
                 onClick={handleCircleStart}
                 title="Run Create → Implement → Test → Debugging → Refactor (3 agents per phase)"
@@ -1238,9 +1255,8 @@ function WorkerNightShiftSection({
                 Circle
               </Button>
               <Button
-                variant="outline"
                 size="sm"
-                className="h-8 text-xs gap-1.5 border-sky-500/50 text-sky-600 hover:bg-sky-500/10"
+                className="h-8 text-xs gap-1.5 bg-gradient-to-r from-sky-500 to-cyan-500 text-white hover:from-sky-400 hover:to-cyan-400"
                 disabled={!projectPath?.trim() || starting || startingIdeaDriven || !isTauri}
                 onClick={() => setIdeaDrivenDialogOpen(true)}
                 title="Implement tickets (one run per ticket, desktop only)"
@@ -1320,7 +1336,7 @@ function WorkerNightShiftSection({
           )}
 
           {(ideaDrivenChecklist.length > 0 || ideaDrivenLogs.length > 0) && (
-            <div className="border-t border-border/50 px-5 py-4 space-y-3 bg-muted/20">
+            <div className="px-5 py-4 space-y-3 bg-purple-500/[0.08]">
               <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                 <ListChecks className="size-3.5" />
                 Idea-driven progress
@@ -1346,7 +1362,7 @@ function WorkerNightShiftSection({
               {ideaDrivenLogs.length > 0 && (
                 <div className="space-y-1">
                   <span className="text-[10px] font-medium text-muted-foreground">Logs</span>
-                  <ScrollArea className="h-24 rounded-md border border-border/50 bg-background/80 p-2">
+                  <ScrollArea className="h-24 rounded-md bg-background/80 p-2">
                     <div className="space-y-1 text-[11px] text-muted-foreground font-mono">
                       {[...ideaDrivenLogs].reverse().map((log) => (
                         <div key={log.id} className="flex gap-2">
@@ -1482,10 +1498,19 @@ interface ProjectRunTabProps {
   agentProvider?: "cursor" | "claude" | "gemini";
 }
 
+type WorkerRunAppId =
+  | "status"
+  | "queue"
+  | "agents"
+  | "vibing"
+  | "enhancements"
+  | "terminal-output";
+
 export function ProjectRunTab({ project, projectId, agentProvider = "cursor" }: ProjectRunTabProps) {
   const [kanbanData, setKanbanData] = useState<TodosKanbanData | null>(null);
   const [kanbanLoading, setKanbanLoading] = useState(false);
   const [kanbanError, setKanbanError] = useState<string | null>(null);
+  const [openWorkerApps, setOpenWorkerApps] = useState<WorkerRunAppId[]>([]);
   const runningRuns = useRunStore((s) => s.runningRuns);
   const runningTerminalCount = runningRuns.filter((r) => isImplementAllRun(r) && r.status === "running").length;
 
@@ -1764,85 +1789,204 @@ export function ProjectRunTab({ project, projectId, agentProvider = "cursor" }: 
     );
   }
 
+  const workerApps = [
+    {
+      id: "agents",
+      label: "Agents",
+      icon: Plug,
+      accent: {
+        icon: "text-cyan-400",
+        iconBg: "bg-cyan-500/12 border-cyan-500/40",
+        active: "bg-cyan-500/12 border-cyan-500/45 shadow-sm",
+      },
+      render: () => (
+        <ProjectWorkerAgentsSection
+          project={project}
+          projectId={projectId}
+          projectPath={project.repoPath?.trim() ?? ""}
+          agentProvider={agentProvider}
+          nightShiftContent={
+            <WorkerNightShiftSection
+              projectId={projectId}
+              projectPath={project.repoPath?.trim() ?? ""}
+              project={project}
+              agentProvider={agentProvider}
+            />
+          }
+        />
+      ),
+    },
+    {
+      id: "vibing",
+      label: "Vibing",
+      icon: Sparkles,
+      accent: {
+        icon: "text-fuchsia-400",
+        iconBg: "bg-fuchsia-500/12 border-fuchsia-500/40",
+        active: "bg-fuchsia-500/12 border-fuchsia-500/45 shadow-sm",
+      },
+      render: () => (
+        <WorkerVibingSection
+          project={project}
+          projectId={projectId}
+          projectPath={project.repoPath?.trim() ?? ""}
+          repoPath={project.repoPath ?? ""}
+          onTicketCreated={loadTicketsAndKanban}
+          agentProvider={agentProvider}
+        />
+      ),
+    },
+    {
+      id: "enhancements",
+      label: "Quality",
+      icon: Settings2,
+      accent: {
+        icon: "text-violet-400",
+        iconBg: "bg-violet-500/12 border-violet-500/40",
+        active: "bg-violet-500/12 border-violet-500/45 shadow-sm",
+      },
+      render: () => (
+        <WorkerEnhancementsSection
+          projectId={projectId}
+          repoPath={project.repoPath ?? ""}
+          project={project}
+          agentProvider={agentProvider}
+        />
+      ),
+    },
+    {
+      id: "terminal-output",
+      label: TERMINAL_TOP_APP_LABEL,
+      icon: Terminal,
+      accent: {
+        icon: "text-sky-400",
+        iconBg: "bg-sky-500/12 border-sky-500/40",
+        active: "bg-sky-500/12 border-sky-500/45 shadow-sm",
+      },
+      render: () => (
+        <div className="rounded-2xl overflow-hidden bg-gradient-to-br from-teal-500/[0.12] via-cyan-500/[0.08] to-emerald-500/[0.1]">
+          <div className="px-5 pt-5 pb-5">
+            <div className="mb-4">
+              <WorkerStatusBar />
+            </div>
+            <Tabs defaultValue="terminals" className="w-full">
+              <TabsList className="flex w-full h-9 rounded-lg bg-teal-500/[0.12] p-1 gap-0.5">
+                <TabsTrigger value="terminals" className="flex-1 min-w-0 text-xs rounded-md inline-flex items-center justify-center gap-1.5">
+                  Terminals
+                  {runningTerminalCount > 0 && (
+                    <span className="inline-flex items-center justify-center size-4 rounded-full bg-sky-500/25 text-sky-400 text-[10px] font-semibold tabular-nums shrink-0">
+                      {runningTerminalCount}
+                    </span>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="queue" className="flex-1 min-w-0 text-xs rounded-md truncate">
+                  Queue
+                </TabsTrigger>
+                <TabsTrigger value="history" className="flex-1 min-w-0 text-xs rounded-md truncate">
+                  History
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="terminals" className="mt-4 px-0 pt-0">
+                <WorkerTerminalsSection
+                  kanbanData={kanbanData}
+                  projectId={projectId}
+                  projectPath={project.repoPath?.trim() ?? ""}
+                  repoPath={project.repoPath ?? ""}
+                  handleMarkDone={handleMarkDone}
+                  handleRedo={handleRedo}
+                  handleArchive={handleArchive}
+                  embedded
+                />
+              </TabsContent>
+              <TabsContent value="queue" className="mt-4 px-0 pt-0">
+                <WorkerGeneralQueueSection
+                  projectId={projectId}
+                  repoPath={project.repoPath ?? ""}
+                  projectPath={project.repoPath?.trim() ?? ""}
+                  kanbanData={kanbanData}
+                  onRunInProgress={handleRunInProgressTickets}
+                  onMarkAllInProgressDone={handleMarkAllInProgressDone}
+                  embedded
+                />
+              </TabsContent>
+              <TabsContent value="history" className="mt-4 px-0 pt-0">
+                <WorkerHistorySection embedded />
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
+      ),
+    },
+  ] as const;
+  const topWorkerApps = workerApps.filter((app) =>
+    WORKER_TOP_APP_IDS.includes(app.id)
+  );
+  const openWorkerAppSections = topWorkerApps.filter((app) => openWorkerApps.includes(app.id));
+
   return (
     <div className="flex flex-col gap-5">
       {!isTauri && (
-        <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">
+        <div className="rounded-xl bg-amber-500/12 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">
           <strong>Worker agents require the desktop app.</strong> Run the app with Tauri (e.g. <code className="rounded bg-amber-500/20 px-1">npm run tauri dev</code> from the repo or install the desktop build) to use Asking, Plan, Fast development, Debugging, and Night shift.
         </div>
       )}
-      {/* ═══ Status Bar ═══ */}
-      <WorkerStatusBar />
-
-      {/* ═══ Pending queue list (when any queued) ═══ */}
-      <WorkerPendingQueueSection />
-
-      {/* ═══ Vibing — Asking, Planning, Fast Development, Debugging, Night Shift ═══ */}
-      <WorkerVibingSection
-        project={project}
-        projectId={projectId}
-        projectPath={project.repoPath?.trim() ?? ""}
-        repoPath={project.repoPath ?? ""}
-        onTicketCreated={loadTicketsAndKanban}
-        agentProvider={agentProvider}
-      />
-
-      {/* ═══ Enhancements — Tools + Context ═══ */}
-      <WorkerEnhancementsSection
-        projectId={projectId}
-        repoPath={project.repoPath ?? ""}
-        project={project}
-      />
-
-      {/* ═══ Terminal Output + Queue + History (tabbed) ═══ */}
-      <div className="rounded-2xl border border-border/50 overflow-hidden bg-teal-500/[0.08]">
-        <div className="px-5 pt-5 pb-5">
-          <Tabs defaultValue="terminals" className="w-full">
-            <TabsList className="flex w-full h-9 rounded-lg bg-teal-500/[0.12] p-1 gap-0.5">
-              <TabsTrigger value="terminals" className="flex-1 min-w-0 text-xs rounded-md inline-flex items-center justify-center gap-1.5">
-                Terminals
-                {runningTerminalCount > 0 && (
-                  <span className="inline-flex items-center justify-center size-4 rounded-full bg-sky-500/25 text-sky-400 text-[10px] font-semibold tabular-nums shrink-0">
-                    {runningTerminalCount}
-                  </span>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="queue" className="flex-1 min-w-0 text-xs rounded-md truncate">
-                Queue
-              </TabsTrigger>
-              <TabsTrigger value="history" className="flex-1 min-w-0 text-xs rounded-md truncate">
-                History
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="terminals" className="mt-4 px-0 pt-0">
-              <WorkerTerminalsSection
-                kanbanData={kanbanData}
-                projectId={projectId}
-                projectPath={project.repoPath?.trim() ?? ""}
-                repoPath={project.repoPath ?? ""}
-                handleMarkDone={handleMarkDone}
-                handleRedo={handleRedo}
-                handleArchive={handleArchive}
-                embedded
-              />
-            </TabsContent>
-            <TabsContent value="queue" className="mt-4 px-0 pt-0">
-              <WorkerGeneralQueueSection
-                projectId={projectId}
-                repoPath={project.repoPath ?? ""}
-                projectPath={project.repoPath?.trim() ?? ""}
-                kanbanData={kanbanData}
-                onRunInProgress={handleRunInProgressTickets}
-                onMarkAllInProgressDone={handleMarkAllInProgressDone}
-                embedded
-              />
-            </TabsContent>
-            <TabsContent value="history" className="mt-4 px-0 pt-0">
-              <WorkerHistorySection embedded />
-            </TabsContent>
-          </Tabs>
+      <div className="rounded-2xl bg-gradient-to-br from-card/85 via-card/80 to-indigo-500/[0.08] p-4">
+        <div className={WORKER_TOP_APPS_ROW_CLASSNAME}>
+          {topWorkerApps.map((app) => {
+            const Icon = app.icon;
+            const isActive = openWorkerApps.includes(app.id);
+            return (
+              <button
+                key={app.id}
+                type="button"
+                onClick={() => setOpenWorkerApps((prev) => toggleWorkerRunSection(prev, app.id))}
+                className={cn(getWorkerTopAppButtonClassName(isActive, app.accent.active))}
+                aria-pressed={isActive}
+              >
+                <span
+                  className={cn(
+                    "inline-flex size-11 items-center justify-center rounded-xl border-0",
+                    isActive
+                      ? cn(app.accent.iconBg, "border-0")
+                      : "bg-muted/40"
+                  )}
+                >
+                  <Icon
+                    className={cn(
+                      "size-5",
+                      app.accent.icon,
+                      !isActive && "opacity-90 group-hover:opacity-100"
+                    )}
+                  />
+                </span>
+                <span className="text-[11px] font-medium leading-tight text-center">
+                  {app.label}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
+
+      {openWorkerAppSections.length > 0 && (
+        <div className={getWorkerRunSectionsGridClassName(openWorkerAppSections.length)}>
+          {openWorkerAppSections.map((section) => (
+            <div key={section.id} className={WORKER_RUN_SECTION_CARD_CLASSNAME}>
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <h3 className="text-sm font-semibold tracking-tight">{section.label}</h3>
+                <Button
+                  size="sm"
+                  className="h-7 px-2 text-xs bg-gradient-to-r from-violet-500/80 to-indigo-500/80 text-white hover:from-violet-400 hover:to-indigo-400"
+                  onClick={() => setOpenWorkerApps((prev) => prev.filter((id) => id !== section.id))}
+                >
+                  Collapse
+                </Button>
+              </div>
+              {section.render()}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -2537,7 +2681,7 @@ function WorkerStatusBar() {
   };
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-border/40 bg-gradient-to-r from-sky-500/[0.06] via-card to-teal-500/[0.06] p-5 backdrop-blur-sm">
+    <div className={cn("relative p-5 backdrop-blur-sm", WORKER_RUN_SECTION_SURFACE_CLASSNAME.status)}>
       {/* Decorative orb */}
       <div className="absolute -top-12 -right-12 size-32 rounded-full bg-sky-500/[0.08] blur-3xl pointer-events-none" />
       <div className="absolute -bottom-8 -left-8 size-24 rounded-full bg-teal-500/[0.06] blur-2xl pointer-events-none" />
@@ -2634,7 +2778,7 @@ function WorkerPendingQueueSection() {
   if (pendingQueue.length === 0) return null;
 
   return (
-    <div className="rounded-2xl surface-card border border-border/50 overflow-hidden bg-violet-500/[0.06]">
+    <div className={cn("surface-card", WORKER_RUN_SECTION_SURFACE_CLASSNAME.queue)}>
       <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
         <div className="flex items-center gap-2.5">
           <div className="flex items-center justify-center size-7 rounded-lg bg-violet-500/10">
@@ -3293,39 +3437,26 @@ function WorkerDebuggingSection({
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   Enhancements — Tools (static analysis selection) + Context (prompts, rules, MCPs)
+   Enhancements — category-based cleanup/refactor tools
    ═══════════════════════════════════════════════════════════════════════════ */
-
-const RULES_DIR = ".cursor/rules";
-
-/** Worker prompt paths included when running Asking, Planning, Fast, Debugging, or Night shift. */
-const WORKER_CONTEXT_PROMPT_PATHS = [
-  { path: AGENTS_ROOT, label: "Agent instructions (all .md)", modes: "Asking, Planning, Fast, Debugging, Night shift" },
-  { path: WORKER_FIX_BUG_PROMPT_PATH, label: "Fix bug", modes: "Debugging" },
-  { path: WORKER_NIGHT_SHIFT_PROMPT_PATH, label: "Night shift", modes: "Night shift" },
-  { path: WORKER_NIGHT_SHIFT_PHASE_PROMPT_PATHS.create, label: "Create phase", modes: "Night shift Circle" },
-  { path: WORKER_NIGHT_SHIFT_PHASE_PROMPT_PATHS.implement, label: "Implement phase", modes: "Night shift Circle" },
-  { path: WORKER_NIGHT_SHIFT_PHASE_PROMPT_PATHS.test, label: "Test phase", modes: "Night shift Circle" },
-  { path: WORKER_NIGHT_SHIFT_PHASE_PROMPT_PATHS.debugging, label: "Debugging phase", modes: "Night shift Circle" },
-  { path: WORKER_NIGHT_SHIFT_PHASE_PROMPT_PATHS.refactor, label: "Refactor phase", modes: "Night shift Circle" },
-] as const;
 
 function WorkerEnhancementsSection({
   projectId,
   repoPath,
   project,
+  agentProvider = "cursor",
 }: {
   projectId: string;
   repoPath: string;
   project: Project | null;
+  agentProvider?: "cursor" | "claude" | "gemini";
 }) {
-  const allToolIds = useMemo(() => STATIC_ANALYSIS_CHECKLIST.tools.map((t) => t.id), []);
+  const runTempTicket = useRunStore((s) => s.runTempTicket);
+  const allToolIds = useMemo(() => getWorkerEnhancementToolIds(), []);
   const [selectedToolIds, setSelectedToolIds] = useState<string[]>(allToolIds);
   const [configLoaded, setConfigLoaded] = useState(false);
   const [savingTools, setSavingTools] = useState(false);
-  const [agentsEntries, setAgentsEntries] = useState<{ name: string }[]>([]);
-  const [rulesEntries, setRulesEntries] = useState<{ name: string }[]>([]);
-  const [contextLoading, setContextLoading] = useState(false);
+  const [runningQualityAudit, setRunningQualityAudit] = useState(false);
 
   useEffect(() => {
     if (!isTauri) {
@@ -3334,13 +3465,11 @@ function WorkerEnhancementsSection({
       return;
     }
     let cancelled = false;
-    getProjectConfig(projectId, "static_analysis_tools")
+    getProjectConfig(projectId, "cleanup_refactor_tools")
       .then((res) => {
         if (cancelled) return;
-        const ids = res.config?.toolIds;
-        if (Array.isArray(ids) && ids.length > 0) {
-          setSelectedToolIds(ids.filter((id) => allToolIds.includes(id)));
-        }
+        const ids = sanitizeWorkerEnhancementToolIds(res.config?.toolIds);
+        if (ids.length > 0) setSelectedToolIds(ids);
         setConfigLoaded(true);
       })
       .catch(() => setConfigLoaded(true));
@@ -3357,8 +3486,8 @@ function WorkerEnhancementsSection({
       setSelectedToolIds(next);
       if (isTauri) {
         setSavingTools(true);
-        setProjectConfig(projectId, "static_analysis_tools", { toolIds: next })
-          .then(() => toast.success("Static analysis tools saved for this project."))
+        setProjectConfig(projectId, "cleanup_refactor_tools", { toolIds: next })
+          .then(() => toast.success("Selected tools saved for this project."))
           .catch((e) => toast.error(e instanceof Error ? e.message : "Failed to save"))
           .finally(() => setSavingTools(false));
       }
@@ -3366,26 +3495,41 @@ function WorkerEnhancementsSection({
     [projectId, selectedToolIds, allToolIds]
   );
 
-  useEffect(() => {
-    if (!repoPath?.trim()) {
-      setAgentsEntries([]);
-      setRulesEntries([]);
+  const handleRunQualityAudit = useCallback(async () => {
+    const projectPath = repoPath?.trim();
+    if (!projectPath) {
+      toast.error("Project path is missing. Set the project repo path in project details.");
       return;
     }
-    setContextLoading(true);
-    Promise.all([
-      listProjectFiles(projectId, AGENTS_ROOT, repoPath).catch(() => []),
-      listProjectFiles(projectId, RULES_DIR, repoPath).catch(() => []),
-    ])
-      .then(([agents, rules]) => {
-        setAgentsEntries(Array.isArray(agents) ? agents.filter((e) => !e.isDirectory && e.name.endsWith(".md")) : []);
-        setRulesEntries(Array.isArray(rules) ? rules.filter((e) => !e.isDirectory) : []);
-      })
-      .finally(() => setContextLoading(false));
-  }, [projectId, repoPath]);
+    if (selectedToolIds.length === 0) {
+      toast.error("Select at least one Quality item before running the audit.");
+      return;
+    }
+    setRunningQualityAudit(true);
+    try {
+      const selectedLabels = getWorkerEnhancementToolLabelsByIds(selectedToolIds);
+      const prompt = buildWorkerEnhancementsTestingPrompt(selectedLabels);
+      const runId = await runTempTicket(projectPath, prompt, "Quality: audit selected items", {
+        provider: agentProvider,
+      });
+      if (runId) {
+        toast.success(
+          runId === "queued"
+            ? "Quality audit queued. Agent will start when a slot is free."
+            : "Quality audit started. Check the terminal below."
+        );
+      } else {
+        toast.error("Failed to start quality audit.");
+      }
+    } catch {
+      toast.error("Failed to start quality audit.");
+    } finally {
+      setRunningQualityAudit(false);
+    }
+  }, [agentProvider, repoPath, runTempTicket, selectedToolIds]);
 
   return (
-    <div className="rounded-2xl border border-border/50 overflow-hidden bg-violet-500/[0.08]">
+    <div className={WORKER_RUN_SECTION_SURFACE_CLASSNAME.enhancements}>
       <div className="px-5 pt-5 pb-3">
         <div className="flex items-center gap-2.5">
           <div className="flex items-center justify-center size-7 shrink-0 rounded-lg bg-violet-500/10">
@@ -3393,32 +3537,35 @@ function WorkerEnhancementsSection({
           </div>
           <div className="min-w-0">
             <h3 className="text-xs font-semibold text-foreground tracking-tight">
-              Enhancements
+              Quality
             </h3>
             <p className="text-[10px] text-muted-foreground normal-case">
-              Static analysis tools and task context
+              Cleanup and refactoring tool categories
             </p>
           </div>
         </div>
       </div>
       <div className="px-5 pb-5">
-        <Tabs defaultValue="tools" className="w-full">
-          <TabsList className="flex w-full h-9 rounded-lg bg-violet-500/[0.12] p-1 gap-0.5">
-            <TabsTrigger value="tools" className="flex-1 min-w-0 text-xs rounded-md truncate">
-              Tools
-            </TabsTrigger>
-            <TabsTrigger value="context" className="flex-1 min-w-0 text-xs rounded-md truncate">
-              Context
-            </TabsTrigger>
+        <Tabs defaultValue={WORKER_ENHANCEMENT_TOOL_CATEGORIES[0]?.id ?? "code-quality"} className="w-full">
+          <TabsList className="flex w-full h-auto rounded-lg bg-violet-500/[0.12] p-1 gap-0.5 flex-wrap">
+            {WORKER_ENHANCEMENT_TOOL_CATEGORIES.map((category) => (
+              <TabsTrigger
+                key={category.id}
+                value={category.id}
+                className="min-w-0 text-xs rounded-md truncate grow basis-[calc(50%-2px)] lg:basis-auto lg:flex-1"
+              >
+                {category.label}
+              </TabsTrigger>
+            ))}
           </TabsList>
-          <TabsContent value="tools" className="mt-4 px-0 pt-0">
-            {!configLoaded ? (
-              <div className="flex items-center gap-2 text-muted-foreground text-xs py-2">
-                <Loader2 className="size-4 animate-spin" />
-                Loading…
-              </div>
-            ) : (
-              <div className="space-y-2">
+          {!configLoaded ? (
+            <div className="flex items-center gap-2 text-muted-foreground text-xs py-2 mt-4">
+              <Loader2 className="size-4 animate-spin" />
+              Loading…
+            </div>
+          ) : (
+            <>
+              <div className="space-y-2 mt-4">
                 {!isTauri && (
                   <p className="text-xs text-amber-600 dark:text-amber-400">
                     Tool selection is saved only in the desktop app. In browser, selection is for display.
@@ -3431,109 +3578,62 @@ function WorkerEnhancementsSection({
                   </p>
                 )}
                 <p className="text-xs text-muted-foreground">
-                  Choose which static analysis tools to run for this project. Used when you run « Apply static analysis checklist » in Debugging.
+                  Choose cleanup and refactoring tool focus areas for this project.
                 </p>
-                <ScrollArea className="h-[min(320px,45vh)] border rounded-md">
-                  <ul className="p-3 space-y-2">
-                    {STATIC_ANALYSIS_CHECKLIST.tools.map((t) => (
-                      <li key={t.id} className="flex items-start gap-2">
-                        <Checkbox
-                          id={`enh-tool-${t.id}`}
-                          checked={selectedToolIds.includes(t.id)}
-                          onCheckedChange={(checked) => handleToolToggle(t.id, checked === true)}
-                          className="mt-0.5"
-                        />
-                        <label htmlFor={`enh-tool-${t.id}`} className="text-xs cursor-pointer flex-1 min-w-0">
-                          <span className="font-medium">{t.name}</span>
-                          {t.optional && (
-                            <Badge variant="secondary" className="ml-1.5 text-[10px] px-1 py-0">
-                              optional
-                            </Badge>
+                <div className="rounded-md border border-violet-500/25 bg-violet-500/[0.08] p-2.5 space-y-1.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs font-medium text-foreground">
+                      Quality audit report
+                    </p>
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="gap-1.5"
+                      onClick={() => void handleRunQualityAudit()}
+                      disabled={runningQualityAudit || !repoPath?.trim() || selectedToolIds.length === 0}
+                      title="Run an agent that audits all checked Quality items and writes a scored report with suggestions"
+                    >
+                      {runningQualityAudit ? <Loader2 className="size-3.5 animate-spin" /> : <Play className="size-3.5" />}
+                      Run audit
+                    </Button>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    Audits all checked items from Code Quality through Code Refactoring and writes a scored report with findings and suggestions to <code className="rounded bg-muted px-1 py-0.5 font-mono text-[10px]">quality-audit-report.md</code>.
+                  </p>
+                </div>
+              </div>
+              {WORKER_ENHANCEMENT_TOOL_CATEGORIES.map((category) => (
+                <TabsContent key={category.id} value={category.id} className="mt-4 px-0 pt-0">
+                  <ScrollArea className="h-[min(320px,45vh)] border rounded-md">
+                    <div className="p-3 space-y-3">
+                      {category.groups.map((group) => (
+                        <div key={group.id} className="space-y-2">
+                          {category.groups.length > 1 && (
+                            <p className="text-xs font-semibold text-foreground">{group.label}</p>
                           )}
-                          <span className="text-muted-foreground ml-1">({t.category})</span>
-                          <p className="text-muted-foreground mt-0.5 text-[10px]">{t.description}</p>
-                        </label>
-                      </li>
-                    ))}
-                  </ul>
-                </ScrollArea>
-              </div>
-            )}
-          </TabsContent>
-          <TabsContent value="context" className="mt-4 px-0 pt-0">
-            {!repoPath?.trim() ? (
-              <p className="text-xs text-muted-foreground">Set project repo path to see project rules and agents.</p>
-            ) : contextLoading ? (
-              <div className="flex items-center gap-2 text-muted-foreground text-xs py-2">
-                <Loader2 className="size-4 animate-spin" />
-                Loading…
-              </div>
-            ) : (
-              <div className="space-y-4 text-xs">
-                <div>
-                  <h4 className="font-medium flex items-center gap-1.5 mb-1.5">
-                    <FileCode className="size-3.5 text-violet-400" />
-                    Prompts
-                  </h4>
-                  <p className="text-muted-foreground mb-2">
-                    Included when running Night shift, Debugging, Planning, or Fast as applicable.
-                  </p>
-                  <ul className="list-disc list-inside space-y-0.5 text-muted-foreground">
-                    {WORKER_CONTEXT_PROMPT_PATHS.map(({ path, label, modes }) => (
-                      <li key={path}>
-                        <code className="text-[10px] bg-muted/70 px-0.5 rounded">{path}</code>
-                        <span className="text-muted-foreground"> — {label}</span>
-                        <span className="block text-[10px] mt-0.5">({modes})</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-medium flex items-center gap-1.5 mb-1.5">
-                    <FileCode className="size-3.5 text-violet-400" />
-                    Agent instructions
-                  </h4>
-                  {agentsEntries.length > 0 ? (
-                    <ul className="list-disc list-inside text-muted-foreground">
-                      {agentsEntries.map((e) => (
-                        <li key={e.name}>
-                          <code className="text-[10px] bg-muted/70 px-0.5 rounded">{AGENTS_ROOT}/{e.name}</code>
-                        </li>
+                          <ul className="space-y-2">
+                            {group.items.map((item) => (
+                              <li key={item.id} className="flex items-start gap-2">
+                                <Checkbox
+                                  id={`enh-tool-${item.id}`}
+                                  checked={selectedToolIds.includes(item.id)}
+                                  onCheckedChange={(checked) => handleToolToggle(item.id, checked === true)}
+                                  className="mt-0.5"
+                                />
+                                <label htmlFor={`enh-tool-${item.id}`} className="text-xs cursor-pointer flex-1 min-w-0">
+                                  <span className="font-medium">{item.label}</span>
+                                </label>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
                       ))}
-                    </ul>
-                  ) : (
-                    <p className="text-muted-foreground">No .md files in {AGENTS_ROOT} (or workspace data/agents in desktop app).</p>
-                  )}
-                </div>
-                <div>
-                  <h4 className="font-medium flex items-center gap-1.5 mb-1.5">
-                    <FileCode className="size-3.5 text-violet-400" />
-                    Rules
-                  </h4>
-                  {rulesEntries.length > 0 ? (
-                    <ul className="list-disc list-inside text-muted-foreground">
-                      {rulesEntries.map((e) => (
-                        <li key={e.name}>
-                          <code className="text-[10px] bg-muted/70 px-0.5 rounded">{RULES_DIR}/{e.name}</code>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-muted-foreground">No files in {RULES_DIR}.</p>
-                  )}
-                </div>
-                <div>
-                  <h4 className="font-medium flex items-center gap-1.5 mb-1.5">
-                    <Plug className="size-3.5 text-violet-400" />
-                    MCPs
-                  </h4>
-                  <p className="text-muted-foreground">
-                    MCPs are determined by your Cursor/workspace settings and apply when the agent runs in the desktop app.
-                  </p>
-                </div>
-              </div>
-            )}
-          </TabsContent>
+                    </div>
+                  </ScrollArea>
+                </TabsContent>
+              ))}
+            </>
+          )}
         </Tabs>
       </div>
     </div>
@@ -3541,7 +3641,7 @@ function WorkerEnhancementsSection({
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   Vibing — section with tabs: Asking, Planning, Fast Development, Debugging, Night Shift
+   Vibing — section with tabs: Asking, Planning, Fast Development, Debugging
    ═══════════════════════════════════════════════════════════════════════════ */
 
 function WorkerVibingSection({
@@ -3560,7 +3660,7 @@ function WorkerVibingSection({
   agentProvider?: "cursor" | "claude" | "gemini";
 }) {
   return (
-    <div className="rounded-2xl border border-border/50 overflow-hidden bg-indigo-500/[0.08]">
+    <div className={WORKER_RUN_SECTION_SURFACE_CLASSNAME.vibing}>
       <div className="px-5 pt-5 pb-3">
         <div className="flex items-center gap-2.5">
           <div className="flex items-center justify-center size-7 shrink-0 rounded-lg bg-indigo-500/10">
@@ -3571,7 +3671,7 @@ function WorkerVibingSection({
               Vibing
             </h3>
             <p className="text-[10px] text-muted-foreground normal-case">
-              Asking, Planning, Fast, Debugging, Night Shift
+              Asking, Planning, Fast, Debugging
             </p>
           </div>
         </div>
@@ -3590,9 +3690,6 @@ function WorkerVibingSection({
             </TabsTrigger>
             <TabsTrigger value="debugging" className="flex-1 min-w-0 text-xs rounded-md truncate">
               Debugging
-            </TabsTrigger>
-            <TabsTrigger value="night-shift" className="flex-1 min-w-0 text-xs rounded-md truncate">
-              Night Shift
             </TabsTrigger>
           </TabsList>
           <TabsContent value="asking" className="mt-4 px-0 pt-0">
@@ -3613,9 +3710,6 @@ function WorkerVibingSection({
           </TabsContent>
           <TabsContent value="debugging" className="mt-4 px-0 pt-0">
             <WorkerDebuggingSection projectId={projectId} projectPath={projectPath} repoPath={repoPath} agentProvider={agentProvider} />
-          </TabsContent>
-          <TabsContent value="night-shift" className="mt-4 px-0 pt-0">
-            <WorkerNightShiftSection projectId={projectId} projectPath={projectPath} project={project} agentProvider={agentProvider} />
           </TabsContent>
         </Tabs>
       </div>
@@ -3673,8 +3767,9 @@ function WorkerTerminalsSection({
     }
   }, [projectPath, runCommand, runCommandInExternalTerminal]);
 
-  const implementAllRuns = runningRuns.filter(isImplementAllRun);
-  const anyRunning = implementAllRuns.some((r) => r.status === "running");
+  const terminalRuns = runningRuns.filter((r) => r.slot != null);
+  const unslottedRunningRuns = runningRuns.filter((r) => r.slot == null && r.status === "running");
+  const anyRunning = runningRuns.some((r) => r.status === "running");
 
   const handleStopAll = async () => {
     try {
@@ -3686,8 +3781,8 @@ function WorkerTerminalsSection({
   };
 
   // Build a compact display list: only slots with runs + 1 empty "next available" slot
-  const slotsWithRuns = new Map<number, (typeof implementAllRuns)[0]>();
-  for (const run of implementAllRuns) {
+  const slotsWithRuns = new Map<number, (typeof terminalRuns)[0]>();
+  for (const run of terminalRuns) {
     const s = run.slot;
     if (s == null || s < 1 || s > MAX_TERMINAL_SLOTS) continue;
     const existing = slotsWithRuns.get(s);
@@ -3701,7 +3796,14 @@ function WorkerTerminalsSection({
     ...occupiedSlotNums.map((s) => ({ slotNum: s, run: slotsWithRuns.get(s)! })),
     ...(occupiedSlotNums.length > 0 ? [{ slotNum: nextFreeSlot, run: null }] : []),
   ];
-  const hasAnyRuns = occupiedSlotNums.length > 0;
+  const unslottedStartSlot =
+    occupiedSlotNums.length > 0 ? Math.max(nextFreeSlot, occupiedSlotNums[occupiedSlotNums.length - 1] ?? 0) + 1 : 1;
+  const unslottedDisplayItems: DisplayItem[] = unslottedRunningRuns.map((run, idx) => ({
+    slotNum: unslottedStartSlot + idx,
+    run,
+  }));
+  const allDisplayItems: DisplayItem[] = [...displayItems, ...unslottedDisplayItems];
+  const hasAnyRuns = allDisplayItems.length > 0;
 
   const inProgressTickets = kanbanData?.columns?.in_progress?.items ?? [];
 
@@ -3711,42 +3813,39 @@ function WorkerTerminalsSection({
         <span className="text-[11px] font-medium text-muted-foreground mr-1.5">Terminals</span>
       )}
       <Button
-        variant="ghost"
         size="sm"
         onClick={handleStopAll}
         disabled={!anyRunning}
         className={cn(
-          "gap-1.5 text-xs h-8 rounded-lg transition-all duration-200",
+          "gap-1.5 text-xs h-8 rounded-lg transition-all duration-200 text-white",
           anyRunning
-            ? "text-red-400 hover:text-red-300 hover:bg-red-500/10 border border-red-500/20"
-            : "text-muted-foreground hover:bg-muted/40"
+            ? "bg-gradient-to-r from-rose-500/85 to-red-500/85 hover:from-rose-400 hover:to-red-400"
+            : "bg-muted/50 text-muted-foreground"
         )}
       >
         <Square className="size-3" />
         Stop all
       </Button>
       <Button
-        variant="ghost"
         size="sm"
         onClick={clearImplementAllLogs}
-        className="gap-1.5 text-xs h-8 rounded-lg text-muted-foreground hover:text-amber-400 hover:bg-amber-500/10 transition-all duration-200"
+        className="gap-1.5 text-xs h-8 rounded-lg text-white bg-gradient-to-r from-amber-500/85 to-orange-500/85 hover:from-amber-400 hover:to-orange-400 transition-all duration-200"
       >
         <Eraser className="size-3" />
         Clear
       </Button>
       <Button
-        variant="ghost"
         size="sm"
         onClick={archiveImplementAllLogs}
-        className="gap-1.5 text-xs h-8 rounded-lg text-muted-foreground hover:text-cyan-400 hover:bg-cyan-500/10 transition-all duration-200"
+        className="gap-1.5 text-xs h-8 rounded-lg text-white bg-gradient-to-r from-cyan-500/85 to-blue-500/85 hover:from-cyan-400 hover:to-blue-400 transition-all duration-200"
       >
         <Archive className="size-3" />
         Archive
       </Button>
       {hasAnyRuns && (
         <span className="ml-auto text-[10px] text-muted-foreground tabular-nums">
-          {occupiedSlotNums.length} terminal{occupiedSlotNums.length !== 1 ? "s" : ""}
-          {anyRunning ? ` · ${implementAllRuns.filter(r => r.status === "running").length} running` : " · all done"}
+          {allDisplayItems.length} terminal{allDisplayItems.length !== 1 ? "s" : ""}
+          {anyRunning ? ` · ${runningRuns.filter((r) => r.status === "running").length} running` : " · all done"}
         </span>
       )}
     </div>
@@ -3783,9 +3882,8 @@ function WorkerTerminalsSection({
           aria-label="Command to run in external terminal"
         />
         <Button
-          variant="outline"
           size="sm"
-          className="h-8 gap-1.5 text-xs shrink-0"
+          className="h-8 gap-1.5 text-xs shrink-0 bg-gradient-to-r from-teal-500/85 to-emerald-500/85 text-white hover:from-teal-400 hover:to-emerald-400"
           disabled={!runCommand.trim() || !projectPath || !isTauri || runningCommand}
           onClick={handleRunInTerminal}
           title={isTauri ? "Run this command in Terminal.app (project directory)" : "Run in terminal is only available in the desktop app (macOS)"}
@@ -3802,7 +3900,7 @@ function WorkerTerminalsSection({
       <div className={cn("overflow-x-auto overflow-y-hidden scroll-smooth", embedded ? "pb-3" : "px-4 pb-4", !hasAnyRuns && "min-h-[140px]")}>
         {hasAnyRuns ? (
           <div className="flex gap-4 flex-nowrap w-max px-1 pb-1">
-            {displayItems.map(({ slotNum, run }) => {
+            {allDisplayItems.map(({ slotNum, run }) => {
               const slotIdx = slotNum - 1;
               const ticketNum = parseTicketNumberFromRunLabel(run?.label ?? undefined);
               const ticket = ticketNum != null
@@ -3828,7 +3926,7 @@ function WorkerTerminalsSection({
                           onMoveToInProgress={async () => { }}
                         />
                       ) : run?.label ? (
-                        <div className="rounded-lg border border-border/40 bg-muted/30 px-3 py-2">
+                        <div className="rounded-lg bg-muted/30 px-3 py-2">
                           <p className="text-[11px] text-muted-foreground font-medium truncate" title={run.label}>
                             {run.label}
                           </p>
@@ -3864,7 +3962,7 @@ function WorkerTerminalsSection({
   if (embedded) return terminalsContent;
 
   return (
-    <div className="rounded-2xl surface-card border border-border/50 overflow-hidden bg-teal-500/[0.06]">
+    <div className={cn("surface-card", WORKER_RUN_SECTION_SURFACE_CLASSNAME["terminal-output"])}>
       {terminalsContent}
     </div>
   );
