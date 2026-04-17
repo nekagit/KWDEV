@@ -23,6 +23,7 @@ KWDEV is a project/workflow workspace focused on agent-driven software execution
 - Goal: consistent card language from Status through Terminal Output while keeping distinct color accents per section.
 - Border density has been reduced across Worker surfaces and nested content blocks (especially Agents and Night Shift) to avoid card-in-card visual noise.
 - Worker action buttons are standardized toward colorful gradient actions for primary flows (start/stop/clear/terminal actions) to keep interaction styling consistent.
+- Additional taste cleanup pass further flattens Worker wrappers (top app row, terminal shell, nested cards) and keeps colorful section surfaces as the main visual containers.
 
 ## Worker Architecture (current)
 - Worker run orchestration is centered on `src/store/run-store.ts`.

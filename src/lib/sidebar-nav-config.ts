@@ -9,16 +9,17 @@ export type SidebarNavItem = {
   href: string;
   label: string;
   icon: LucideIcon;
+  iconColor?: string;
   section?: "work" | "system";
 };
 
 const items: SidebarNavItem[] = [
-  { href: "/github", label: "GitHub", icon: Github },
-  { href: "/projects", label: "Projects", icon: Folders, section: "work" },
-  { href: "/company", label: "Company", icon: Building2, section: "work" },
-  { href: "/configuration", label: "Configuration", icon: Settings, section: "system" },
-  { href: "/shortcuts", label: "Shortcuts", icon: Keyboard, section: "system" },
-  { href: "/loading-screen", label: "Loading", icon: Moon, section: "system" },
+  { href: "/github", label: "GitHub", icon: Github, iconColor: "text-slate-300" },
+  { href: "/projects", label: "Projects", icon: Folders, iconColor: "text-sky-400", section: "work" },
+  { href: "/company", label: "Company", icon: Building2, iconColor: "text-violet-400", section: "work" },
+  { href: "/configuration", label: "Configuration", icon: Settings, iconColor: "text-amber-400", section: "system" },
+  { href: "/shortcuts", label: "Shortcuts", icon: Keyboard, iconColor: "text-emerald-400", section: "system" },
+  { href: "/loading-screen", label: "Loading", icon: Moon, iconColor: "text-cyan-400", section: "system" },
 ];
 
 export function getSidebarNavItemsFlat(): SidebarNavItem[] {

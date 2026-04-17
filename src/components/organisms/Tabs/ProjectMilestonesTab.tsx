@@ -26,6 +26,12 @@ import { Dialog as SharedDialog } from "@/components/molecules/FormsAndDialogs/D
 import { ButtonGroup } from "@/components/molecules/ControlsAndButtons/ButtonGroup";
 import { GenericInputWithLabel } from "@/components/molecules/Form/GenericInputWithLabel";
 import { GenericTextareaWithLabel } from "@/components/molecules/Form/GenericTextareaWithLabel";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 // Removed: file-based milestone folder functions - milestones are now stored in the database only
 
@@ -235,7 +241,9 @@ export function ProjectMilestonesTab({
   return (
     <div className="w-full flex flex-col gap-4">
       <div className="flex items-center justify-between gap-2 flex-wrap">
-        <h3 className="text-sm font-semibold">Milestones</h3>
+        <h2 className="text-sm font-medium text-muted-foreground">
+          Milestones ({milestones.length})
+        </h2>
         <div className="flex items-center gap-1.5">
           {selectedMilestoneId != null && (
             <>
@@ -243,9 +251,9 @@ export function ProjectMilestonesTab({
                 variant="outline"
                 size="sm"
                 onClick={() => setConvertTicketsOpen(true)}
-                className="gap-1"
+                className="gap-1.5"
               >
-                <ListTodo className="size-3" />
+                <ListTodo className="h-3.5 w-3.5" />
                 Convert to tickets
               </Button>
               <Button
@@ -255,9 +263,9 @@ export function ProjectMilestonesTab({
                   const m = milestones.find((x) => x.id === selectedMilestoneId);
                   if (m) openEdit(m);
                 }}
-                className="gap-1"
+                className="gap-1.5"
               >
-                <Pencil className="size-3" />
+                <Pencil className="h-3.5 w-3.5" />
                 Edit
               </Button>
               <Button
@@ -268,29 +276,35 @@ export function ProjectMilestonesTab({
                   handleDeleteMilestone();
                 }}
                 disabled={deleteSaving}
-                className="gap-1 text-destructive hover:text-destructive"
+                className="gap-1.5 text-destructive hover:text-destructive"
               >
-                {deleteSaving ? <Loader2 className="size-3 animate-spin" /> : <Trash2 className="size-3" />}
+                {deleteSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
                 Delete
               </Button>
             </>
           )}
-          <Button variant="outline" size="sm" onClick={() => setAddOpen(true)} className="gap-1">
-            <Plus className="size-3" />
+          <Button size="sm" onClick={() => setAddOpen(true)} className="gap-1.5">
+            <Plus className="h-3.5 w-3.5" />
             Add milestone
           </Button>
         </div>
       </div>
-      <SectionCard accentColor="orange" tint={1} className="flex-1 min-h-0 flex flex-col">
-        <div className="flex items-center gap-2 mb-3">
-          <FileText className="h-4 w-4 text-orange-500" />
-          <span className="text-sm font-semibold">Milestones</span>
-        </div>
-        <p className="text-xs text-muted-foreground mb-3">
-          DB entries with an id for tickets and implementation log. Click a row to view content; use actions to edit, delete, or convert to tickets.
-        </p>
-        <div className="rounded-md border border-border/60 overflow-hidden flex-1 min-h-0 flex flex-col">
-          <Table>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <SectionCard accentColor="orange" tint={1} className="flex-1 min-h-0 flex flex-col">
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="milestones-list" className="border-none">
+              <AccordionTrigger className="py-0 hover:no-underline">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-orange-500" />
+                  <span className="text-sm font-semibold">Milestones</span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pt-3">
+                <p className="text-xs text-muted-foreground mb-3">
+                  DB entries with an id for tickets and implementation log. Click a row to view content; use actions to edit, delete, or convert to tickets.
+                </p>
+                <div className="rounded-md border border-border/60 overflow-hidden flex-1 min-h-0 flex flex-col">
+                  <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[1%]">#</TableHead>
@@ -356,34 +370,46 @@ export function ProjectMilestonesTab({
                 </TableRow>
               ))}
             </TableBody>
-          </Table>
-        </div>
-      </SectionCard>
+                  </Table>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </SectionCard>
 
-      {selectedMilestoneId != null && (() => {
-        const selected = milestones.find((m) => m.id === selectedMilestoneId);
-        if (!selected) return null;
-        const hasContent = selected.content != null && selected.content.trim() !== "";
-        return (
-          <SectionCard accentColor="orange" tint={2} className="flex-1 min-h-0 flex flex-col">
-            <div className="flex items-center gap-2 mb-3">
-              <FileText className="h-4 w-4 text-orange-500" />
-              <span className="text-sm font-semibold">Content — {selected.name}</span>
-            </div>
-            <div className="rounded-md border border-border/60 overflow-hidden flex-1 min-h-[120px] flex flex-col">
-              {hasContent ? (
-                <div className={cn("p-3 pr-4 overflow-y-auto", markdownClasses)}>
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{selected.content}</ReactMarkdown>
-                </div>
-              ) : (
-                <div className="p-4 text-sm text-muted-foreground italic">
-                  No content for this milestone. Use Edit to add markdown content.
-                </div>
-              )}
-            </div>
-          </SectionCard>
-        );
-      })()}
+        {selectedMilestoneId != null && (() => {
+          const selected = milestones.find((m) => m.id === selectedMilestoneId);
+          if (!selected) return null;
+          const hasContent = selected.content != null && selected.content.trim() !== "";
+          return (
+            <SectionCard accentColor="orange" tint={2} className="flex-1 min-h-0 flex flex-col">
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="milestone-content" className="border-none">
+                  <AccordionTrigger className="py-0 hover:no-underline">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-orange-500" />
+                      <span className="text-sm font-semibold">Content - {selected.name}</span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-3">
+                    <div className="rounded-md border border-border/60 overflow-hidden flex-1 min-h-[120px] flex flex-col">
+                      {hasContent ? (
+                        <div className={cn("p-3 pr-4 overflow-y-auto", markdownClasses)}>
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{selected.content}</ReactMarkdown>
+                        </div>
+                      ) : (
+                        <div className="p-4 text-sm text-muted-foreground italic">
+                          No content for this milestone. Use Edit to add markdown content.
+                        </div>
+                      )}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </SectionCard>
+          );
+        })()}
+      </div>
 
       <SharedDialog
         isOpen={addOpen}

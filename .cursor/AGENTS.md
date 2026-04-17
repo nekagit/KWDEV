@@ -2,6 +2,8 @@
 
 - Always run the KWDEV Next.js dev server and Tauri app on port 4000.
 - Prefer using the Tauri desktop app (via `npm run dev:tauri`) when interacting with KWDEV locally.
+- Treat `PROJECT.md` as the single source of truth for project structure and features.
+- Implement changes test-first (TDD): write/finalize tests before implementation updates.
 - Place all new `.md` documentation files under a `.cursor/xxx` folder, where `xxx` matches the document purpose.
 - Add a new `.md` architecture decision record under `.cursor/adr` for significant changes based on AI-assisted work.
 - Avoid deleting existing files; prefer updating them in place unless explicitly instructed to delete or when deletion is clearly necessary.

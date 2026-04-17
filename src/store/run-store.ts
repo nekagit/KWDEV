@@ -9,7 +9,22 @@ import { useShallow } from "zustand/react/shallow";
 import { invoke, isTauri, runRunTerminalAgentPayload } from "@/lib/tauri";
 import { STATIC_ANALYSIS_CHECKLIST } from "@/lib/static-analysis-checklist";
 import { isImplementAllRun, getNextFreeSlotOrNull } from "@/lib/run-helpers";
+import {
+  completeTestingAgentIteration as completeTestingAgentIterationState,
+  initialTestingAgentLoopState,
+  startTestingAgentLoop as startTestingAgentLoopState,
+  stopTestingAgentLoop as stopTestingAgentLoopState,
+  type TestingAgentIteration,
+} from "@/lib/testing-agent-loop";
+import {
+  completeWorkerAgentIteration as completeWorkerAgentIterationState,
+  initialWorkerAgentLoopState,
+  startWorkerAgentLoop as startWorkerAgentLoopState,
+  stopWorkerAgentLoop as stopWorkerAgentLoopState,
+  type WorkerAgentIteration,
+} from "@/lib/worker-agent-loop";
 import { debugIngest } from "@/lib/debug-ingest";
+import { logAppActivity } from "@/lib/app-activity-log";
 import { getApiErrorMessage } from "@/lib/utils";
 import { toast } from "sonner";
 import {
@@ -85,6 +100,22 @@ export interface RunState {
   lastStaticAnalysisReportByProject: Record<string, string>;
   /** runId -> projectPath for in-flight static analysis runs; cleared when run exits. */
   staticAnalysisRunIdToProjectPath: Record<string, string>;
+  /** Testing Agent loop active flag and callback (Night Shift style loop orchestration). */
+  testingAgentActive: boolean;
+  testingAgentReplenishCallback: ((slot: 1 | 2 | 3, exitingRun?: RunInfo | null) => Promise<void>) | null;
+  /** Testing Agent status and recent iterations shown in Worker > Agents > Testing Agent. */
+  testingAgentStatus: "idle" | "running" | "stopped";
+  testingAgentIterations: TestingAgentIteration[];
+  /** Cleanup Agent loop active flag and callback. */
+  cleanupAgentActive: boolean;
+  cleanupAgentReplenishCallback: ((slot: 1 | 2 | 3, exitingRun?: RunInfo | null) => Promise<void>) | null;
+  cleanupAgentStatus: "idle" | "running" | "stopped";
+  cleanupAgentIterations: WorkerAgentIteration[];
+  /** Refactor Agent loop active flag and callback. */
+  refactorAgentActive: boolean;
+  refactorAgentReplenishCallback: ((slot: 1 | 2 | 3, exitingRun?: RunInfo | null) => Promise<void>) | null;
+  refactorAgentStatus: "idle" | "running" | "stopped";
+  refactorAgentIterations: WorkerAgentIteration[];
 }
 
 export interface RunActions {
@@ -196,6 +227,24 @@ export interface RunActions {
       | Record<string, NightShiftCirclePhase | "done">
       | ((prev: Record<string, NightShiftCirclePhase | "done">) => Record<string, NightShiftCirclePhase | "done">)
   ) => void;
+  setTestingAgentActive: (active: boolean) => void;
+  setTestingAgentReplenishCallback: (cb: ((slot: 1 | 2 | 3, exitingRun?: RunInfo | null) => Promise<void>) | null) => void;
+  startTestingAgentLoop: (iteration: TestingAgentIteration) => void;
+  stopTestingAgentLoop: () => void;
+  completeTestingAgentIteration: (iterationId: string, executionResult: string, createdTests: string) => void;
+  clearTestingAgentIterations: () => void;
+  setCleanupAgentActive: (active: boolean) => void;
+  setCleanupAgentReplenishCallback: (cb: ((slot: 1 | 2 | 3, exitingRun?: RunInfo | null) => Promise<void>) | null) => void;
+  startCleanupAgentLoop: (iteration: WorkerAgentIteration) => void;
+  stopCleanupAgentLoop: () => void;
+  completeCleanupAgentIteration: (iterationId: string, executionResult: string, createdArtifacts: string) => void;
+  clearCleanupAgentIterations: () => void;
+  setRefactorAgentActive: (active: boolean) => void;
+  setRefactorAgentReplenishCallback: (cb: ((slot: 1 | 2 | 3, exitingRun?: RunInfo | null) => Promise<void>) | null) => void;
+  startRefactorAgentLoop: (iteration: WorkerAgentIteration) => void;
+  stopRefactorAgentLoop: () => void;
+  completeRefactorAgentIteration: (iterationId: string, executionResult: string, createdArtifacts: string) => void;
+  clearRefactorAgentIterations: () => void;
 }
 
 export type RunStore = RunState & RunActions;
@@ -283,6 +332,35 @@ function processTempTicketQueue(
       const errMsg = e instanceof Error ? e.message : String(e);
       debugIngest({ sessionId: "c29a12", location: "run-store.ts:processTempTicketQueue:catch", message: "invoke run_run_terminal_agent failed", data: { error: errMsg, label: job.label }, timestamp: Date.now(), hypothesisId: "H1" }, { "X-Debug-Session-Id": "c29a12" });
       // #endregion
+      const selectedProvider = job.meta?.provider;
+      const canFallbackProvider =
+        !!selectedProvider &&
+        selectedProvider !== "cursor" &&
+        job.meta?.providerFallbackTried !== true &&
+        /not available|not found|command not found|no such file|spawn|ENOENT|provider/i.test(errMsg);
+
+      if (canFallbackProvider) {
+        const fallbackJob: PendingTempTicketJob = {
+          ...job,
+          meta: {
+            ...(job.meta ?? {}),
+            provider: "cursor",
+            providerFallbackTried: true,
+          },
+        };
+        set((s) => ({
+          ...s,
+          error: errMsg,
+          runningRuns: s.runningRuns.filter((r) => r.runId !== tempId),
+          pendingTempTicketQueue: [fallbackJob, ...s.pendingTempTicketQueue],
+        }));
+        toast.error(
+          `Selected provider '${selectedProvider}' is unavailable. Falling back to Cursor provider.`
+        );
+        processTempTicketQueue(get, set);
+        return;
+      }
+
       set((s) => ({
         ...s,
         error: errMsg,
@@ -336,6 +414,18 @@ const initialState: RunState = {
   lastRefreshedAt: null,
   lastStaticAnalysisReportByProject: {},
   staticAnalysisRunIdToProjectPath: {},
+  testingAgentActive: initialTestingAgentLoopState.active,
+  testingAgentReplenishCallback: null,
+  testingAgentStatus: initialTestingAgentLoopState.status,
+  testingAgentIterations: initialTestingAgentLoopState.iterations,
+  cleanupAgentActive: initialWorkerAgentLoopState.active,
+  cleanupAgentReplenishCallback: null,
+  cleanupAgentStatus: initialWorkerAgentLoopState.status,
+  cleanupAgentIterations: initialWorkerAgentLoopState.iterations,
+  refactorAgentActive: initialWorkerAgentLoopState.active,
+  refactorAgentReplenishCallback: null,
+  refactorAgentStatus: initialWorkerAgentLoopState.status,
+  refactorAgentIterations: initialWorkerAgentLoopState.iterations,
 };
 
 const TERMINAL_HISTORY_MAX = 100;
@@ -360,13 +450,16 @@ export const useRunStore = create<RunStore>()((set, get) => ({
   saveActiveProjects: async () => {
     const { activeProjects } = get();
     try {
+      logAppActivity("run-store", `Saving active projects (${activeProjects.length})`);
       await invoke("save_active_projects", { projects: activeProjects });
       set({ error: null });
       toast.success("Saved active projects to cursor_projects.json");
+      logAppActivity("run-store", "Saved active projects");
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       set({ error: msg });
       toast.error("Failed to save projects", { description: msg });
+      logAppActivity("run-store", `Failed to save active projects: ${msg}`);
     }
   },
 
@@ -407,6 +500,7 @@ export const useRunStore = create<RunStore>()((set, get) => ({
 
   refreshData: async () => {
     set({ error: null, dataWarning: null });
+    logAppActivity("run-store", "Refreshing app data");
     // #region agent log
     debugIngest({ sessionId: "8a3da1", location: "run-store.ts:refreshData", message: "refreshData_start", data: { isTauri }, timestamp: Date.now(), hypothesisId: "H2" }, { "X-Debug-Session-Id": "8a3da1" });
     // #endregion
@@ -465,11 +559,13 @@ export const useRunStore = create<RunStore>()((set, get) => ({
       });
       // #endregion
       set({ error: errMsg });
+      logAppActivity("run-store", `Refresh failed: ${errMsg}`);
     } finally {
       // #region agent log
       debugIngest({ sessionId: "8a3da1", location: "run-store.ts:refreshData", message: "refreshData_finally_loading_false", data: {}, timestamp: Date.now(), hypothesisId: "H2" }, { "X-Debug-Session-Id": "8a3da1" });
       // #endregion
       set({ loading: false });
+      logAppActivity("run-store", "Refresh finished");
     }
   },
 
@@ -485,6 +581,7 @@ export const useRunStore = create<RunStore>()((set, get) => ({
     }
     set({ error: null });
     try {
+      logAppActivity("run-store", `Starting run script (${selectedPromptRecordIds.length} prompts, ${activeProjects.length} projects)`);
       const { run_id } = await invoke<{ run_id: string }>("run_script", {
         args: {
           promptIds: selectedPromptRecordIds,
@@ -501,8 +598,10 @@ export const useRunStore = create<RunStore>()((set, get) => ({
         ],
         selectedRunId: run_id,
       }));
+      logAppActivity("run-store", `Run started: ${run_id}`);
     } catch (e) {
       set({ error: e instanceof Error ? e.message : String(e) });
+      logAppActivity("run-store", `Run start failed: ${e instanceof Error ? e.message : String(e)}`);
     }
   },
 
@@ -516,6 +615,7 @@ export const useRunStore = create<RunStore>()((set, get) => ({
       return null;
     }
     try {
+      logAppActivity("run-store", `Starting run with params (${params.runLabel ?? "Run"})`);
       const { run_id } = await invoke<{ run_id: string }>("run_script", {
         args: {
           promptIds: hasIds ? params.promptIds : [],
@@ -537,9 +637,11 @@ export const useRunStore = create<RunStore>()((set, get) => ({
         ],
         selectedRunId: run_id,
       }));
+      logAppActivity("run-store", `Run started: ${run_id}`);
       return run_id;
     } catch (e) {
       set({ error: e instanceof Error ? e.message : String(e) });
+      logAppActivity("run-store", `Run with params failed: ${e instanceof Error ? e.message : String(e)}`);
       return null;
     }
   },
@@ -769,6 +871,7 @@ export const useRunStore = create<RunStore>()((set, get) => ({
     }
     set({ error: null });
     try {
+      logAppActivity("run-store", `Starting npm script: ${name}`);
       const { run_id } = await invoke<{ run_id: string }>("run_npm_script", {
         projectPath: path,
         scriptName: name,
@@ -789,9 +892,11 @@ export const useRunStore = create<RunStore>()((set, get) => ({
         floatingTerminalRunId: run_id,
         floatingTerminalMinimized: false,
       }));
+      logAppActivity("run-store", `npm script started: ${name} (${run_id})`);
       return run_id;
     } catch (e) {
       set({ error: e instanceof Error ? e.message : String(e) });
+      logAppActivity("run-store", `npm script failed to start (${name}): ${e instanceof Error ? e.message : String(e)}`);
       return null;
     }
   },
@@ -920,6 +1025,7 @@ export const useRunStore = create<RunStore>()((set, get) => ({
 
   stopRun: async (runId) => {
     try {
+      logAppActivity("run-store", `Stopping run: ${runId}`);
       await invoke("stop_run", { runId });
       set((s) => ({
         runningRuns: s.runningRuns.map((r) =>
@@ -928,8 +1034,10 @@ export const useRunStore = create<RunStore>()((set, get) => ({
             : r
         ),
       }));
+      logAppActivity("run-store", `Stopped run: ${runId}`);
     } catch (e) {
       set({ error: e instanceof Error ? e.message : String(e) });
+      logAppActivity("run-store", `Stop run failed (${runId}): ${e instanceof Error ? e.message : String(e)}`);
     }
   },
 
@@ -1074,6 +1182,144 @@ export const useRunStore = create<RunStore>()((set, get) => ({
     set((s) => ({
       ideaDrivenTicketPhases: typeof phases === "function" ? phases(s.ideaDrivenTicketPhases) : phases,
     })),
+  setTestingAgentActive: (active) => set({ testingAgentActive: active }),
+  setTestingAgentReplenishCallback: (cb) => set({ testingAgentReplenishCallback: cb }),
+  startTestingAgentLoop: (iteration) =>
+    set((s) => {
+      const next = startTestingAgentLoopState(
+        {
+          active: s.testingAgentActive,
+          status: s.testingAgentStatus,
+          iterations: s.testingAgentIterations,
+        },
+        iteration
+      );
+      return {
+        testingAgentActive: next.active,
+        testingAgentStatus: next.status,
+        testingAgentIterations: next.iterations,
+      };
+    }),
+  stopTestingAgentLoop: () =>
+    set((s) => {
+      const next = stopTestingAgentLoopState({
+        active: s.testingAgentActive,
+        status: s.testingAgentStatus,
+        iterations: s.testingAgentIterations,
+      });
+      return {
+        testingAgentActive: false,
+        testingAgentReplenishCallback: null,
+        testingAgentStatus: next.status,
+        testingAgentIterations: next.iterations,
+      };
+    }),
+  completeTestingAgentIteration: (iterationId, executionResult, createdTests) =>
+    set((s) => {
+      const next = completeTestingAgentIterationState(
+        {
+          active: s.testingAgentActive,
+          status: s.testingAgentStatus,
+          iterations: s.testingAgentIterations,
+        },
+        iterationId,
+        { executionResult, createdTests, completedAt: Date.now() }
+      );
+      return { testingAgentIterations: next.iterations };
+    }),
+  clearTestingAgentIterations: () => set({ testingAgentIterations: [] }),
+  setCleanupAgentActive: (active) => set({ cleanupAgentActive: active }),
+  setCleanupAgentReplenishCallback: (cb) => set({ cleanupAgentReplenishCallback: cb }),
+  startCleanupAgentLoop: (iteration) =>
+    set((s) => {
+      const next = startWorkerAgentLoopState(
+        {
+          active: s.cleanupAgentActive,
+          status: s.cleanupAgentStatus,
+          iterations: s.cleanupAgentIterations,
+        },
+        iteration
+      );
+      return {
+        cleanupAgentActive: next.active,
+        cleanupAgentStatus: next.status,
+        cleanupAgentIterations: next.iterations,
+      };
+    }),
+  stopCleanupAgentLoop: () =>
+    set((s) => {
+      const next = stopWorkerAgentLoopState({
+        active: s.cleanupAgentActive,
+        status: s.cleanupAgentStatus,
+        iterations: s.cleanupAgentIterations,
+      });
+      return {
+        cleanupAgentActive: false,
+        cleanupAgentReplenishCallback: null,
+        cleanupAgentStatus: next.status,
+        cleanupAgentIterations: next.iterations,
+      };
+    }),
+  completeCleanupAgentIteration: (iterationId, executionResult, createdArtifacts) =>
+    set((s) => {
+      const next = completeWorkerAgentIterationState(
+        {
+          active: s.cleanupAgentActive,
+          status: s.cleanupAgentStatus,
+          iterations: s.cleanupAgentIterations,
+        },
+        iterationId,
+        { executionResult, createdArtifacts, completedAt: Date.now() }
+      );
+      return { cleanupAgentIterations: next.iterations };
+    }),
+  clearCleanupAgentIterations: () => set({ cleanupAgentIterations: [] }),
+  setRefactorAgentActive: (active) => set({ refactorAgentActive: active }),
+  setRefactorAgentReplenishCallback: (cb) => set({ refactorAgentReplenishCallback: cb }),
+  startRefactorAgentLoop: (iteration) =>
+    set((s) => {
+      const next = startWorkerAgentLoopState(
+        {
+          active: s.refactorAgentActive,
+          status: s.refactorAgentStatus,
+          iterations: s.refactorAgentIterations,
+        },
+        iteration
+      );
+      return {
+        refactorAgentActive: next.active,
+        refactorAgentStatus: next.status,
+        refactorAgentIterations: next.iterations,
+      };
+    }),
+  stopRefactorAgentLoop: () =>
+    set((s) => {
+      const next = stopWorkerAgentLoopState({
+        active: s.refactorAgentActive,
+        status: s.refactorAgentStatus,
+        iterations: s.refactorAgentIterations,
+      });
+      return {
+        refactorAgentActive: false,
+        refactorAgentReplenishCallback: null,
+        refactorAgentStatus: next.status,
+        refactorAgentIterations: next.iterations,
+      };
+    }),
+  completeRefactorAgentIteration: (iterationId, executionResult, createdArtifacts) =>
+    set((s) => {
+      const next = completeWorkerAgentIterationState(
+        {
+          active: s.refactorAgentActive,
+          status: s.refactorAgentStatus,
+          iterations: s.refactorAgentIterations,
+        },
+        iterationId,
+        { executionResult, createdArtifacts, completedAt: Date.now() }
+      );
+      return { refactorAgentIterations: next.iterations };
+    }),
+  clearRefactorAgentIterations: () => set({ refactorAgentIterations: [] }),
 }));
 
 /** Hook with same API as legacy useRunState from context. Use anywhere run state is needed. */

@@ -24,6 +24,12 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
@@ -250,77 +256,90 @@ export function ProjectIdeasDocTab({ project, projectId, docsRefreshKey }: Proje
         </Button>
       </div>
 
-      {/* Add idea section */}
-      <SectionCard accentColor="amber" tint={1}>
-        <div className="flex items-center gap-2 mb-3">
-          <Plus className="h-4 w-4 text-amber-500" />
-          <h3 className="text-sm font-semibold">Add idea</h3>
-        </div>
-        <p className="text-xs text-muted-foreground mb-3">
-          Add a new idea to this project. Ideas are stored in the database.
-        </p>
-        <div className="space-y-3">
-          <Input
-            placeholder="Idea title (required)"
-            value={newIdeaTitle}
-            onChange={(e) => setNewIdeaTitle(e.target.value)}
-            disabled={adding}
-          />
-          <Textarea
-            className="min-h-[72px] text-sm"
-            placeholder="Description (optional)"
-            value={newIdeaDescription}
-            onChange={(e) => setNewIdeaDescription(e.target.value)}
-            disabled={adding}
-          />
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <Select
-              value={newIdeaCategory}
-              onValueChange={(v) => setNewIdeaCategory(v as IdeaCategory)}
-              disabled={adding}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
-                  <SelectItem key={key} value={key}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button
-              size="sm"
-              className="gap-1.5"
-              onClick={addIdea}
-              disabled={!newIdeaTitle.trim() || adding}
-            >
-              {adding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
-              Add idea
-            </Button>
-          </div>
-        </div>
-      </SectionCard>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <SectionCard accentColor="amber" tint={1}>
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="add-idea" className="border-none">
+              <AccordionTrigger className="py-0 hover:no-underline">
+                <div className="flex items-center gap-2">
+                  <Plus className="h-4 w-4 text-amber-500" />
+                  <h3 className="text-sm font-semibold">Add idea</h3>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pt-3">
+                <p className="text-xs text-muted-foreground mb-3">
+                  Add a new idea to this project. Ideas are stored in the database.
+                </p>
+                <div className="space-y-3">
+                  <Input
+                    placeholder="Idea title (required)"
+                    value={newIdeaTitle}
+                    onChange={(e) => setNewIdeaTitle(e.target.value)}
+                    disabled={adding}
+                  />
+                  <Textarea
+                    className="min-h-[72px] text-sm"
+                    placeholder="Description (optional)"
+                    value={newIdeaDescription}
+                    onChange={(e) => setNewIdeaDescription(e.target.value)}
+                    disabled={adding}
+                  />
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <Select
+                      value={newIdeaCategory}
+                      onValueChange={(v) => setNewIdeaCategory(v as IdeaCategory)}
+                      disabled={adding}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
+                          <SelectItem key={key} value={key}>
+                            {label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      size="sm"
+                      className="gap-1.5"
+                      onClick={addIdea}
+                      disabled={!newIdeaTitle.trim() || adding}
+                    >
+                      {adding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
+                      Add idea
+                    </Button>
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </SectionCard>
 
-      {/* Ideas table */}
-      {ideas.length === 0 ? (
-        <EmptyState
-          icon={<Lightbulb className="size-6 text-muted-foreground" />}
-          title="No ideas yet"
-          description="Add your first idea using the form above."
-        />
-      ) : (
-        <SectionCard accentColor="amber" tint={2} className="flex-1 min-h-0 flex flex-col">
-          <div className="flex items-center gap-2 mb-3">
-            <Lightbulb className="h-4 w-4 text-amber-500" />
-            <span className="text-sm font-semibold">Ideas</span>
-          </div>
-          <p className="text-xs text-muted-foreground mb-3">
-            Click a row to view details; use actions to convert to milestones or delete.
-          </p>
-          <div className="rounded-md border border-border/60 overflow-hidden flex-1 min-h-0 flex flex-col">
-            <Table>
+        <SectionCard accentColor="amber" tint={2} className="flex min-h-0 flex-col">
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="ideas-list" className="border-none">
+              <AccordionTrigger className="py-0 hover:no-underline">
+                <div className="flex items-center gap-2">
+                  <Lightbulb className="h-4 w-4 text-amber-500" />
+                  <span className="text-sm font-semibold">Ideas</span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pt-3">
+                {ideas.length === 0 ? (
+                  <EmptyState
+                    icon={<Lightbulb className="size-6 text-muted-foreground" />}
+                    title="No ideas yet"
+                    description="Add your first idea using the form above."
+                  />
+                ) : (
+                  <>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Click a row to view details; use actions to convert to milestones or delete.
+                    </p>
+                    <div className="rounded-md border border-border/60 overflow-hidden flex-1 min-h-0 flex flex-col">
+                      <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[1%]">#</TableHead>
@@ -386,54 +405,59 @@ export function ProjectIdeasDocTab({ project, projectId, docsRefreshKey }: Proje
                   </TableRow>
                 ))}
               </TableBody>
-            </Table>
-          </div>
-          {selectedIdea && (
-            <div className="mt-3 flex-1 min-h-[200px] border border-border/60 rounded-md overflow-hidden flex flex-col">
-              <div className="px-3 py-2 text-xs font-medium text-muted-foreground border-b border-border/60">
-                {selectedIdea.title}
-              </div>
-              <ScrollArea className="flex-1 min-h-[200px]">
-                <div className="p-4 space-y-3">
-                  {selectedIdea.description ? (
-                    <div>
-                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">
-                        Description
-                      </p>
-                      <p className="text-xs text-foreground/90 whitespace-pre-wrap">
-                        {selectedIdea.description}
-                      </p>
+                      </Table>
                     </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">No description.</p>
-                  )}
-                  <div className="flex flex-wrap gap-2 text-[10px] text-muted-foreground">
-                    <span>Source: {selectedIdea.source}</span>
-                    {selectedIdea.created_at && (
-                      <span>Created: {new Date(selectedIdea.created_at).toLocaleDateString()}</span>
+                    {selectedIdea && (
+                      <div className="mt-3 flex-1 min-h-[200px] border border-border/60 rounded-md overflow-hidden flex flex-col">
+                        <div className="px-3 py-2 text-xs font-medium text-muted-foreground border-b border-border/60">
+                          {selectedIdea.title}
+                        </div>
+                        <ScrollArea className="flex-1 min-h-[200px]">
+                          <div className="p-4 space-y-3">
+                            {selectedIdea.description ? (
+                              <div>
+                                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+                                  Description
+                                </p>
+                                <p className="text-xs text-foreground/90 whitespace-pre-wrap">
+                                  {selectedIdea.description}
+                                </p>
+                              </div>
+                            ) : (
+                              <p className="text-sm text-muted-foreground">No description.</p>
+                            )}
+                            <div className="flex flex-wrap gap-2 text-[10px] text-muted-foreground">
+                              <span>Source: {selectedIdea.source}</span>
+                              {selectedIdea.created_at && (
+                                <span>Created: {new Date(selectedIdea.created_at).toLocaleDateString()}</span>
+                              )}
+                            </div>
+                            <div className="pt-2 border-t border-border/40">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="gap-1.5"
+                                onClick={() => {
+                                  setConvertMilestonesDefaultName(selectedIdea.title);
+                                  setConvertMilestonesOpen(true);
+                                }}
+                              >
+                                <Flag className="h-3.5 w-3.5" />
+                                Convert to milestones
+                              </Button>
+                            </div>
+                          </div>
+                        </ScrollArea>
+                      </div>
                     )}
-                  </div>
-                  <div className="pt-2 border-t border-border/40">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="gap-1.5"
-                      onClick={() => {
-                        setConvertMilestonesDefaultName(selectedIdea.title);
-                        setConvertMilestonesOpen(true);
-                      }}
-                    >
-                      <Flag className="h-3.5 w-3.5" />
-                      Convert to milestones
-                    </Button>
-                  </div>
-                </div>
-              </ScrollArea>
-            </div>
-          )}
+                  </>
+                )}
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </SectionCard>
-      )}
+      </div>
 
       <ConvertToMilestonesDialog
         isOpen={convertMilestonesOpen}

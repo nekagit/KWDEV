@@ -2,7 +2,7 @@
 
 /** Project Project Tab component. */
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Loader2, FileText, FolderOpen, FolderInput, RefreshCw, Play, Square, FolderGit2, Bot, Folder, MonitorUp, MessageSquare, Hammer, Trash2, Plug } from "lucide-react";
+import { Loader2, FileText, FolderOpen, FolderInput, RefreshCw, Play, Square, FolderGit2, Bot, Folder, MonitorUp, MessageSquare, Hammer, Trash2, Plug, ListChecks } from "lucide-react";
 import { listProjectFiles, readProjectFile, readProjectFileOrEmpty, updateProject, writeProjectFile, deleteProjectPath, type FileEntry } from "@/lib/api-projects";
 import { isTauri } from "@/lib/tauri";
 import { useRunStore } from "@/store/run-store";
@@ -21,6 +21,7 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { PROJECT_DIR } from "@/lib/cursor-paths";
+import { getDefaultProjectFilesPath } from "@/lib/project-files-default-path";
 import { TerminalSlot } from "@/components/molecules/Display/TerminalSlot";
 import {
   Tooltip,
@@ -40,6 +41,27 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PromptRecordsPageContent } from "@/components/organisms/PromptRecordsPageContent";
+
+type InitializeAllChecklistItem = {
+  categorySlug: string;
+  label: string;
+  summary: string;
+  files: string[];
+};
+
+type InitializeAllManifest = {
+  version: number;
+  title: string;
+  description?: string;
+  checklist: InitializeAllChecklistItem[];
+};
+
+type CursorRulesTemplateResponse = {
+  rules?: { name: string; content: string }[];
+  rulesByCategory?: Record<string, { name: string; content: string }[]>;
+  initializeAllManifest?: InitializeAllManifest | null;
+  error?: string;
+};
 
 function formatSize(bytes: number): string {
   if (bytes === 0) return "0 B";
@@ -100,6 +122,9 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
   const [rulesEntriesByCategory, setRulesEntriesByCategory] = useState<Record<string, FileEntry[]>>({});
   const [rulesCategoryTab, setRulesCategoryTab] = useState<string>("design");
   const [initializeRulesCategoryLoading, setInitializeRulesCategoryLoading] = useState<string | null>(null);
+  const [rulesTemplatePayload, setRulesTemplatePayload] = useState<CursorRulesTemplateResponse | null>(null);
+  const [rulesTemplateLoading, setRulesTemplateLoading] = useState(false);
+  const [initializeAllLoading, setInitializeAllLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [scripts, setScripts] = useState<Record<string, string>>({});
   const [loadingScripts, setLoadingScripts] = useState(false);
@@ -107,7 +132,7 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
   const [savingPort, setSavingPort] = useState(false);
   const [folderRefreshKey, setFolderRefreshKey] = useState(0);
   const [projectFilesActionLoading, setProjectFilesActionLoading] = useState<"rebuild" | "desktop" | "deleteAll" | null>(null);
-  const [projectFilesCurrentPath, setProjectFilesCurrentPath] = useState(".cursor");
+  const [projectFilesCurrentPath, setProjectFilesCurrentPath] = useState(getDefaultProjectFilesPath());
   const [projectFilesEntries, setProjectFilesEntries] = useState<FileEntry[]>([]);
   const [rulePreview, setRulePreview] = useState<{ name: string; content: string } | null>(null);
   const [rulePreviewLoading, setRulePreviewLoading] = useState(false);
@@ -204,6 +229,62 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
     [projectId, project.repoPath, loadRulesForCategory]
   );
 
+  const handleInitializeAllEssential = useCallback(async () => {
+    if (!project.repoPath) {
+      toast.error("Project has no repo path.");
+      return;
+    }
+    setInitializeAllLoading(true);
+    try {
+      let payload = rulesTemplatePayload;
+      if (!payload?.rules?.length) {
+        const res = await fetch("/api/data/cursor-rules-template");
+        if (!res.ok) {
+          const data = (await res.json().catch(() => ({}))) as CursorRulesTemplateResponse;
+          toast.error(data.error ?? "Failed to load rules template");
+          return;
+        }
+        payload = (await res.json()) as CursorRulesTemplateResponse;
+        setRulesTemplatePayload(payload);
+      }
+      const manifest = payload?.initializeAllManifest;
+      const checklist = manifest?.checklist ?? [];
+      if (checklist.length === 0) {
+        toast.error("No essential checklist. Add data/rules/initialize-all-manifest.json.");
+        return;
+      }
+      const rules = payload.rules ?? [];
+      const byName = new Map(rules.map((r) => [r.name, r] as const));
+      const base = RULES_DIR.endsWith("/") ? RULES_DIR : `${RULES_DIR}/`;
+      const missing: string[] = [];
+      let written = 0;
+
+      for (const row of checklist) {
+        for (const file of row.files) {
+          const rule = byName.get(file);
+          if (!rule) {
+            missing.push(file);
+            continue;
+          }
+          await writeProjectFile(projectId, base + rule.name, rule.content, project.repoPath);
+          written += 1;
+        }
+      }
+
+      await Promise.all(RULES_CATEGORIES.map((c) => loadRulesForCategory(c.slug)));
+
+      if (missing.length > 0) {
+        toast.error(`Some template files were missing: ${missing.slice(0, 5).join(", ")}${missing.length > 5 ? "…" : ""}`);
+      } else {
+        toast.success(`Initialized ${written} essential rule file(s) across all categories.`);
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to initialize all rules");
+    } finally {
+      setInitializeAllLoading(false);
+    }
+  }, [projectId, project.repoPath, loadRulesForCategory, rulesTemplatePayload]);
+
   const handleOpenRulePreview = useCallback(
     async (entry: FileEntry, categorySlug: string) => {
       if (entry.isDirectory || !project.repoPath) return;
@@ -243,6 +324,29 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
       loadRulesForCategory(rulesCategoryTab);
     }
   }, [project.repoPath, innerTab, rulesCategoryTab, loadRulesForCategory, docsRefreshKey, folderRefreshKey]);
+
+  useEffect(() => {
+    if (!project.repoPath || innerTab !== "rules") return;
+    let cancelled = false;
+    setRulesTemplateLoading(true);
+    fetch("/api/data/cursor-rules-template")
+      .then(async (res) => {
+        if (!res.ok) return null;
+        return (await res.json()) as CursorRulesTemplateResponse;
+      })
+      .then((data) => {
+        if (!cancelled && data) setRulesTemplatePayload(data);
+      })
+      .catch(() => {
+        if (!cancelled) setRulesTemplatePayload(null);
+      })
+      .finally(() => {
+        if (!cancelled) setRulesTemplateLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [project.repoPath, innerTab, docsRefreshKey, folderRefreshKey]);
 
   const loadScripts = useCallback((): Promise<void> => {
     if (!project.repoPath) {
@@ -331,8 +435,56 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
           <ScrollArea className="h-[calc(100vh-14rem)]">
             <div className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden data-[state=open]:border-teal-500/30 p-5 pr-4">
               <p className="text-xs text-muted-foreground mb-3">
-                Cursor rules by category in <code className="rounded bg-muted px-1 py-0.5 font-mono text-[10px]">{RULES_DIR}</code>. Use Initialize to copy best-practice rules from data/rules into this project.
+                Cursor rules by category in <code className="rounded bg-muted px-1 py-0.5 font-mono text-[10px]">{RULES_DIR}</code>. Use per-tab <strong className="text-foreground/90">Initialize</strong> for every JSON file in that category, or the button below to copy the curated essential set from <code className="rounded bg-muted px-1 py-0.5 font-mono text-[10px]">data/rules/initialize-all-manifest.json</code> in one go.
               </p>
+
+              <div className="rounded-lg border border-border/50 bg-muted/20 p-4 mb-5 flex flex-wrap items-center justify-between gap-3">
+                <div className="flex gap-2 min-w-0">
+                  <ListChecks className="size-4 text-teal-500 shrink-0 mt-0.5" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground">
+                      {rulesTemplateLoading
+                        ? "Essential rules"
+                        : (rulesTemplatePayload?.initializeAllManifest?.title ?? "Essential rules")}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {rulesTemplateLoading
+                        ? "Loading manifest…"
+                        : (rulesTemplatePayload?.initializeAllManifest?.description ??
+                          "One button copies the curated files for all categories into .cursor/rules.")}
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="h-8 text-xs gap-1.5 shrink-0"
+                  disabled={
+                    !!initializeRulesCategoryLoading ||
+                    initializeAllLoading ||
+                    !project.repoPath ||
+                    rulesTemplateLoading ||
+                    (rulesTemplatePayload?.initializeAllManifest?.checklist?.length ?? 0) === 0
+                  }
+                  onClick={() => void handleInitializeAllEssential()}
+                  title="Copy curated essential rule files from data/rules into .cursor/rules"
+                >
+                  {initializeAllLoading ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <FolderInput className="h-3.5 w-3.5" />
+                  )}
+                  Initialize all (essential)
+                </Button>
+              </div>
+              {!rulesTemplateLoading &&
+              (rulesTemplatePayload?.initializeAllManifest?.checklist?.length ?? 0) === 0 ? (
+                <p className="text-xs text-muted-foreground mb-5 -mt-2">
+                  Add <code className="rounded bg-muted px-1 py-0.5 font-mono text-[10px]">data/rules/initialize-all-manifest.json</code>{" "}
+                  to enable the button.
+                </p>
+              ) : null}
+
               <Tabs value={rulesCategoryTab} onValueChange={setRulesCategoryTab} className="w-full">
                 <TabsList className="flex flex-wrap h-auto gap-1 p-1.5 bg-muted/50">
                   {RULES_CATEGORIES.map(({ slug, label }) => (
@@ -351,7 +503,9 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
                         variant="default"
                         size="sm"
                         className="h-7 text-xs gap-1.5"
-                        disabled={!!initializeRulesCategoryLoading || !project.repoPath}
+                        disabled={
+                          !!initializeRulesCategoryLoading || initializeAllLoading || !project.repoPath
+                        }
                         onClick={() => void handleInitializeRulesForCategory(slug)}
                         title={`Copy best-practice rules from data/rules/${slug === "general" ? "" : slug} into the project`}
                       >
@@ -454,15 +608,14 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
         </TabsContent>
 
         <TabsContent value="project-files" className="mt-0">
-          <ScrollArea className="h-[calc(100vh-14rem)]">
-            <div className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden p-5 pr-4">
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center justify-between gap-2">
+          <div className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden p-5 pr-4">
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between gap-2">
                   <Button variant="ghost" size="sm" onClick={() => setFolderRefreshKey((k) => k + 1)} className="gap-1.5">
                     <RefreshCw className="h-3.5 w-3.5" />
                     Refresh
                   </Button>
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
                       size="sm"
@@ -560,19 +713,18 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
                       )}
                       Put on Desktop
                     </Button>
-                  </div>
                 </div>
-                <ProjectFilesTab
-                  project={project}
-                  projectId={projectId}
-                  onStateChange={(path, entries) => {
-                    setProjectFilesCurrentPath(path);
-                    setProjectFilesEntries(entries);
-                  }}
-                />
               </div>
+              <ProjectFilesTab
+                project={project}
+                projectId={projectId}
+                onStateChange={(path, entries) => {
+                  setProjectFilesCurrentPath(path);
+                  setProjectFilesEntries(entries);
+                }}
+              />
             </div>
-          </ScrollArea>
+          </div>
         </TabsContent>
 
         <TabsContent value="run" className="mt-0">

@@ -120,7 +120,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
               )}
             >
-              <Icon className="size-4 shrink-0" />
+              <Icon
+                className={cn(
+                  "size-4 shrink-0",
+                  item.iconColor ?? "text-sky-400",
+                  !isActive && "opacity-90"
+                )}
+              />
               {item.label}
             </Link>
           );

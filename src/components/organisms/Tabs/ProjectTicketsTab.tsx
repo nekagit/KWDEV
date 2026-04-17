@@ -73,6 +73,7 @@ import { MAX_TERMINAL_SLOTS } from "@/types/run";
 import { AddPromptDialog } from "@/components/molecules/FormsAndDialogs/AddPromptDialog";
 import { TerminalSlot } from "@/components/molecules/Display/TerminalSlot";
 import { extractTicketJsonFromStdout } from "@/lib/ticket-parsing";
+import { PROJECT_PLANNER_SECTION_ORDER } from "@/lib/project-planner-layout";
 
 const PRIORITIES: Array<"P0" | "P1" | "P2" | "P3"> = ["P0", "P1", "P2", "P3"];
 
@@ -789,8 +790,121 @@ export function ProjectTicketsTab({
         <ErrorDisplay message={kanbanError} />
       ) : !kanbanData ? null : (
         <>
-          {/* ═══════ Planner Manager (top, expanded by default) ═══════ */}
-          <Accordion type="single" collapsible defaultValue="planner-manager" className="w-full">
+          {/* ═══════ Project Planner (stats + Kanban) ═══════ */}
+          <Accordion
+            type="single"
+            collapsible
+            defaultValue={PROJECT_PLANNER_SECTION_ORDER[0] === "kanban" ? "planner-stats" : "planner-manager"}
+            className="w-full"
+          >
+            <AccordionItem value="planner-stats" className="border-none">
+              <AccordionTrigger className="hover:no-underline py-0">
+                <div className="flex flex-col items-start text-left gap-1">
+                  <h2 className="text-xl font-bold tracking-tight">Project Planner</h2>
+                  <p className="text-sm text-muted-foreground font-normal">
+                    Manage tickets and progress.
+                  </p>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pt-6">
+                <div className="flex flex-col gap-6">
+                  {/* Stats Grid */}
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="rounded-xl border border-border/40 bg-card backdrop-blur-sm p-4 flex flex-col gap-2 relative overflow-hidden group">
+                      <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <TicketIcon className="size-8" />
+                      </div>
+                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        Total Tickets
+                      </span>
+                      <span className="text-2xl font-bold tabular-nums">
+                        {totalTickets}
+                      </span>
+                    </div>
+
+                    <div className="rounded-xl border border-blue-500/20 bg-blue-500/10 backdrop-blur-sm p-4 flex flex-col gap-2 relative overflow-hidden group">
+                      <div className="absolute top-0 right-0 p-3 text-blue-500 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <Circle className="size-8" />
+                      </div>
+                      <span className="text-xs font-medium text-blue-400 uppercase tracking-wider">
+                        Open
+                      </span>
+                      <span className="text-2xl font-bold text-blue-500 tabular-nums">
+                        {totalTickets - doneTickets}
+                      </span>
+                    </div>
+
+                    <div className="rounded-xl border border-sky-500/20 bg-sky-500/10 backdrop-blur-sm p-4 flex flex-col gap-2 relative overflow-hidden group">
+                      <div className="absolute top-0 right-0 p-3 text-sky-500 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <CheckCircle2 className="size-8" />
+                      </div>
+                      <span className="text-xs font-medium text-sky-400 uppercase tracking-wider">
+                        Completed
+                      </span>
+                      <span className="text-2xl font-bold text-sky-500 tabular-nums">
+                        {doneTickets}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Overall Progress */}
+                  {totalTickets > 0 && (
+                    <div className="rounded-xl border border-border/40 bg-card p-4 flex items-center gap-4">
+                      <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
+                        Overall Progress
+                      </span>
+                      <div className="h-3 flex-1 bg-muted/50 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-sky-500 to-sky-400 rounded-full transition-all duration-700 ease-out"
+                          style={{ width: `${progressPercent}%` }}
+                        />
+                      </div>
+                      <span className="text-sm font-bold tabular-nums">
+                        {progressPercent}%
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Kanban Board */}
+                  <div data-testid="kanban-columns-grid">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {(() => {
+                        const kanbanColumnOrder = [
+                          "backlog",
+                          "in_progress",
+                          "done",
+                        ] as const;
+                        return kanbanColumnOrder.map((columnId) => {
+                          const column = kanbanData.columns[columnId];
+                          if (!column) return null;
+                          return (
+                            <KanbanColumnCard
+                              key={columnId}
+                              columnId={columnId}
+                              column={column}
+                              projectId={projectId}
+                              handleMarkDone={handleMarkDone}
+                              handleRedo={handleRedo}
+                              handleArchive={handleArchive}
+                              handleMoveToInProgress={handleMoveToInProgress}
+                            />
+                          );
+                        });
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+
+          {/* ═══════ Planner Manager ═══════ */}
+          <Accordion
+            type="single"
+            collapsible
+            defaultValue={PROJECT_PLANNER_SECTION_ORDER[0] === "planner-manager" ? "planner-manager" : undefined}
+            className="w-full"
+          >
             <AccordionItem value="planner-manager" className="border-none">
               <AccordionTrigger className="hover:no-underline py-0">
                 <div className="flex flex-col items-start text-left gap-1">
@@ -930,109 +1044,6 @@ export function ProjectTicketsTab({
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                  </div>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-
-          {/* ═══════ Project Planner (stats + Kanban) ═══════ */}
-          <Accordion type="single" collapsible defaultValue="planner-stats" className="w-full">
-            <AccordionItem value="planner-stats" className="border-none">
-              <AccordionTrigger className="hover:no-underline py-0">
-                <div className="flex flex-col items-start text-left gap-1">
-                  <h2 className="text-xl font-bold tracking-tight">Project Planner</h2>
-                  <p className="text-sm text-muted-foreground font-normal">
-                    Manage tickets and progress.
-                  </p>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="pt-6">
-                <div className="flex flex-col gap-6">
-                  {/* Stats Grid */}
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <div className="rounded-xl border border-border/40 bg-card backdrop-blur-sm p-4 flex flex-col gap-2 relative overflow-hidden group">
-                      <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <TicketIcon className="size-8" />
-                      </div>
-                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                        Total Tickets
-                      </span>
-                      <span className="text-2xl font-bold tabular-nums">
-                        {totalTickets}
-                      </span>
-                    </div>
-
-                    <div className="rounded-xl border border-blue-500/20 bg-blue-500/10 backdrop-blur-sm p-4 flex flex-col gap-2 relative overflow-hidden group">
-                      <div className="absolute top-0 right-0 p-3 text-blue-500 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <Circle className="size-8" />
-                      </div>
-                      <span className="text-xs font-medium text-blue-400 uppercase tracking-wider">
-                        Open
-                      </span>
-                      <span className="text-2xl font-bold text-blue-500 tabular-nums">
-                        {totalTickets - doneTickets}
-                      </span>
-                    </div>
-
-                    <div className="rounded-xl border border-sky-500/20 bg-sky-500/10 backdrop-blur-sm p-4 flex flex-col gap-2 relative overflow-hidden group">
-                      <div className="absolute top-0 right-0 p-3 text-sky-500 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <CheckCircle2 className="size-8" />
-                      </div>
-                      <span className="text-xs font-medium text-sky-400 uppercase tracking-wider">
-                        Completed
-                      </span>
-                      <span className="text-2xl font-bold text-sky-500 tabular-nums">
-                        {doneTickets}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Overall Progress */}
-                  {totalTickets > 0 && (
-                    <div className="rounded-xl border border-border/40 bg-card p-4 flex items-center gap-4">
-                      <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
-                        Overall Progress
-                      </span>
-                      <div className="h-3 flex-1 bg-muted/50 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-sky-500 to-sky-400 rounded-full transition-all duration-700 ease-out"
-                          style={{ width: `${progressPercent}%` }}
-                        />
-                      </div>
-                      <span className="text-sm font-bold tabular-nums">
-                        {progressPercent}%
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Kanban Board */}
-                  <div data-testid="kanban-columns-grid">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {(() => {
-                        const kanbanColumnOrder = [
-                          "backlog",
-                          "in_progress",
-                          "done",
-                        ] as const;
-                        return kanbanColumnOrder.map((columnId) => {
-                          const column = kanbanData.columns[columnId];
-                          if (!column) return null;
-                          return (
-                            <KanbanColumnCard
-                              key={columnId}
-                              columnId={columnId}
-                              column={column}
-                              projectId={projectId}
-                              handleMarkDone={handleMarkDone}
-                              handleRedo={handleRedo}
-                              handleArchive={handleArchive}
-                              handleMoveToInProgress={handleMoveToInProgress}
-                            />
-                          );
-                        });
-                      })()}
-                    </div>
                   </div>
                 </div>
               </AccordionContent>

@@ -24,6 +24,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { listProjectFiles, type FileEntry, readProjectFile, deleteProjectPath } from "@/lib/api-projects";
+import { getDefaultProjectFilesPath } from "@/lib/project-files-default-path";
 import type { Project } from "@/types/project";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -37,7 +38,7 @@ interface ProjectFilesTabProps {
 }
 
 export function ProjectFilesTab({ project, projectId, onStateChange }: ProjectFilesTabProps) {
-    const [currentPath, setCurrentPath] = useState(".cursor");
+    const [currentPath, setCurrentPath] = useState(getDefaultProjectFilesPath());
     const [files, setFiles] = useState<FileEntry[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -171,7 +172,7 @@ export function ProjectFilesTab({ project, projectId, onStateChange }: ProjectFi
     }
 
     return (
-        <div className="flex flex-col h-[500px] border border-border/40 rounded-xl bg-card overflow-hidden">
+        <div className="flex flex-col border border-border/40 rounded-xl bg-card overflow-visible">
             {/* Header / Breadcrumb */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border/40 bg-muted/40">
                 <div className="flex items-center gap-2 overflow-hidden">
@@ -209,7 +210,7 @@ export function ProjectFilesTab({ project, projectId, onStateChange }: ProjectFi
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-hidden relative">
+            <div className="relative">
                 {loading ? (
                     <div className="absolute inset-0 flex items-center justify-center bg-card/50 backdrop-blur-[1px]">
                         <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -220,73 +221,71 @@ export function ProjectFilesTab({ project, projectId, onStateChange }: ProjectFi
                         <Button variant="outline" size="sm" onClick={() => void fetchFiles()}>Retry</Button>
                     </div>
                 ) : files.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                    <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
                         <Folder className="h-8 w-8 mb-2 opacity-20" />
                         <p className="text-xs">Empty directory</p>
                     </div>
                 ) : (
-                    <ScrollArea className="h-full">
-                        <div className="flex flex-col p-2">
-                            {files.map((file) => (
-                                <div
-                                    key={file.name}
-                                    className={cn(
-                                        "group flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer",
-                                        "hover:bg-accent/50 active:bg-accent"
+                    <div className="flex flex-col p-2">
+                        {files.map((file) => (
+                            <div
+                                key={file.name}
+                                className={cn(
+                                    "group flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer",
+                                    "hover:bg-accent/50 active:bg-accent"
+                                )}
+                                onClick={() => handleNavigate(file)}
+                            >
+                                <div className="flex items-center gap-3 overflow-hidden">
+                                    {file.isDirectory ? (
+                                        <Folder className="h-4 w-4 text-blue-400 shrink-0" fill="currentColor" fillOpacity={0.2} />
+                                    ) : (
+                                        (() => {
+                                            const Icon = getFileIcon(file.name);
+                                            return <Icon className="h-4 w-4 text-muted-foreground shrink-0" />;
+                                        })()
                                     )}
-                                    onClick={() => handleNavigate(file)}
-                                >
-                                    <div className="flex items-center gap-3 overflow-hidden">
-                                        {file.isDirectory ? (
-                                            <Folder className="h-4 w-4 text-blue-400 shrink-0" fill="currentColor" fillOpacity={0.2} />
-                                        ) : (
-                                            (() => {
-                                                const Icon = getFileIcon(file.name);
-                                                return <Icon className="h-4 w-4 text-muted-foreground shrink-0" />;
-                                            })()
-                                        )}
-                                        <span className={cn(
-                                            "truncate",
-                                            file.isDirectory && "font-medium text-foreground",
-                                            !file.isDirectory && "text-muted-foreground group-hover:text-foreground"
-                                        )}>
-                                            {file.name}
-                                        </span>
-                                    </div>
-
-                                    <div className="flex items-center gap-3 text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <span>{file.isDirectory ? "-" : formatSize(file.size)}</span>
-                                        {!file.isDirectory && (
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                                    <Button variant="ghost" size="icon" className="h-6 w-6">
-                                                        <MoreVertical className="h-3 w-3" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleOpenFile(file); }}>
-                                                        View
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem
-                                                        className="text-destructive focus:text-destructive"
-                                                        onClick={(e) => handleDeleteFile(file, e)}
-                                                        disabled={deletingPath === fullPathFor(file)}
-                                                    >
-                                                        {deletingPath === fullPathFor(file) ? (
-                                                            <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" />
-                                                        ) : (
-                                                            <Trash2 className="h-3.5 w-3.5 mr-2" />
-                                                        )}
-                                                        Delete
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        )}
-                                    </div>
+                                    <span className={cn(
+                                        "truncate",
+                                        file.isDirectory && "font-medium text-foreground",
+                                        !file.isDirectory && "text-muted-foreground group-hover:text-foreground"
+                                    )}>
+                                        {file.name}
+                                    </span>
                                 </div>
-                            ))}
-                        </div>
-                    </ScrollArea>
+
+                                <div className="flex items-center gap-3 text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <span>{file.isDirectory ? "-" : formatSize(file.size)}</span>
+                                    {!file.isDirectory && (
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                                <Button variant="ghost" size="icon" className="h-6 w-6">
+                                                    <MoreVertical className="h-3 w-3" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleOpenFile(file); }}>
+                                                    View
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                    className="text-destructive focus:text-destructive"
+                                                    onClick={(e) => handleDeleteFile(file, e)}
+                                                    disabled={deletingPath === fullPathFor(file)}
+                                                >
+                                                    {deletingPath === fullPathFor(file) ? (
+                                                        <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" />
+                                                    ) : (
+                                                        <Trash2 className="h-3.5 w-3.5 mr-2" />
+                                                    )}
+                                                    Delete
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 )}
             </div>
 

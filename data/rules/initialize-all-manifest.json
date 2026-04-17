@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "title": "Essential Cursor rules",
+  "description": "Curated high-impact rules from data/rules. “Initialize all” copies only these files into .cursor/rules. Use per-category Initialize to copy every JSON file in that folder.",
+  "checklist": [
+    {
+      "categorySlug": "design",
+      "label": "Design",
+      "summary": "Design system alignment, tokens, and UI consistency.",
+      "files": ["design/design-system.json"]
+    },
+    {
+      "categorySlug": "architecture",
+      "label": "Architecture",
+      "summary": "Layering, boundaries, and structural patterns.",
+      "files": ["architecture/architecture-patterns.json"]
+    },
+    {
+      "categorySlug": "does",
+      "label": "Does",
+      "summary": "Recommended practices to follow.",
+      "files": ["does/best-practices-do.json"]
+    },
+    {
+      "categorySlug": "donts",
+      "label": "Donts",
+      "summary": "Anti-patterns and things to avoid.",
+      "files": ["donts/anti-patterns-dont.json"]
+    },
+    {
+      "categorySlug": "coding",
+      "label": "Coding",
+      "summary": "Code style and implementation standards.",
+      "files": ["coding/coding-standards.json"]
+    },
+    {
+      "categorySlug": "testing",
+      "label": "Testing",
+      "summary": "Tests, coverage, and quality gates.",
+      "files": ["testing/testing-practices.json"]
+    },
+    {
+      "categorySlug": "security",
+      "label": "Security",
+      "summary": "Secure defaults and review focus areas.",
+      "files": ["security/security-rules.json"]
+    },
+    {
+      "categorySlug": "naming",
+      "label": "Naming",
+      "summary": "Consistent naming across the codebase.",
+      "files": ["naming/naming-conventions.json"]
+    },
+    {
+      "categorySlug": "api",
+      "label": "API",
+      "summary": "API design and conventions.",
+      "files": ["api/api-conventions.json"]
+    },
+    {
+      "categorySlug": "general",
+      "label": "General",
+      "summary": "Cross-cutting editor rules (imports, switches, style).",
+      "files": [
+        "code-style.json",
+        "no-inline-imports.json",
+        "typescript-exhaustive-switch.json"
+      ]
+    }
+  ]
+}

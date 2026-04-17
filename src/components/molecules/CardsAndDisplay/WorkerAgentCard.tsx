@@ -43,7 +43,7 @@ export interface WorkerAgentCardProps {
 }
 
 const TEXTAREA_CLASS =
-  "flex-1 min-w-0 min-h-[140px] resize-y rounded-xl border border-border/40 bg-muted/20 hover:bg-muted/40 transition-colors px-4 py-3 text-sm font-mono placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent focus-visible:bg-background disabled:cursor-not-allowed disabled:opacity-50 shadow-inner";
+  "flex-1 min-w-0 min-h-[140px] resize-y rounded-xl border border-border/60 bg-muted/30 hover:bg-muted/40 transition-colors px-4 py-3 text-sm font-mono placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-background disabled:cursor-not-allowed disabled:opacity-50";
 
 export function WorkerAgentCard({
   bgColor,
@@ -70,9 +70,9 @@ export function WorkerAgentCard({
   };
 
   return (
-    <div className={cn("rounded-3xl surface-card border border-border/40 overflow-hidden shadow-card transition-all duration-500 hover:shadow-card-hover hover:-translate-y-1 group", bgColor)}>
+    <div className={cn("rounded-xl border border-border/60 overflow-hidden transition-all duration-200", bgColor)}>
       <div className="flex items-center gap-4 px-6 pt-6 pb-5">
-        <div className={cn("flex items-center justify-center size-10 rounded-xl shadow-inner transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3", iconBg)}>
+        <div className={cn("flex items-center justify-center size-10 rounded-xl", iconBg)}>
           <Icon className={cn("size-5", iconColor)} />
         </div>
         <div>
@@ -96,11 +96,11 @@ export function WorkerAgentCard({
             size="icon"
             onClick={onSubmit}
             disabled={loading || disabled}
-            className="bg-indigo-500 hover:bg-indigo-600 text-indigo-50 shadow-md hover:shadow-glow-sm h-12 w-12 rounded-xl shrink-0 transition-all duration-300 active:scale-95 group/btn"
+            className="h-12 w-12 rounded-xl shrink-0 bg-cyan-500 text-cyan-50 hover:bg-cyan-400"
             title={buttonTitle}
             aria-label={buttonLabel}
           >
-            {loading ? <Loader2 className="size-5 animate-spin" /> : <Send className="size-5 transition-transform duration-300 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1" />}
+            {loading ? <Loader2 className="size-5 animate-spin" /> : <Send className="size-5" />}
           </Button>
         </div>
         {children}

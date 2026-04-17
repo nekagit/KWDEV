@@ -146,6 +146,7 @@ import {
 } from "@/lib/worker-run-layout";
 import {
   getWorkerTopAppButtonClassName,
+  getWorkerTopAppIconWrapClassName,
   TERMINAL_TOP_APP_LABEL,
   WORKER_TOP_APP_IDS,
   WORKER_TOP_APPS_ROW_CLASSNAME,
@@ -1207,11 +1208,11 @@ function WorkerNightShiftSection({
   }, [setNightShiftActive, setNightShiftReplenishCallback, setNightShiftCircleState, setNightShiftIdeaDrivenState, setIdeaDrivenAutoState, setIdeaDrivenTicketPhases, clearIdeaDrivenProgress]);
 
   return (
-    <div className={cn("surface-card", WORKER_RUN_SECTION_SURFACE_CLASSNAME["night-shift"])}>
+    <div className="rounded-xl border border-cyan-500/25 bg-cyan-500/[0.08] overflow-hidden">
       <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
         <div className="flex items-center gap-2.5">
-          <div className="flex items-center justify-center size-7 rounded-lg bg-purple-500/10">
-            <Moon className="size-3.5 text-purple-400" />
+          <div className="flex items-center justify-center size-7 rounded-lg bg-cyan-500/15">
+            <Moon className="size-3.5 text-cyan-300" />
           </div>
           <div>
             <h3 className="text-xs font-semibold text-foreground tracking-tight">Night shift</h3>
@@ -1224,7 +1225,8 @@ function WorkerNightShiftSection({
           {nightShiftActive ? (
             <Button
               size="sm"
-              className="h-8 text-xs gap-1.5 bg-gradient-to-r from-amber-500/85 to-orange-500/85 text-white hover:from-amber-400 hover:to-orange-400"
+              variant="outline"
+              className="h-8 text-xs gap-1.5"
               onClick={handleStop}
               title="Stop night shift (no new runs)"
             >
@@ -1236,7 +1238,7 @@ function WorkerNightShiftSection({
               <Button
                 variant="default"
                 size="sm"
-                className="h-8 text-xs gap-1.5 bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:from-indigo-400 hover:to-violet-400"
+                className="h-8 text-xs gap-1.5 bg-cyan-500 text-cyan-50 hover:bg-cyan-400"
                 disabled={!projectPath?.trim() || starting}
                 onClick={handleStart}
                 title="Start 3 agents with same prompt in a loop"
@@ -1246,7 +1248,8 @@ function WorkerNightShiftSection({
               </Button>
               <Button
                 size="sm"
-                className="h-8 text-xs gap-1.5 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white hover:from-violet-400 hover:to-fuchsia-400"
+                variant="secondary"
+                className="h-8 text-xs gap-1.5"
                 disabled={!projectPath?.trim() || starting}
                 onClick={handleCircleStart}
                 title="Run Create → Implement → Test → Debugging → Refactor (3 agents per phase)"
@@ -1256,7 +1259,8 @@ function WorkerNightShiftSection({
               </Button>
               <Button
                 size="sm"
-                className="h-8 text-xs gap-1.5 bg-gradient-to-r from-sky-500 to-cyan-500 text-white hover:from-sky-400 hover:to-cyan-400"
+                variant="secondary"
+                className="h-8 text-xs gap-1.5"
                 disabled={!projectPath?.trim() || starting || startingIdeaDriven || !isTauri}
                 onClick={() => setIdeaDrivenDialogOpen(true)}
                 title="Implement tickets (one run per ticket, desktop only)"
@@ -1276,7 +1280,7 @@ function WorkerNightShiftSection({
                 {nightShiftCircleMode ? "Circle phase:" : "Mode (click to toggle):"}
               </span>
               {nightShiftActive && nightShiftCircleMode && nightShiftCirclePhase && !nightShiftIdeaDrivenMode && (
-                <span className="text-[10px] font-medium text-indigo-600 dark:text-indigo-400" aria-live="polite">
+                <span className="text-[10px] font-medium text-cyan-700 dark:text-cyan-400" aria-live="polite">
                   Current: {NIGHT_SHIFT_BADGES.find((b) => b.id === nightShiftCirclePhase)?.label ?? nightShiftCirclePhase}
                 </span>
               )}
@@ -1297,7 +1301,7 @@ function WorkerNightShiftSection({
                       "text-xs font-medium transition-colors",
                       nightShiftCircleMode ? "cursor-default" : "cursor-pointer hover:bg-muted/60",
                       selected
-                        ? "bg-indigo-600 text-white hover:bg-indigo-700 hover:text-white ring-2 ring-indigo-400 ring-offset-2 ring-offset-background"
+                        ? "bg-cyan-600 text-white hover:bg-cyan-700 hover:text-white ring-2 ring-cyan-400 ring-offset-2 ring-offset-background"
                         : nightShiftCircleMode ? "" : "hover:bg-muted/60"
                     )}
                     onClick={nightShiftCircleMode ? undefined : () => toggleBadge(b.id)}
@@ -1336,7 +1340,7 @@ function WorkerNightShiftSection({
           )}
 
           {(ideaDrivenChecklist.length > 0 || ideaDrivenLogs.length > 0) && (
-            <div className="px-5 py-4 space-y-3 bg-purple-500/[0.08]">
+            <div className="px-5 py-4 space-y-3 bg-cyan-500/[0.08] border-t border-cyan-500/20">
               <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                 <ListChecks className="size-3.5" />
                 Idea-driven progress
@@ -1346,9 +1350,9 @@ function WorkerNightShiftSection({
                   {ideaDrivenChecklist.map((item) => (
                     <li key={item.id} className="flex items-center gap-2 text-xs">
                       {item.status === "done" ? (
-                        <CheckCircle2 className="size-3.5 text-sky-600 shrink-0" aria-hidden />
+                        <CheckCircle2 className="size-3.5 text-cyan-600 shrink-0" aria-hidden />
                       ) : item.status === "in_progress" ? (
-                        <Loader2 className="size-3.5 animate-spin text-indigo-500 shrink-0" aria-hidden />
+                        <Loader2 className="size-3.5 animate-spin text-cyan-500 shrink-0" aria-hidden />
                       ) : (
                         <Circle className="size-3.5 text-muted-foreground shrink-0" aria-hidden />
                       )}
@@ -1866,9 +1870,6 @@ export function ProjectRunTab({ project, projectId, agentProvider = "cursor" }: 
       render: () => (
         <div className="rounded-2xl overflow-hidden bg-gradient-to-br from-teal-500/[0.12] via-cyan-500/[0.08] to-emerald-500/[0.1]">
           <div className="px-5 pt-5 pb-5">
-            <div className="mb-4">
-              <WorkerStatusBar />
-            </div>
             <Tabs defaultValue="terminals" className="w-full">
               <TabsList className="flex w-full h-9 rounded-lg bg-teal-500/[0.12] p-1 gap-0.5">
                 <TabsTrigger value="terminals" className="flex-1 min-w-0 text-xs rounded-md inline-flex items-center justify-center gap-1.5">
@@ -1946,15 +1947,13 @@ export function ProjectRunTab({ project, projectId, agentProvider = "cursor" }: 
                 <span
                   className={cn(
                     "inline-flex size-11 items-center justify-center rounded-xl border-0",
-                    isActive
-                      ? cn(app.accent.iconBg, "border-0")
-                      : "bg-muted/40"
+                    getWorkerTopAppIconWrapClassName(isActive, app.accent.iconBg)
                   )}
                 >
                   <Icon
                     className={cn(
                       "size-5",
-                      app.accent.icon,
+                      isActive ? "text-white" : app.accent.icon,
                       !isActive && "opacity-90 group-hover:opacity-100"
                     )}
                   />
@@ -1972,16 +1971,6 @@ export function ProjectRunTab({ project, projectId, agentProvider = "cursor" }: 
         <div className={getWorkerRunSectionsGridClassName(openWorkerAppSections.length)}>
           {openWorkerAppSections.map((section) => (
             <div key={section.id} className={WORKER_RUN_SECTION_CARD_CLASSNAME}>
-              <div className="mb-3 flex items-center justify-between gap-2">
-                <h3 className="text-sm font-semibold tracking-tight">{section.label}</h3>
-                <Button
-                  size="sm"
-                  className="h-7 px-2 text-xs bg-gradient-to-r from-violet-500/80 to-indigo-500/80 text-white hover:from-violet-400 hover:to-indigo-400"
-                  onClick={() => setOpenWorkerApps((prev) => prev.filter((id) => id !== section.id))}
-                >
-                  Collapse
-                </Button>
-              </div>
               {section.render()}
             </div>
           ))}
@@ -3660,11 +3649,11 @@ function WorkerVibingSection({
   agentProvider?: "cursor" | "claude" | "gemini";
 }) {
   return (
-    <div className={WORKER_RUN_SECTION_SURFACE_CLASSNAME.vibing}>
+    <div className="rounded-2xl border border-cyan-500/20 overflow-hidden bg-gradient-to-br from-cyan-500/[0.12] via-indigo-500/[0.08] to-violet-500/[0.1]">
       <div className="px-5 pt-5 pb-3">
         <div className="flex items-center gap-2.5">
-          <div className="flex items-center justify-center size-7 shrink-0 rounded-lg bg-indigo-500/10">
-            <Sparkles className="size-3.5 text-indigo-400" />
+          <div className="flex items-center justify-center size-7 shrink-0 rounded-lg bg-cyan-500/15">
+            <Sparkles className="size-3.5 text-cyan-300" />
           </div>
           <div className="min-w-0">
             <h3 className="text-xs font-semibold text-foreground tracking-tight">
@@ -3678,7 +3667,7 @@ function WorkerVibingSection({
       </div>
       <div className="px-5 pb-5">
         <Tabs defaultValue="asking" className="w-full">
-          <TabsList className="flex w-full h-9 rounded-lg bg-indigo-500/[0.12] p-1 gap-0.5">
+          <TabsList className="flex w-full h-9 rounded-lg bg-cyan-500/[0.1] p-1 gap-0.5">
             <TabsTrigger value="asking" className="flex-1 min-w-0 text-xs rounded-md truncate">
               Asking
             </TabsTrigger>
@@ -3696,7 +3685,7 @@ function WorkerVibingSection({
             <WorkerAskingSection projectId={projectId} projectPath={projectPath} agentProvider={agentProvider} />
           </TabsContent>
           <TabsContent value="planning" className="mt-4 px-0 pt-0">
-            <div className="rounded-2xl border border-border/50 overflow-hidden bg-amber-500/[0.06]">
+            <div className="rounded-2xl border border-cyan-500/25 overflow-hidden bg-cyan-500/[0.08]">
               <ProjectPlanTab project={project} projectId={projectId} agentProvider={agentProvider} />
             </div>
           </TabsContent>
@@ -3746,26 +3735,6 @@ function WorkerTerminalsSection({
   const stopAllImplementAll = useRunStore((s) => s.stopAllImplementAll);
   const clearImplementAllLogs = useRunStore((s) => s.clearImplementAllLogs);
   const archiveImplementAllLogs = useRunStore((s) => s.archiveImplementAllLogs);
-  const runCommandInExternalTerminal = useRunStore((s) => s.runCommandInExternalTerminal);
-  const [runCommand, setRunCommand] = useState("");
-  const [runningCommand, setRunningCommand] = useState(false);
-
-  const handleRunInTerminal = useCallback(async () => {
-    const cmd = runCommand.trim();
-    if (!cmd || !projectPath) return;
-    setRunningCommand(true);
-    try {
-      const opened = await runCommandInExternalTerminal(projectPath, cmd);
-      if (opened) {
-        toast.success("Opened in Terminal.");
-        setRunCommand("");
-      } else {
-        toast.error("Failed to open terminal. Only supported on macOS in the desktop app.");
-      }
-    } finally {
-      setRunningCommand(false);
-    }
-  }, [projectPath, runCommand, runCommandInExternalTerminal]);
 
   const terminalRuns = runningRuns.filter((r) => r.slot != null);
   const unslottedRunningRuns = runningRuns.filter((r) => r.slot == null && r.status === "running");
@@ -3869,29 +3838,6 @@ function WorkerTerminalsSection({
           </div>
         </div>
       )}
-
-      {/* Run command in external terminal */}
-      <div className={cn("flex items-center gap-2 flex-wrap", embedded ? "px-0 pb-3" : "px-5 pb-4")}>
-        <Input
-          placeholder={projectPath ? "Enter command to run in project terminal (e.g. npm run dev)…" : "Set project repo path to run commands"}
-          value={runCommand}
-          onChange={(e) => setRunCommand(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleRunInTerminal()}
-          disabled={!projectPath || !isTauri}
-          className="flex-1 min-w-[200px] h-8 text-xs font-mono"
-          aria-label="Command to run in external terminal"
-        />
-        <Button
-          size="sm"
-          className="h-8 gap-1.5 text-xs shrink-0 bg-gradient-to-r from-teal-500/85 to-emerald-500/85 text-white hover:from-teal-400 hover:to-emerald-400"
-          disabled={!runCommand.trim() || !projectPath || !isTauri || runningCommand}
-          onClick={handleRunInTerminal}
-          title={isTauri ? "Run this command in Terminal.app (project directory)" : "Run in terminal is only available in the desktop app (macOS)"}
-        >
-          {runningCommand ? <Loader2 className="size-3.5 animate-spin" /> : <Play className="size-3.5" />}
-          Run in terminal
-        </Button>
-      </div>
 
       {/* Command bar */}
       {!embedded ? <div className="px-5 pb-4">{commandBar}</div> : commandBar}

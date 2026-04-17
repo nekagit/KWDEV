@@ -69,6 +69,20 @@ export interface RunMeta {
   agentMode?: "agent" | "ask" | "plan" | "debug";
   /** Agent provider: "cursor" (default), "claude", or "gemini". Selects which CLI script to run. */
   provider?: "cursor" | "claude" | "gemini";
+  /** Internal retry guard for provider fallback when selected provider is unavailable. */
+  providerFallbackTried?: boolean;
+  /** Testing Agent run: replenish with next generated prompt while testing loop is active. */
+  isTestingAgent?: boolean;
+  /** Testing Agent iteration id used to map script output back to UI entries. */
+  testingAgentIterationId?: string;
+  /** Cleanup Agent run: replenish with next generated prompt while cleanup loop is active. */
+  isCleanupAgent?: boolean;
+  /** Cleanup Agent iteration id used to map script output back to UI entries. */
+  cleanupAgentIterationId?: string;
+  /** Refactor Agent run: replenish with next generated prompt while refactor loop is active. */
+  isRefactorAgent?: boolean;
+  /** Refactor Agent iteration id used to map script output back to UI entries. */
+  refactorAgentIterationId?: string;
 }
 
 export interface Run {

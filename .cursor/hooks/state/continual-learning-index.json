@@ -1,10 +1,149 @@
 {
   "version": 1,
   "transcripts": {
-    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/8b7cf94c-1779-40fa-a399-02c98afb93b5/8b7cf94c-1779-40fa-a399-02c98afb93b5.jsonl": {
-      "mtimeMs": 1773653508,
-      "lastProcessedAt": "2026-03-16T00:00:00.000Z"
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/03fa32fa-6a22-46fe-871f-0266d3c56060/03fa32fa-6a22-46fe-871f-0266d3c56060.jsonl": {
+      "mtimeMs": 1773735632,
+      "lastProcessedAt": "2026-04-17T11:19:08Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/0fa036eb-281d-4d68-b25f-f8ab6b2ed4df/0fa036eb-281d-4d68-b25f-f8ab6b2ed4df.jsonl": {
+      "mtimeMs": 1773667361,
+      "lastProcessedAt": "2026-04-17T11:19:08Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/141670e7-956f-4728-8d77-dc02218a9aa9/141670e7-956f-4728-8d77-dc02218a9aa9.jsonl": {
+      "mtimeMs": 1773906553,
+      "lastProcessedAt": "2026-04-17T11:19:08Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/21394e78-973b-4571-b3b1-daf7f3a9f483/21394e78-973b-4571-b3b1-daf7f3a9f483.jsonl": {
+      "mtimeMs": 1773673192,
+      "lastProcessedAt": "2026-04-17T11:19:08Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/33e4c346-b482-49a9-8672-2f87ebb2a3be/33e4c346-b482-49a9-8672-2f87ebb2a3be.jsonl": {
+      "mtimeMs": 1773766982,
+      "lastProcessedAt": "2026-04-17T11:19:08Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/564583a9-4a2d-4fa5-b331-92deb7743e4f/564583a9-4a2d-4fa5-b331-92deb7743e4f.jsonl": {
+      "mtimeMs": 1773749444,
+      "lastProcessedAt": "2026-04-17T11:19:08Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/5de3d8be-adcf-4c97-beee-1dd803ea0078/5de3d8be-adcf-4c97-beee-1dd803ea0078.jsonl": {
+      "mtimeMs": 1773827042,
+      "lastProcessedAt": "2026-04-17T11:19:08Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/5e055b96-6e13-4003-bcfa-18a28743cc2e/5e055b96-6e13-4003-bcfa-18a28743cc2e.jsonl": {
+      "mtimeMs": 1773839211,
+      "lastProcessedAt": "2026-04-17T11:19:08Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/5fdd6673-42ec-40ca-87a3-a11aec44bcfa/5fdd6673-42ec-40ca-87a3-a11aec44bcfa.jsonl": {
+      "mtimeMs": 1773688664,
+      "lastProcessedAt": "2026-04-17T11:19:08Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/7e8daed6-54bb-4bd9-8707-0118841ed272/7e8daed6-54bb-4bd9-8707-0118841ed272.jsonl": {
+      "mtimeMs": 1773688711,
+      "lastProcessedAt": "2026-04-17T11:19:08Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/830fb63f-14a1-4e2f-a4ac-cba463d30f1f/830fb63f-14a1-4e2f-a4ac-cba463d30f1f.jsonl": {
+      "mtimeMs": 1773755172,
+      "lastProcessedAt": "2026-04-17T11:19:08Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/852c61ec-262b-4dc9-8b72-0334c373aa30/852c61ec-262b-4dc9-8b72-0334c373aa30.jsonl": {
+      "mtimeMs": 1773738910,
+      "lastProcessedAt": "2026-04-17T11:19:08Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/875a276e-ce14-48a0-a53d-06e87494303c/875a276e-ce14-48a0-a53d-06e87494303c.jsonl": {
+      "mtimeMs": 1773737736,
+      "lastProcessedAt": "2026-04-17T11:19:08Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/8b23b163-a19b-4dee-a02c-b79d3b1c7ffc/8b23b163-a19b-4dee-a02c-b79d3b1c7ffc.jsonl": {
+      "mtimeMs": 1773733742,
+      "lastProcessedAt": "2026-04-17T11:19:08Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/9bad9309-2142-4c6b-af57-fc556676c534/9bad9309-2142-4c6b-af57-fc556676c534.jsonl": {
+      "mtimeMs": 1773731423,
+      "lastProcessedAt": "2026-04-17T11:19:08Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/9c76490c-99ed-4da9-aecd-383b3e06086f/9c76490c-99ed-4da9-aecd-383b3e06086f.jsonl": {
+      "mtimeMs": 1773670695,
+      "lastProcessedAt": "2026-04-17T11:19:08Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/9facc653-e050-4e30-a7dd-3515dc825cb9/9facc653-e050-4e30-a7dd-3515dc825cb9.jsonl": {
+      "mtimeMs": 1773754008,
+      "lastProcessedAt": "2026-04-17T11:19:08Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/a6fb32d0-6e19-4ebf-b12c-a1d41e28a192/a6fb32d0-6e19-4ebf-b12c-a1d41e28a192.jsonl": {
+      "mtimeMs": 1773733894,
+      "lastProcessedAt": "2026-04-17T11:19:08Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/afc3cd3f-4c10-43a2-971c-476f8f4f4e59/afc3cd3f-4c10-43a2-971c-476f8f4f4e59.jsonl": {
+      "mtimeMs": 1773673207,
+      "lastProcessedAt": "2026-04-17T11:19:08Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/bf8fdaff-092f-4e99-8117-3bbe2f4ceea2/bf8fdaff-092f-4e99-8117-3bbe2f4ceea2.jsonl": {
+      "mtimeMs": 1773749607,
+      "lastProcessedAt": "2026-04-17T11:19:08Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/cf8869ab-9488-41c6-ad7a-59dc93cab123/cf8869ab-9488-41c6-ad7a-59dc93cab123.jsonl": {
+      "mtimeMs": 1774597601,
+      "lastProcessedAt": "2026-04-17T11:19:08Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/e1abefaf-2e42-4b88-9691-52a4ab9b265b/e1abefaf-2e42-4b88-9691-52a4ab9b265b.jsonl": {
+      "mtimeMs": 1773860085,
+      "lastProcessedAt": "2026-04-17T11:19:08Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/eaa9d856-b3c0-440c-90e8-a1c39133e44e/eaa9d856-b3c0-440c-90e8-a1c39133e44e.jsonl": {
+      "mtimeMs": 1773823847,
+      "lastProcessedAt": "2026-04-17T11:19:08Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/f3c71d5b-e6dd-4ba8-a5ac-86608b1818a3/f3c71d5b-e6dd-4ba8-a5ac-86608b1818a3.jsonl": {
+      "mtimeMs": 1773825261,
+      "lastProcessedAt": "2026-04-17T11:19:08Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/f8105bbf-25a1-4f6f-bcad-94ba446325d9/f8105bbf-25a1-4f6f-bcad-94ba446325d9.jsonl": {
+      "mtimeMs": 1773750323,
+      "lastProcessedAt": "2026-04-17T11:19:08Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/fd87b06e-4a3c-4c0d-ac29-d1e3e64dbd9a/fd87b06e-4a3c-4c0d-ac29-d1e3e64dbd9a.jsonl": {
+      "mtimeMs": 1776426621,
+      "lastProcessedAt": "2026-04-17T13:19:41Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/fdbf1e10-c055-4964-bb56-305e624967fd/fdbf1e10-c055-4964-bb56-305e624967fd.jsonl": {
+      "mtimeMs": 1773689326,
+      "lastProcessedAt": "2026-04-17T11:19:08Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/c060813f-1fc5-4501-bb6b-80182c239353/c060813f-1fc5-4501-bb6b-80182c239353.jsonl": {
+      "mtimeMs": 1776426705,
+      "lastProcessedAt": "2026-04-17T13:19:41Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/39d68477-e36f-40d5-982f-ccb4db44cffe/39d68477-e36f-40d5-982f-ccb4db44cffe.jsonl": {
+      "mtimeMs": 1776426701,
+      "lastProcessedAt": "2026-04-17T13:19:41Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/4e0fee95-853c-421d-b1cc-bc729f2a743e/4e0fee95-853c-421d-b1cc-bc729f2a743e.jsonl": {
+      "mtimeMs": 1776431702,
+      "lastProcessedAt": "2026-04-17T13:19:41Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/c4e38b96-1576-42fa-ae47-ea9d704faabc/c4e38b96-1576-42fa-ae47-ea9d704faabc.jsonl": {
+      "mtimeMs": 1776431949,
+      "lastProcessedAt": "2026-04-17T13:19:41Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/43d77526-ccc4-4242-8c75-760b54c49c7f/43d77526-ccc4-4242-8c75-760b54c49c7f.jsonl": {
+      "mtimeMs": 1776426003,
+      "lastProcessedAt": "2026-04-17T13:19:41Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/86d7cc37-db1d-4909-952f-a668677cc387/86d7cc37-db1d-4909-952f-a668677cc387.jsonl": {
+      "mtimeMs": 1776426108,
+      "lastProcessedAt": "2026-04-17T13:19:41Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/3411de1a-867d-4e5a-a5d4-a633059e0aec/3411de1a-867d-4e5a-a5d4-a633059e0aec.jsonl": {
+      "mtimeMs": 1776431931,
+      "lastProcessedAt": "2026-04-17T13:19:41Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/fd308c41-30e7-4a0c-b7ff-7c23829d2d01/fd308c41-30e7-4a0c-b7ff-7c23829d2d01.jsonl": {
+      "mtimeMs": 1776426695,
+      "lastProcessedAt": "2026-04-17T13:19:41Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/e8f8d35a-aeda-4ca5-ba8e-702b5793557d/e8f8d35a-aeda-4ca5-ba8e-702b5793557d.jsonl": {
+      "mtimeMs": 1776431905,
+      "lastProcessedAt": "2026-04-17T13:19:41Z"
     }
   }
 }
-

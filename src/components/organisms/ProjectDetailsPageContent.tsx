@@ -338,31 +338,209 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
         data-testid="project-detail-page"
       >
         {/* ═══════════════ HERO HEADER ═══════════════ */}
-        <div className="relative overflow-hidden rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-primary/[0.04] p-6 md:p-8 mb-8 mx-4 mt-4">
+        <div className="relative overflow-hidden rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-primary/[0.04] p-3 md:p-4 mb-4 mx-4 mt-3">
           {/* Decorative gradient orbs */}
           <div className="absolute -top-24 -right-24 size-48 rounded-full bg-primary/[0.07] blur-3xl pointer-events-none" />
           <div className="absolute -bottom-16 -left-16 size-36 rounded-full bg-info/[0.05] blur-3xl pointer-events-none" />
           <div className="absolute top-1/2 right-1/4 size-24 rounded-full bg-violet-500/[0.04] blur-2xl pointer-events-none" />
 
-          <div className="relative z-10 flex flex-col gap-5">
-            <Breadcrumb
-              items={[
-                { label: "Projects", href: "/projects" },
-                { label: project.name ?? "Project" },
-              ]}
-              className="mb-0.5"
-            />
-            {/* Top bar: delete */}
-            <div className="flex items-center justify-end">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 transition-all duration-200 gap-1.5"
-                onClick={() => setDeleteConfirmOpen(true)}
-              >
-                <Trash2 className="size-3.5" />
-                <span className="text-xs">Delete</span>
-              </Button>
+          <div className="relative z-10 flex flex-col gap-2">
+            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+              <div className="min-w-0 flex justify-start">
+                <Breadcrumb
+                  items={[
+                    { label: "Projects", href: "/projects" },
+                    { label: project.name ?? "Project" },
+                  ]}
+                  className="mb-0.5"
+                />
+              </div>
+              <div className="flex items-center justify-center overflow-x-auto">
+                <div className="flex items-center gap-2 whitespace-nowrap">
+                  {/* Agent Provider Switcher — selected button always black */}
+                  <div className="flex items-center justify-center gap-1 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => handleProviderChange("cursor")}
+                      className={cn(
+                        "px-2.5 py-1 text-xs font-medium rounded-l-md border transition-colors",
+                        agentProvider === "cursor"
+                          ? "bg-black text-white border-black dark:bg-white dark:text-black dark:border-white"
+                          : "bg-muted/40 text-muted-foreground border-border hover:bg-black/10 hover:text-foreground hover:border-black/30 dark:hover:bg-white/10 dark:hover:border-white/30"
+                      )}
+                    >
+                      Cursor
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleProviderChange("claude")}
+                      className={cn(
+                        "px-2.5 py-1 text-xs font-medium border border-l-0 transition-colors",
+                        agentProvider === "claude"
+                          ? "bg-black text-white border-black dark:bg-white dark:text-black dark:border-white"
+                          : "bg-muted/40 text-muted-foreground border-border hover:bg-black/10 hover:text-foreground hover:border-black/30 dark:hover:bg-white/10 dark:hover:border-white/30"
+                      )}
+                    >
+                      Claude
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleProviderChange("gemini")}
+                      className={cn(
+                        "px-2.5 py-1 text-xs font-medium rounded-r-md border border-l-0 transition-colors",
+                        agentProvider === "gemini"
+                          ? "bg-black text-white border-black dark:bg-white dark:text-black dark:border-white"
+                          : "bg-muted/40 text-muted-foreground border-border hover:bg-black/10 hover:text-foreground hover:border-black/30 dark:hover:bg-white/10 dark:hover:border-white/30"
+                      )}
+                    >
+                      Gemini
+                    </button>
+                  </div>
+                  {/* Run port: display or set localhost port for View Running Project (always show so port can be set even without repo path) */}
+                  <>
+                    {project.runPort != null ? (
+                      portEdit ? (
+                        <div className="flex items-center gap-1.5">
+                          <Input
+                            type="number"
+                            min={1}
+                            max={65535}
+                            placeholder="Port"
+                            value={portInput}
+                            onChange={(e) => setPortInput(e.target.value)}
+                            className="h-7 w-20 text-xs font-mono"
+                          />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 px-2 text-[10px]"
+                            disabled={savingPort}
+                            onClick={async () => {
+                              const num = parseInt(portInput, 10);
+                              if (Number.isNaN(num) || num < 1 || num > 65535) {
+                                toast.error("Enter a port between 1 and 65535");
+                                return;
+                              }
+                              setSavingPort(true);
+                              try {
+                                const updated = await updateProject(projectId, { runPort: num });
+                                if (mountedRef.current && updated?.runPort != null) {
+                                  setProject((p) => (p ? { ...p, runPort: updated.runPort } : p));
+                                }
+                                await fetchProject();
+                                setPortEdit(false);
+                                setPortInput("");
+                                toast.success("Run port updated.");
+                              } catch (err) {
+                                toast.error(err instanceof Error ? err.message : "Failed to save port");
+                              } finally {
+                                setSavingPort(false);
+                              }
+                            }}
+                          >
+                            {savingPort ? <Loader2 className="size-3 animate-spin" /> : "Save"}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-1.5"
+                            onClick={() => {
+                              setPortEdit(false);
+                              setPortInput("");
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      ) : (
+                        <MetadataBadge
+                          icon={<Monitor className="size-3" />}
+                          color="bg-sky-500/10 border-sky-500/20 text-sky-600 dark:text-sky-400"
+                        >
+                          <span className="normal-case font-mono">
+                            localhost:{project.runPort}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPortInput(String(project.runPort ?? ""));
+                              setPortEdit(true);
+                            }}
+                            className="ml-1 rounded p-0.5 hover:bg-sky-500/20"
+                            aria-label="Change port"
+                          >
+                            <Pencil className="size-2.5" />
+                          </button>
+                        </MetadataBadge>
+                      )
+                    ) : (
+                      <div className="flex items-center gap-1.5">
+                        <Input
+                          type="number"
+                          min={1}
+                          max={65535}
+                          placeholder="Port"
+                          value={portInput}
+                          onChange={(e) => setPortInput(e.target.value)}
+                          className="h-7 w-20 text-xs font-mono"
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 px-2 text-[10px] font-semibold uppercase tracking-wider gap-1"
+                          disabled={savingPort}
+                          onClick={async () => {
+                            const num = parseInt(portInput, 10);
+                            if (Number.isNaN(num) || num < 1 || num > 65535) {
+                              toast.error("Enter a port between 1 and 65535");
+                              return;
+                            }
+                            setSavingPort(true);
+                            try {
+                              const updated = await updateProject(projectId, { runPort: num });
+                              if (mountedRef.current && updated?.runPort != null) {
+                                setProject((p) => (p ? { ...p, runPort: updated.runPort } : p));
+                              }
+                              await fetchProject();
+                              setPortInput("");
+                              toast.success("Run port saved.");
+                            } catch (err) {
+                              toast.error(err instanceof Error ? err.message : "Failed to save port");
+                            } finally {
+                              setSavingPort(false);
+                            }
+                          }}
+                        >
+                          {savingPort ? <Loader2 className="size-3 animate-spin" /> : "Set port"}
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                  {/* View Running Project: opens modal with iframe (always visible; disabled until port is set) */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 px-2.5 text-[10px] font-semibold uppercase tracking-wider gap-1.5 border-sky-500/30 hover:bg-sky-500/5 hover:border-sky-500/50 transition-all duration-300 shadow-sm"
+                    title={project.runPort == null ? "Set run port above first" : "Open running app in modal"}
+                    onClick={() => setViewRunningOpen(true)}
+                    disabled={project.runPort == null}
+                  >
+                    <Monitor className="size-3 text-sky-500" />
+                    View Running Project
+                  </Button>
+                </div>
+              </div>
+              <div className="flex justify-end">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-rose-400 hover:text-rose-300 hover:bg-destructive/10 transition-all duration-200 gap-1.5"
+                  onClick={() => setDeleteConfirmOpen(true)}
+                >
+                  <Trash2 className="size-3.5 text-rose-400" />
+                  <span className="text-xs">Delete</span>
+                </Button>
+              </div>
             </div>
 
             {/* Delete project confirmation (same pattern as ProjectHeader, ADR 0130 / 0189) */}
@@ -395,7 +573,7 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
             </Dialog>
 
             {/* Project Title & Description */}
-            <div className="space-y-2.5">
+            <div className="space-y-1">
               <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
                 <div className="flex justify-start">
                   {prevId ? (
@@ -455,182 +633,11 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
                 </p>
               )}
 
-              {/* Agent Provider Switcher — selected button always black */}
-              <div className="flex items-center justify-center gap-1 mt-1">
-                <button
-                  type="button"
-                  onClick={() => handleProviderChange("cursor")}
-                  className={cn(
-                    "px-3 py-1 text-xs font-medium rounded-l-md border transition-colors",
-                    agentProvider === "cursor"
-                      ? "bg-black text-white border-black dark:bg-white dark:text-black dark:border-white"
-                      : "bg-muted/40 text-muted-foreground border-border hover:bg-black/10 hover:text-foreground hover:border-black/30 dark:hover:bg-white/10 dark:hover:border-white/30"
-                  )}
-                >
-                  Cursor
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleProviderChange("claude")}
-                  className={cn(
-                    "px-3 py-1 text-xs font-medium border border-l-0 transition-colors",
-                    agentProvider === "claude"
-                      ? "bg-black text-white border-black dark:bg-white dark:text-black dark:border-white"
-                      : "bg-muted/40 text-muted-foreground border-border hover:bg-black/10 hover:text-foreground hover:border-black/30 dark:hover:bg-white/10 dark:hover:border-white/30"
-                  )}
-                >
-                  Claude
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleProviderChange("gemini")}
-                  className={cn(
-                    "px-3 py-1 text-xs font-medium rounded-r-md border border-l-0 transition-colors",
-                    agentProvider === "gemini"
-                      ? "bg-black text-white border-black dark:bg-white dark:text-black dark:border-white"
-                      : "bg-muted/40 text-muted-foreground border-border hover:bg-black/10 hover:text-foreground hover:border-black/30 dark:hover:bg-white/10 dark:hover:border-white/30"
-                  )}
-                >
-                  Gemini
-                </button>
-              </div>
             </div>
 
-            {/* Metadata: port, View Running, badges */}
-            <div className="flex flex-wrap items-center justify-between gap-4 mt-1">
-              <div className="flex flex-wrap items-center gap-2">
-                {/* Run port: display or set localhost port for View Running Project (always show so port can be set even without repo path) */}
-                <>
-                  {project.runPort != null ? (
-                    portEdit ? (
-                      <div className="flex items-center gap-1.5">
-                        <Input
-                          type="number"
-                          min={1}
-                          max={65535}
-                          placeholder="Port"
-                          value={portInput}
-                          onChange={(e) => setPortInput(e.target.value)}
-                          className="h-7 w-20 text-xs font-mono"
-                        />
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-7 px-2 text-[10px]"
-                          disabled={savingPort}
-                          onClick={async () => {
-                            const num = parseInt(portInput, 10);
-                            if (Number.isNaN(num) || num < 1 || num > 65535) {
-                              toast.error("Enter a port between 1 and 65535");
-                              return;
-                            }
-                            setSavingPort(true);
-                            try {
-                              const updated = await updateProject(projectId, { runPort: num });
-                              if (mountedRef.current && updated?.runPort != null) {
-                                setProject((p) => (p ? { ...p, runPort: updated.runPort } : p));
-                              }
-                              await fetchProject();
-                              setPortEdit(false);
-                              setPortInput("");
-                              toast.success("Run port updated.");
-                            } catch (err) {
-                              toast.error(err instanceof Error ? err.message : "Failed to save port");
-                            } finally {
-                              setSavingPort(false);
-                            }
-                          }}
-                        >
-                          {savingPort ? <Loader2 className="size-3 animate-spin" /> : "Save"}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 px-1.5"
-                          onClick={() => {
-                            setPortEdit(false);
-                            setPortInput("");
-                          }}
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    ) : (
-                      <MetadataBadge
-                        icon={<Monitor className="size-3" />}
-                        color="bg-sky-500/10 border-sky-500/20 text-sky-600 dark:text-sky-400"
-                      >
-                        <span className="normal-case font-mono">
-                          localhost:{project.runPort}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setPortInput(String(project.runPort ?? ""));
-                            setPortEdit(true);
-                          }}
-                          className="ml-1 rounded p-0.5 hover:bg-sky-500/20"
-                          aria-label="Change port"
-                        >
-                          <Pencil className="size-2.5" />
-                        </button>
-                      </MetadataBadge>
-                    )
-                  ) : (
-                    <div className="flex items-center gap-1.5">
-                      <Input
-                        type="number"
-                        min={1}
-                        max={65535}
-                        placeholder="Port"
-                        value={portInput}
-                        onChange={(e) => setPortInput(e.target.value)}
-                        className="h-7 w-20 text-xs font-mono"
-                      />
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-7 px-2 text-[10px] font-semibold uppercase tracking-wider gap-1"
-                        disabled={savingPort}
-                        onClick={async () => {
-                          const num = parseInt(portInput, 10);
-                          if (Number.isNaN(num) || num < 1 || num > 65535) {
-                            toast.error("Enter a port between 1 and 65535");
-                            return;
-                          }
-                          setSavingPort(true);
-                          try {
-                            const updated = await updateProject(projectId, { runPort: num });
-                            if (mountedRef.current && updated?.runPort != null) {
-                              setProject((p) => (p ? { ...p, runPort: updated.runPort } : p));
-                            }
-                            await fetchProject();
-                            setPortInput("");
-                            toast.success("Run port saved.");
-                          } catch (err) {
-                            toast.error(err instanceof Error ? err.message : "Failed to save port");
-                          } finally {
-                            setSavingPort(false);
-                          }
-                        }}
-                      >
-                        {savingPort ? <Loader2 className="size-3 animate-spin" /> : "Set port"}
-                      </Button>
-                    </div>
-                  )}
-                </>
-                {/* View Running Project: opens modal with iframe (always visible; disabled until port is set) */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 px-2.5 text-[10px] font-semibold uppercase tracking-wider gap-1.5 border-sky-500/30 hover:bg-sky-500/5 hover:border-sky-500/50 transition-all duration-300 shadow-sm"
-                  title={project.runPort == null ? "Set run port above first" : "Open running app in modal"}
-                  onClick={() => setViewRunningOpen(true)}
-                  disabled={project.runPort == null}
-                >
-                  <Monitor className="size-3 text-sky-500" />
-                  View Running Project
-                </Button>
+            {/* Metadata badges */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1">
+              <div className="flex items-center gap-2 whitespace-nowrap">
                 {project.created_at && (
                   <MetadataBadge
                     icon={<Calendar className="size-3" />}
@@ -671,7 +678,7 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
           </div>
         </div>
 
-        {/* ═══════════════ TABS: left sidebar (project sections) + main content ═══════════════ */}
+        {/* ═══════════════ TABS: main content + bottom navigation (mobile-style) ═══════════════ */}
         <Tabs
           value={activeTab}
           onValueChange={(v) => {
@@ -681,39 +688,11 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
             setActiveTab(v);
             if (projectId) setProjectDetailTabPreference(projectId, v);
           }}
-          className="flex flex-row gap-6 w-full min-h-0 flex-1"
+          className="flex flex-col w-full min-h-0 flex-1"
           data-testid="project-detail-tabs"
         >
-          {/* Left sidebar: project section tabs (vertical) */}
-          <TabsList
-            className="inline-flex self-stretch min-h-0 flex-col flex-nowrap gap-1 rounded-none rounded-r-xl border-r border-border/60 bg-sidebar p-2 w-52 shrink-0 overflow-y-auto"
-            aria-label="Project sections"
-          >
-            {[...TAB_ROW_1, ...TAB_ROW_2].map((tab) => (
-              <TabsTrigger
-                key={tab.value}
-                value={tab.value}
-                data-testid={`tab-${tab.value}`}
-                className={cn(
-                  "relative flex items-center gap-2 rounded-lg px-3 py-2.5 text-xs font-semibold transition-all duration-200 w-full justify-start",
-                  "data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:text-foreground data-[state=inactive]:hover:bg-muted/60",
-                  "data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-border/60",
-                  activeTab === tab.value && tab.activeGlow
-                )}
-              >
-                <tab.icon
-                  className={cn(
-                    "size-4 shrink-0 transition-colors duration-200",
-                    activeTab === tab.value ? tab.color : ""
-                  )}
-                />
-                {tab.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-
-          {/* Main content: selected tab; horizontal padding so content does not touch viewport edge */}
-          <div className="flex-1 min-w-0 min-h-0 flex flex-col overflow-auto px-6">
+          {/* Main content: selected tab; pb clears fixed bottom nav */}
+          <div className="flex-1 min-w-0 min-h-0 flex flex-col overflow-auto px-6 pb-20">
           {/* ── Project Tab ── */}
           <TabsContent
             value="project"
@@ -795,6 +774,35 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
             <ProjectGitTab project={project} projectId={projectId} />
           </TabsContent>
           </div>
+
+          {/* Bottom navigation: fixed, always visible */}
+          <TabsList
+            className="fixed bottom-0 left-0 right-0 z-40 inline-flex flex-row flex-nowrap gap-1 w-full shrink-0 overflow-x-auto overflow-y-hidden rounded-none rounded-t-xl border-t border-border/60 bg-sidebar backdrop-blur-sm p-2 min-h-[3.5rem] justify-around md:justify-evenly"
+            aria-label="Project sections"
+          >
+            {[...TAB_ROW_1, ...TAB_ROW_2].map((tab) => (
+              <TabsTrigger
+                key={tab.value}
+                value={tab.value}
+                data-testid={`tab-${tab.value}`}
+                className={cn(
+                  "relative flex flex-col sm:flex-row items-center gap-1 sm:gap-2 rounded-lg px-3 py-2.5 min-w-[4rem] sm:min-w-0 sm:flex-1 max-w-[6rem] sm:max-w-none text-xs font-semibold transition-all duration-200 justify-center shrink-0",
+                  "data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:text-foreground data-[state=inactive]:hover:bg-muted/60",
+                  "data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-border/60",
+                  activeTab === tab.value && tab.activeGlow
+                )}
+              >
+                <tab.icon
+                  className={cn(
+                    "size-5 shrink-0 transition-colors duration-200",
+                    tab.color,
+                    activeTab !== tab.value && "opacity-90"
+                  )}
+                />
+                <span className="truncate">{tab.label}</span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
         </Tabs>
       </div>
 
