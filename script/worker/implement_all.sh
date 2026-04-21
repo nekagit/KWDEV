@@ -1,5 +1,5 @@
 #!/bin/bash
-# Implement All: one run per terminal slot; prompt is built by the app from data/prompts/implement-all.prompt.md and the ticket (+ .cursor/agents when assigned).
+# Implement All: one run per terminal slot; prompt is built by the app from data/prompts/workflows/implement-all.prompt.md and the ticket (+ .cursor/agents when assigned).
 # Usage: -P project path (required), -S 1..20 (optional slot), -F prompt file (optional; when set, runs agent -F -p "<content>").
 MAX_SLOT=20
 

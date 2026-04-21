@@ -24,13 +24,14 @@ describe("project details planner unification", () => {
     expect(source).toContain("<ProjectMilestonesTab");
   });
 
-  it("uses a responsive 2-column grid for planner secondary sections", () => {
+  it("uses tabs for planner secondary ideas and milestones sections", () => {
     const componentPath = path.join(
       process.cwd(),
       "src/components/organisms/ProjectDetailsPageContent.tsx"
     );
     const source = fs.readFileSync(componentPath, "utf8");
-    expect(source).toContain('data-testid="planner-secondary-grid"');
-    expect(source).toContain("grid grid-cols-1 gap-4 lg:grid-cols-2");
+    expect(source).toContain('data-testid="planner-secondary-tabs"');
+    expect(source).toContain('<TabsTrigger value="planner-ideas"');
+    expect(source).toContain('<TabsTrigger value="planner-milestones"');
   });
 });

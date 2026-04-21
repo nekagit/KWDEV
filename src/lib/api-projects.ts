@@ -707,7 +707,17 @@ export async function runAnalyzeQueueProcessing(
 
 // --- Project Documents (database storage) ---
 
-export type ProjectDocType = "ideas" | "design" | "architecture" | "testing" | "documentation" | "project_info";
+export type ProjectDocType =
+  | "ideas"
+  | "design"
+  | "architecture"
+  | "testing"
+  | "documentation"
+  | "project_info"
+  | "setup_prompts"
+  | "setup_skills"
+  | "setup_rules"
+  | "setup_agents";
 
 /**
  * Get a project document from the database.
@@ -747,7 +757,12 @@ export async function getAllProjectDocs(projectId: string): Promise<Array<{ doc_
 
 // --- Project Configs (database storage) ---
 
-export type ProjectConfigType = "frontend" | "backend" | "static_analysis_tools";
+export type ProjectConfigType =
+  | "frontend"
+  | "backend"
+  | "static_analysis_tools"
+  | "setup_mcp_servers"
+  | "setup_migrations";
 
 export interface ProjectConfigResult {
   config: Record<string, unknown>;

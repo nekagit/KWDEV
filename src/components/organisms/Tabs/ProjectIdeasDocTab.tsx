@@ -23,13 +23,6 @@ import { EmptyState } from "@/components/molecules/Display/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
@@ -47,6 +40,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Dialog as SharedDialog } from "@/components/molecules/FormsAndDialogs/Dialog";
+import { ButtonGroup } from "@/components/molecules/ControlsAndButtons/ButtonGroup";
 
 const CATEGORY_LABELS: Record<IdeaCategory, string> = {
   saas: "SaaS",
@@ -86,6 +81,7 @@ export function ProjectIdeasDocTab({ project, projectId, docsRefreshKey }: Proje
   const [deleting, setDeleting] = useState<number | null>(null);
   const [convertMilestonesOpen, setConvertMilestonesOpen] = useState(false);
   const [convertMilestonesDefaultName, setConvertMilestonesDefaultName] = useState("");
+  const [addOpen, setAddOpen] = useState(false);
 
   const fetchIdeas = useCallback(async () => {
     setLoading(true);
@@ -217,8 +213,6 @@ export function ProjectIdeasDocTab({ project, projectId, docsRefreshKey }: Proje
     }
   }, []);
 
-  const selectedIdea = ideas.find((i) => i.id === selectedIdeaId);
-
   if (loading) {
     return (
       <div className="flex items-center justify-center rounded-xl border border-border/40 bg-muted/10 py-24">
@@ -244,102 +238,73 @@ export function ProjectIdeasDocTab({ project, projectId, docsRefreshKey }: Proje
         <h2 className="text-sm font-medium text-muted-foreground">
           Ideas ({ideas.length})
         </h2>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={fetchIdeas}
-          disabled={loading}
-          className="gap-1.5"
-        >
-          {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
-          Refresh
-        </Button>
+        <div className="flex items-center gap-1.5">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={fetchIdeas}
+            disabled={loading}
+            className="gap-1.5"
+          >
+            {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+            Refresh
+          </Button>
+          {selectedIdeaId != null && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const selected = ideas.find((idea) => idea.id === selectedIdeaId);
+                  if (!selected) return;
+                  setConvertMilestonesDefaultName(selected.title);
+                  setConvertMilestonesOpen(true);
+                }}
+                className="gap-1.5"
+              >
+                <Flag className="h-3.5 w-3.5" />
+                Convert to milestones
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={deleting === selectedIdeaId}
+                onClick={() => {
+                  if (selectedIdeaId == null) return;
+                  void deleteIdea(selectedIdeaId);
+                }}
+                className="gap-1.5 text-destructive hover:text-destructive"
+              >
+                {deleting === selectedIdeaId ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                Delete
+              </Button>
+            </>
+          )}
+          <Button size="sm" className="gap-1.5" onClick={() => setAddOpen(true)}>
+            <Plus className="h-3.5 w-3.5" />
+            Add idea
+          </Button>
+        </div>
       </div>
-
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <SectionCard accentColor="amber" tint={1}>
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="add-idea" className="border-none">
-              <AccordionTrigger className="py-0 hover:no-underline">
-                <div className="flex items-center gap-2">
-                  <Plus className="h-4 w-4 text-amber-500" />
-                  <h3 className="text-sm font-semibold">Add idea</h3>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="pt-3">
-                <p className="text-xs text-muted-foreground mb-3">
-                  Add a new idea to this project. Ideas are stored in the database.
-                </p>
-                <div className="space-y-3">
-                  <Input
-                    placeholder="Idea title (required)"
-                    value={newIdeaTitle}
-                    onChange={(e) => setNewIdeaTitle(e.target.value)}
-                    disabled={adding}
-                  />
-                  <Textarea
-                    className="min-h-[72px] text-sm"
-                    placeholder="Description (optional)"
-                    value={newIdeaDescription}
-                    onChange={(e) => setNewIdeaDescription(e.target.value)}
-                    disabled={adding}
-                  />
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <Select
-                      value={newIdeaCategory}
-                      onValueChange={(v) => setNewIdeaCategory(v as IdeaCategory)}
-                      disabled={adding}
-                    >
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
-                          <SelectItem key={key} value={key}>
-                            {label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      size="sm"
-                      className="gap-1.5"
-                      onClick={addIdea}
-                      disabled={!newIdeaTitle.trim() || adding}
-                    >
-                      {adding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
-                      Add idea
-                    </Button>
-                  </div>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </SectionCard>
-
-        <SectionCard accentColor="amber" tint={2} className="flex min-h-0 flex-col">
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="ideas-list" className="border-none">
-              <AccordionTrigger className="py-0 hover:no-underline">
-                <div className="flex items-center gap-2">
-                  <Lightbulb className="h-4 w-4 text-amber-500" />
-                  <span className="text-sm font-semibold">Ideas</span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="pt-3">
-                {ideas.length === 0 ? (
-                  <EmptyState
-                    icon={<Lightbulb className="size-6 text-muted-foreground" />}
-                    title="No ideas yet"
-                    description="Add your first idea using the form above."
-                  />
-                ) : (
-                  <>
-                    <p className="text-xs text-muted-foreground mb-3">
-                      Click a row to view details; use actions to convert to milestones or delete.
-                    </p>
-                    <div className="rounded-md border border-border/60 overflow-hidden flex-1 min-h-0 flex flex-col">
-                      <Table>
+      {ideas.length === 0 ? (
+        <EmptyState
+          icon={<Lightbulb className="size-6 text-muted-foreground" />}
+          title="No ideas yet"
+          description="Ideas are DB entries with an id for planning and conversion. Add one to start building milestones."
+          action={
+            <Button onClick={() => setAddOpen(true)} className="gap-2">
+              <Plus className="size-4" />
+              Add idea
+            </Button>
+          }
+        />
+      ) : (
+        <SectionCard accentColor="amber" tint={1} className="flex-1 min-h-0 flex flex-col">
+          <p className="text-xs text-muted-foreground mb-3">
+            DB entries with an id for project planning. Select a row, then use actions to convert or delete.
+          </p>
+          <div className="rounded-md border border-border/60 overflow-hidden flex-1 min-h-0 flex flex-col">
+            <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[1%]">#</TableHead>
@@ -390,7 +355,7 @@ export function ProjectIdeasDocTab({ project, projectId, docsRefreshKey }: Proje
                           disabled={deleting === idea.id}
                           onClick={(e) => {
                             e.preventDefault();
-                            deleteIdea(idea.id);
+                            void deleteIdea(idea.id);
                           }}
                           title="Delete"
                         >
@@ -405,59 +370,71 @@ export function ProjectIdeasDocTab({ project, projectId, docsRefreshKey }: Proje
                   </TableRow>
                 ))}
               </TableBody>
-                      </Table>
-                    </div>
-                    {selectedIdea && (
-                      <div className="mt-3 flex-1 min-h-[200px] border border-border/60 rounded-md overflow-hidden flex flex-col">
-                        <div className="px-3 py-2 text-xs font-medium text-muted-foreground border-b border-border/60">
-                          {selectedIdea.title}
-                        </div>
-                        <ScrollArea className="flex-1 min-h-[200px]">
-                          <div className="p-4 space-y-3">
-                            {selectedIdea.description ? (
-                              <div>
-                                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">
-                                  Description
-                                </p>
-                                <p className="text-xs text-foreground/90 whitespace-pre-wrap">
-                                  {selectedIdea.description}
-                                </p>
-                              </div>
-                            ) : (
-                              <p className="text-sm text-muted-foreground">No description.</p>
-                            )}
-                            <div className="flex flex-wrap gap-2 text-[10px] text-muted-foreground">
-                              <span>Source: {selectedIdea.source}</span>
-                              {selectedIdea.created_at && (
-                                <span>Created: {new Date(selectedIdea.created_at).toLocaleDateString()}</span>
-                              )}
-                            </div>
-                            <div className="pt-2 border-t border-border/40">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                className="gap-1.5"
-                                onClick={() => {
-                                  setConvertMilestonesDefaultName(selectedIdea.title);
-                                  setConvertMilestonesOpen(true);
-                                }}
-                              >
-                                <Flag className="h-3.5 w-3.5" />
-                                Convert to milestones
-                              </Button>
-                            </div>
-                          </div>
-                        </ScrollArea>
-                      </div>
-                    )}
-                  </>
-                )}
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+            </Table>
+          </div>
         </SectionCard>
-      </div>
+      )}
+
+      <SharedDialog
+        isOpen={addOpen}
+        title="Add idea"
+        onClose={() => {
+          if (adding) return;
+          setAddOpen(false);
+        }}
+        actions={
+          <ButtonGroup alignment="right">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setAddOpen(false);
+              }}
+              disabled={adding}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => void addIdea()}
+              disabled={!newIdeaTitle.trim() || adding}
+            >
+              {adding ? <Loader2 className="size-4 animate-spin mr-2" /> : null}
+              Add
+            </Button>
+          </ButtonGroup>
+        }
+      >
+        <div className="space-y-3">
+          <Input
+            placeholder="Idea title (required)"
+            value={newIdeaTitle}
+            onChange={(e) => setNewIdeaTitle(e.target.value)}
+            disabled={adding}
+          />
+          <Textarea
+            className="min-h-[72px] text-sm"
+            placeholder="Description (optional)"
+            value={newIdeaDescription}
+            onChange={(e) => setNewIdeaDescription(e.target.value)}
+            disabled={adding}
+          />
+          <Select
+            value={newIdeaCategory}
+            onValueChange={(v) => setNewIdeaCategory(v as IdeaCategory)}
+            disabled={adding}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
+                <SelectItem key={key} value={key}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </SharedDialog>
 
       <ConvertToMilestonesDialog
         isOpen={convertMilestonesOpen}

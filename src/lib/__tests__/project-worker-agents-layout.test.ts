@@ -45,12 +45,12 @@ describe("project worker agents layout", () => {
   it("exposes prompt info copy for testing and cleanup agents", () => {
     expect(getWorkerAgentPromptInfo("testing")).toEqual({
       title: "Testing Agent Prompt",
-      path: "data/prompts/testing-agent.prompt.json",
+      path: "data/prompts/workflows/testing-agent.prompt.json",
       description: "Generates and runs a continuous test-focused iteration loop from project context.",
     });
     expect(getWorkerAgentPromptInfo("cleanup-refactor")).toEqual({
       title: "Cleanup + Refactor Prompt",
-      path: "data/prompts/cleanup-refactor-agent.prompt.json",
+      path: "data/prompts/workflows/cleanup-refactor-agent.prompt.json",
       description:
         "Generates and runs a continuous cleanup/refactor loop based on selected Quality focus criteria.",
     });

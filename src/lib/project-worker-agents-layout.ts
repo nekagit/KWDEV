@@ -44,12 +44,12 @@ export const WORKER_AGENT_NIGHT_SHIFT_CARD_CLASSNAME =
 const WORKER_AGENT_PROMPT_INFO_BY_TAB: Partial<Record<WorkerAgentTabId, WorkerAgentPromptInfo>> = {
   testing: {
     title: "Testing Agent Prompt",
-    path: "data/prompts/testing-agent.prompt.json",
+    path: "data/prompts/workflows/testing-agent.prompt.json",
     description: "Generates and runs a continuous test-focused iteration loop from project context.",
   },
   "cleanup-refactor": {
     title: "Cleanup + Refactor Prompt",
-    path: "data/prompts/cleanup-refactor-agent.prompt.json",
+    path: "data/prompts/workflows/cleanup-refactor-agent.prompt.json",
     description:
       "Generates and runs a continuous cleanup/refactor loop based on selected Quality focus criteria.",
   },

@@ -68,7 +68,7 @@ describe("cursor-paths constants", () => {
   });
 
   it("project prompt path is under worker root", () => {
-    expect(PROJECT_PROMPT_PATH).toBe("data/prompts/project.prompt.json");
+    expect(PROJECT_PROMPT_PATH).toBe("data/prompts/workflows/project.prompt.json");
     expect(PROJECT_PROMPT_PATH.startsWith("data/prompts")).toBe(true);
   });
 
@@ -88,32 +88,32 @@ describe("cursor-paths constants", () => {
   it("planner and ideas doc paths are defined", () => {
     expect(PLANNER_TICKETS_PATH).toBe(".cursor/7. planner/tickets.md");
     expect(IDEAS_DOC_PATH).toBe(".cursor/0. ideas/ideas.md");
-    expect(IDEAS_PROMPT_PATH).toBe("data/prompts/ideas.prompt.json");
+    expect(IDEAS_PROMPT_PATH).toBe("data/prompts/workflows/ideas.prompt.json");
   });
 });
 
 describe("SETUP_* constants", () => {
   it("setup design, architecture, testing paths are under 1. project", () => {
     expect(SETUP_DESIGN_DOC_PATH).toBe(".cursor/1. project/design.md");
-    expect(SETUP_DESIGN_PROMPT_PATH).toBe("data/prompts/design.prompt.json");
+    expect(SETUP_DESIGN_PROMPT_PATH).toBe("data/prompts/workflows/design.prompt.json");
     expect(SETUP_ARCHITECTURE_DOC_PATH).toBe(".cursor/1. project/architecture.md");
-    expect(SETUP_ARCHITECTURE_PROMPT_PATH).toBe("data/prompts/architecture.prompt.json");
+    expect(SETUP_ARCHITECTURE_PROMPT_PATH).toBe("data/prompts/workflows/architecture.prompt.json");
     expect(SETUP_TESTING_DOC_PATH).toBe(".cursor/1. project/testing.md");
-    expect(SETUP_TESTING_PROMPT_PATH).toBe("data/prompts/testing.prompt.json");
-    expect(SETUP_TESTING_PROMPTS_DIR).toBe("data/prompts/testing");
+    expect(SETUP_TESTING_PROMPT_PATH).toBe("data/prompts/workflows/testing.prompt.json");
+    expect(SETUP_TESTING_PROMPTS_DIR).toBe("data/prompts/workflows/testing");
   });
 
   it("setup documentation paths are under 1. project", () => {
     expect(SETUP_DOCUMENTATION_DOC_PATH).toBe(".cursor/1. project/documentation.md");
-    expect(SETUP_DOCUMENTATION_PROMPT_PATH).toBe("data/prompts/documentation.prompt.json");
+    expect(SETUP_DOCUMENTATION_PROMPT_PATH).toBe("data/prompts/workflows/documentation.prompt.json");
   });
 
   it("setup frontend and backend paths are under 1. project", () => {
     expect(SETUP_FRONTEND_JSON_PATH).toBe(".cursor/1. project/frontend.json");
-    expect(SETUP_FRONTEND_PROMPT_PATH).toBe("data/prompts/frontend.prompt.json");
+    expect(SETUP_FRONTEND_PROMPT_PATH).toBe("data/prompts/workflows/frontend.prompt.json");
     expect(SETUP_FRONTEND_ANALYSIS_PATH).toBe(".cursor/1. project/frontend-analysis.md");
     expect(SETUP_BACKEND_JSON_PATH).toBe(".cursor/1. project/backend.json");
-    expect(SETUP_BACKEND_PROMPT_PATH).toBe("data/prompts/backend.prompt.json");
+    expect(SETUP_BACKEND_PROMPT_PATH).toBe("data/prompts/workflows/backend.prompt.json");
     expect(SETUP_BACKEND_ANALYSIS_PATH).toBe(".cursor/1. project/backend-analysis.md");
   });
 
@@ -148,27 +148,27 @@ describe("SETUP_* constants", () => {
 
 describe("getPromptPath", () => {
   it("returns ideas prompt path for ideas", () => {
-    expect(getPromptPath("ideas")).toBe("data/prompts/ideas.prompt.json");
+    expect(getPromptPath("ideas")).toBe("data/prompts/workflows/ideas.prompt.json");
   });
 
   it("returns project prompt path for project", () => {
-    expect(getPromptPath("project")).toBe("data/prompts/project.prompt.json");
+    expect(getPromptPath("project")).toBe("data/prompts/workflows/project.prompt.json");
   });
 
   it("returns path under data/prompts for design, architecture, testing, documentation", () => {
-    expect(getPromptPath("design")).toBe("data/prompts/design.prompt.json");
-    expect(getPromptPath("architecture")).toBe("data/prompts/architecture.prompt.json");
-    expect(getPromptPath("testing")).toBe("data/prompts/testing.prompt.json");
-    expect(getPromptPath("documentation")).toBe("data/prompts/documentation.prompt.json");
+    expect(getPromptPath("design")).toBe("data/prompts/workflows/design.prompt.json");
+    expect(getPromptPath("architecture")).toBe("data/prompts/workflows/architecture.prompt.json");
+    expect(getPromptPath("testing")).toBe("data/prompts/workflows/testing.prompt.json");
+    expect(getPromptPath("documentation")).toBe("data/prompts/workflows/documentation.prompt.json");
   });
 
   it("returns frontend and backend prompt paths", () => {
-    expect(getPromptPath("frontend")).toBe("data/prompts/frontend.prompt.json");
-    expect(getPromptPath("backend")).toBe("data/prompts/backend.prompt.json");
+    expect(getPromptPath("frontend")).toBe("data/prompts/workflows/frontend.prompt.json");
+    expect(getPromptPath("backend")).toBe("data/prompts/workflows/backend.prompt.json");
   });
 
   it("returns prompts path for unknown id (type-unsafe default)", () => {
-    expect(getPromptPath("" as AnalyzeJobId)).toBe("data/prompts/.prompt.json");
+    expect(getPromptPath("" as AnalyzeJobId)).toBe("data/prompts/workflows/.prompt.json");
   });
 });
 
@@ -217,9 +217,9 @@ describe("getSetupPromptPath", () => {
   });
 
   it("returns .prompt.json under data/prompts for other keys", () => {
-    expect(getSetupPromptPath("design")).toBe("data/prompts/design.prompt.json");
-    expect(getSetupPromptPath("architecture")).toBe("data/prompts/architecture.prompt.json");
-    expect(getSetupPromptPath("testing")).toBe("data/prompts/testing.prompt.json");
-    expect(getSetupPromptPath("documentation")).toBe("data/prompts/documentation.prompt.json");
+    expect(getSetupPromptPath("design")).toBe("data/prompts/workflows/design.prompt.json");
+    expect(getSetupPromptPath("architecture")).toBe("data/prompts/workflows/architecture.prompt.json");
+    expect(getSetupPromptPath("testing")).toBe("data/prompts/workflows/testing.prompt.json");
+    expect(getSetupPromptPath("documentation")).toBe("data/prompts/workflows/documentation.prompt.json");
   });
 });

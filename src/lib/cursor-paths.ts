@@ -10,6 +10,10 @@ const DATA = "data";
 // ─── New Structure (data folder) ───────────────────────────────────────────
 /** Prompts folder (*.prompt.md editable sources, *.prompt.json runtime). */
 export const WORKER_ROOT = `${DATA}/prompts`;
+/** Prompt workflow files (*.prompt.md, *.prompt.json). */
+export const WORKER_PROMPTS_WORKFLOWS_ROOT = `${WORKER_ROOT}/workflows`;
+/** Prompt output files (*-output.md). */
+export const WORKER_PROMPTS_OUTPUTS_ROOT = `${WORKER_ROOT}/outputs`;
 /** Agent definitions folder (*.md files). */
 export const AGENTS_ROOT = `${DATA}/agents`;
 /** Project's .cursor agents folder (after Initialize from workspace data/agents). */
@@ -29,25 +33,25 @@ export const LEGACY_AGENTS_ROOT = `${CURSOR}/2. agents`;
 
 // ─── Worker Prompts ────────────────────────────────────────────────────────
 /** Runtime prompt reads are JSON-primary. */
-export const WORKER_IMPLEMENT_ALL_PROMPT_PATH = `${WORKER_ROOT}/implement-all.prompt.json`;
-export const WORKER_FIX_BUG_PROMPT_PATH = `${WORKER_ROOT}/fix-bug.prompt.json`;
+export const WORKER_IMPLEMENT_ALL_PROMPT_PATH = `${WORKER_PROMPTS_WORKFLOWS_ROOT}/implement-all.prompt.json`;
+export const WORKER_FIX_BUG_PROMPT_PATH = `${WORKER_PROMPTS_WORKFLOWS_ROOT}/fix-bug.prompt.json`;
 /** Night shift: 3 agents run this prompt in a loop; edit this file to change the prompt. */
-export const WORKER_NIGHT_SHIFT_PROMPT_PATH = `${WORKER_ROOT}/night-shift.prompt.json`;
+export const WORKER_NIGHT_SHIFT_PROMPT_PATH = `${WORKER_PROMPTS_WORKFLOWS_ROOT}/night-shift.prompt.json`;
 /** Night shift Circle / badges: per-phase prompts (refactor, test, debugging, implement, create). */
 export const WORKER_NIGHT_SHIFT_PHASE_PROMPT_PATHS = {
-  refactor: `${WORKER_ROOT}/refactor.prompt.json`,
-  test: `${WORKER_ROOT}/test.prompt.json`,
-  debugging: `${WORKER_ROOT}/debugging.prompt.json`,
-  implement: `${WORKER_ROOT}/implement.prompt.json`,
-  create: `${WORKER_ROOT}/create.prompt.json`,
+  refactor: `${WORKER_PROMPTS_WORKFLOWS_ROOT}/refactor.prompt.json`,
+  test: `${WORKER_PROMPTS_WORKFLOWS_ROOT}/test.prompt.json`,
+  debugging: `${WORKER_PROMPTS_WORKFLOWS_ROOT}/debugging.prompt.json`,
+  implement: `${WORKER_PROMPTS_WORKFLOWS_ROOT}/implement.prompt.json`,
+  create: `${WORKER_PROMPTS_WORKFLOWS_ROOT}/create.prompt.json`,
 } as const;
 /** Auto idea-driven: prompts and output paths for the automated flow. */
-export const WORKER_ANALYZE_PROJECT_PROMPT_PATH = `${WORKER_ROOT}/analyze-project.prompt.json`;
-export const WORKER_IDEA_TO_MILESTONES_PROMPT_PATH = `${WORKER_ROOT}/idea-to-milestones.prompt.json`;
-export const WORKER_MILESTONE_TO_TICKETS_PROMPT_PATH = `${WORKER_ROOT}/milestone-to-tickets.prompt.json`;
-export const WORKER_IDEA_ANALYSIS_OUTPUT_PATH = `${WORKER_ROOT}/idea-analysis-output.md`;
-export const WORKER_MILESTONES_OUTPUT_PATH = `${WORKER_ROOT}/milestones-output.md`;
-export const WORKER_TICKETS_OUTPUT_PATH = `${WORKER_ROOT}/tickets-output.md`;
+export const WORKER_ANALYZE_PROJECT_PROMPT_PATH = `${WORKER_PROMPTS_WORKFLOWS_ROOT}/analyze-project.prompt.json`;
+export const WORKER_IDEA_TO_MILESTONES_PROMPT_PATH = `${WORKER_PROMPTS_WORKFLOWS_ROOT}/idea-to-milestones.prompt.json`;
+export const WORKER_MILESTONE_TO_TICKETS_PROMPT_PATH = `${WORKER_PROMPTS_WORKFLOWS_ROOT}/milestone-to-tickets.prompt.json`;
+export const WORKER_IDEA_ANALYSIS_OUTPUT_PATH = `${WORKER_PROMPTS_OUTPUTS_ROOT}/idea-analysis-output.md`;
+export const WORKER_MILESTONES_OUTPUT_PATH = `${WORKER_PROMPTS_OUTPUTS_ROOT}/milestones-output.md`;
+export const WORKER_TICKETS_OUTPUT_PATH = `${WORKER_PROMPTS_OUTPUTS_ROOT}/tickets-output.md`;
 
 /** Analyze queue file (worker tab: prompts as tickets). Stored under data/queue. */
 export const ANALYZE_QUEUE_PATH = "data/queue/analyze-jobs.json";
@@ -66,7 +70,7 @@ export type AnalyzeJobId =
 
 /** Prompt path for an analyze job. All prompts are now in the worker folder. */
 export function getPromptPath(id: AnalyzeJobId): string {
-  return `${WORKER_ROOT}/${id}.prompt.json`;
+  return `${WORKER_PROMPTS_WORKFLOWS_ROOT}/${id}.prompt.json`;
 }
 
 /** Output path for an analyze job (legacy file paths, use database instead). */
@@ -106,43 +110,43 @@ export const ANALYZE_JOB_IDS: AnalyzeJobId[] = [
 /** @deprecated Use database (project_docs table, doc_type='ideas'). */
 export const IDEAS_DOC_PATH = `${IDEAS_ROOT}/ideas.md`;
 /** @deprecated Prompts now in worker folder. */
-export const IDEAS_PROMPT_PATH = `${WORKER_ROOT}/ideas.prompt.json`;
+export const IDEAS_PROMPT_PATH = `${WORKER_PROMPTS_WORKFLOWS_ROOT}/ideas.prompt.json`;
 
 /** @deprecated Use database instead. */
 export const PROJECT_DIR = PROJECT_ROOT;
 /** @deprecated Prompts now in worker folder. */
-export const PROJECT_PROMPT_PATH = `${WORKER_ROOT}/project.prompt.json`;
+export const PROJECT_PROMPT_PATH = `${WORKER_PROMPTS_WORKFLOWS_ROOT}/project.prompt.json`;
 /** @deprecated Use database (project_docs table, doc_type='project_info'). */
 export const PROJECT_OUTPUT_PATH = `${PROJECT_ROOT}/PROJECT-INFO.md`;
 
 /** @deprecated Use database (project_docs table, doc_type='design'). */
 export const SETUP_DESIGN_DOC_PATH = `${PROJECT_ROOT}/design.md`;
 /** @deprecated Prompts now in worker folder. */
-export const SETUP_DESIGN_PROMPT_PATH = `${WORKER_ROOT}/design.prompt.json`;
+export const SETUP_DESIGN_PROMPT_PATH = `${WORKER_PROMPTS_WORKFLOWS_ROOT}/design.prompt.json`;
 /** @deprecated Use database (project_docs table, doc_type='architecture'). */
 export const SETUP_ARCHITECTURE_DOC_PATH = `${PROJECT_ROOT}/architecture.md`;
 /** @deprecated Prompts now in worker folder. */
-export const SETUP_ARCHITECTURE_PROMPT_PATH = `${WORKER_ROOT}/architecture.prompt.json`;
+export const SETUP_ARCHITECTURE_PROMPT_PATH = `${WORKER_PROMPTS_WORKFLOWS_ROOT}/architecture.prompt.json`;
 /** @deprecated Use database (project_docs table, doc_type='testing'). */
 export const SETUP_TESTING_DOC_PATH = `${PROJECT_ROOT}/testing.md`;
 /** @deprecated Prompts now in worker folder. */
-export const SETUP_TESTING_PROMPT_PATH = `${WORKER_ROOT}/testing.prompt.json`;
+export const SETUP_TESTING_PROMPT_PATH = `${WORKER_PROMPTS_WORKFLOWS_ROOT}/testing.prompt.json`;
 /** @deprecated Use database instead. */
-export const SETUP_TESTING_PROMPTS_DIR = `${WORKER_ROOT}/testing`;
+export const SETUP_TESTING_PROMPTS_DIR = `${WORKER_PROMPTS_WORKFLOWS_ROOT}/testing`;
 /** @deprecated Use database (project_docs table, doc_type='documentation'). */
 export const SETUP_DOCUMENTATION_DOC_PATH = `${PROJECT_ROOT}/documentation.md`;
 /** @deprecated Prompts now in worker folder. */
-export const SETUP_DOCUMENTATION_PROMPT_PATH = `${WORKER_ROOT}/documentation.prompt.json`;
+export const SETUP_DOCUMENTATION_PROMPT_PATH = `${WORKER_PROMPTS_WORKFLOWS_ROOT}/documentation.prompt.json`;
 /** @deprecated Use database (project_configs table, config_type='frontend'). */
 export const SETUP_FRONTEND_JSON_PATH = `${PROJECT_ROOT}/frontend.json`;
 /** @deprecated Prompts now in worker folder. */
-export const SETUP_FRONTEND_PROMPT_PATH = `${WORKER_ROOT}/frontend.prompt.json`;
+export const SETUP_FRONTEND_PROMPT_PATH = `${WORKER_PROMPTS_WORKFLOWS_ROOT}/frontend.prompt.json`;
 /** @deprecated Use database (project_configs table, config_type='frontend', analysis_content). */
 export const SETUP_FRONTEND_ANALYSIS_PATH = `${PROJECT_ROOT}/frontend-analysis.md`;
 /** @deprecated Use database (project_configs table, config_type='backend'). */
 export const SETUP_BACKEND_JSON_PATH = `${PROJECT_ROOT}/backend.json`;
 /** @deprecated Prompts now in worker folder. */
-export const SETUP_BACKEND_PROMPT_PATH = `${WORKER_ROOT}/backend.prompt.json`;
+export const SETUP_BACKEND_PROMPT_PATH = `${WORKER_PROMPTS_WORKFLOWS_ROOT}/backend.prompt.json`;
 /** @deprecated Use database (project_configs table, config_type='backend', analysis_content). */
 export const SETUP_BACKEND_ANALYSIS_PATH = `${PROJECT_ROOT}/backend-analysis.md`;
 
@@ -161,5 +165,5 @@ export function getSetupDocPath(key: "design" | "ideas" | "architecture" | "test
 
 /** @deprecated Prompt path for a setup key. Prompts now in worker folder. */
 export function getSetupPromptPath(key: "design" | "ideas" | "architecture" | "testing" | "documentation"): string {
-  return `${WORKER_ROOT}/${key}.prompt.json`;
+  return `${WORKER_PROMPTS_WORKFLOWS_ROOT}/${key}.prompt.json`;
 }

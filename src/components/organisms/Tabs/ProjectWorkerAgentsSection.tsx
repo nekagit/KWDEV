@@ -26,8 +26,8 @@ import {
   sanitizeWorkerEnhancementToolIds,
 } from "@/lib/worker-enhancements-tools";
 
-const TESTING_AGENT_PROMPT_PATH = "data/prompts/testing-agent.prompt.json";
-const CLEANUP_REFACTOR_AGENT_PROMPT_PATH = "data/prompts/cleanup-refactor-agent.prompt.json";
+const TESTING_AGENT_PROMPT_PATH = "data/prompts/workflows/testing-agent.prompt.json";
+const CLEANUP_REFACTOR_AGENT_PROMPT_PATH = "data/prompts/workflows/cleanup-refactor-agent.prompt.json";
 
 function resolveStatus(active: boolean, status: "idle" | "running" | "stopped"): "idle" | "running" | "stopped" {
   if (active || status === "running") return "running";

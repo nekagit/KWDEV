@@ -5,8 +5,9 @@ KWDEV is a project/workflow workspace focused on agent-driven software execution
 
 ## Core Areas
 - **Projects page**: central project navigation and details.
-- **Project tab (inside project details)**: focused on project files workspace management.
-- **Setup tab (inside project details)**: workspace setup tabs for Prompts, Skills, Design, Rules, MCP, ADR, and Agents.
+- **Project tab (inside project details)**: focused on project files and ADR workspace management.
+- **Setup tab (inside project details)**: top-level setup tabs are Prompts, Skills, Design, Rules, MCP, and Agents.
+- **Rules in Setup**: Rules tab uses three category tabs: Architecture, Testing, and Security.
 - **Bottom project circles**: project detail bottom circles are user-reorderable via drag-and-drop and persisted locally.
 - **Worker tab**: agent execution workflows (Vibing, Agents, terminals, queue, history).
 - **Planner tab**: ticket and kanban planning.
@@ -51,7 +52,7 @@ KWDEV is a project/workflow workspace focused on agent-driven software execution
 ## Testing Agent Loop (MVP)
 - Designed to mirror Night Shift loop semantics.
 - Start flow:
-  1. Generate prompt from project context + optional `data/prompts/testing-agent.prompt.json` (`source_markdown` payload).
+  1. Generate prompt from project context + optional `data/prompts/workflows/testing-agent.prompt.json` (`source_markdown` payload).
   2. Create an iteration entry for UI visibility.
   3. Enqueue run through `runTempTicket(...)` with testing-agent run metadata.
 - Loop continuation:
@@ -81,7 +82,7 @@ KWDEV is a project/workflow workspace focused on agent-driven software execution
   3. Enqueue run via `runTempTicket(...)` with loop-specific run metadata.
   4. On `script-exited`, hydration completes iteration output/artifact extraction and triggers replenish callback if loop is still active.
 - Prompt template paths:
-  - `data/prompts/cleanup-refactor-agent.prompt.json` (optional, fallback prompt is used when missing)
+  - `data/prompts/workflows/cleanup-refactor-agent.prompt.json` (optional, fallback prompt is used when missing)
 - Agent prompts now explicitly enforce code-only scope:
   - modify only code-related files (source/tests/code tooling config),
   - do not modify any `.md` files.
@@ -89,9 +90,22 @@ KWDEV is a project/workflow workspace focused on agent-driven software execution
 
 ## Prompt Runtime Source (current)
 - Runtime prompt loading is JSON-primary for worker flows.
-- `data/prompts/*.prompt.json` is the execution source, parsed from `source_markdown`.
-- `data/prompts/*.prompt.md` remains the editable markdown companion and must stay paired with the same stem.
+- `data/prompts/workflows/*.prompt.json` is the execution source, parsed from `source_markdown`.
+- `data/prompts/workflows/*.prompt.md` remains the editable markdown companion and must stay paired with the same stem.
 - Prompt initialization now validates that each prompt stem has both files (`.prompt.md` and `.prompt.json`) and reports missing counterparts explicitly.
+
+## Setup Entity Storage (current)
+- Setup entities are DB-first and project-scoped.
+- `Prompts`, `Skills`, `Rules`, and `Agents` are stored in `project_docs`:
+  - `setup_prompts`
+  - `setup_skills`
+  - `setup_rules`
+  - `setup_agents`
+- `MCP` setup records are stored in `project_configs`:
+  - `setup_mcp_servers`
+- Setup migration status is tracked per project in `project_configs`:
+  - `setup_migrations`
+- Legacy file sources are imported once per entity and project, then Setup reads/writes DB only.
 
 ## Vibing Section
 - Vibing now focuses on:

@@ -206,7 +206,7 @@ async function loadAllAgentsContent(projectId: string, repoPath: string): Promis
   }
 }
 
-/** Fallback when project has no data/prompts/fix-bug.prompt.json */
+/** Fallback when project has no data/prompts/workflows/fix-bug.prompt.json */
 const DEBUG_ASSISTANT_PROMPT_FALLBACK = `You are a debugging assistant in the current workspace. The user has pasted error/log output below. Identify the root cause, apply the fix in this workspace (edit files, run commands), and state what you fixed. Work only in this repo; be specific. If logs refer to another path, say so.
 
 ERROR/LOG INFORMATION:
@@ -448,7 +448,7 @@ const NIGHT_SHIFT_PHASE_FALLBACK: Record<NightShiftCirclePhase, string> = {
   create: "Focus on creating: add a new changelog-worthy capability; new files and clear boundaries, then run npm run verify.\n\n",
 };
 
-/** Load phase prompt from data/prompts/{phase}.prompt.json; fallback to default if missing or empty. */
+/** Load phase prompt from data/prompts/workflows/{phase}.prompt.json; fallback to default if missing or empty. */
 async function loadPhasePrompt(
   projectId: string,
   projectPath: string,
@@ -471,7 +471,7 @@ function nightShiftCircleRunLabel(slot: 1 | 2 | 3, phase: NightShiftCirclePhase)
   return `Night shift (Terminal ${slot}) — ${phaseLabel}`;
 }
 
-/** Build badge block from selected badges (loads prompts from data/prompts/{id}.prompt.md) and optional extra instructions. */
+/** Build badge block from selected badges (loads prompts from data/prompts/workflows/{id}.prompt.md) and optional extra instructions. */
 async function buildBadgeAndInstructionsBlock(
   projectId: string,
   projectPath: string,
@@ -543,7 +543,7 @@ function WorkerNightShiftSection({
       const basePrompt =
         (await readProjectPromptJsonOrThrow(projectId, WORKER_NIGHT_SHIFT_PROMPT_PATH, projectPath))?.trim() ?? "";
       if (!basePrompt) {
-        toast.error("Night shift prompt JSON is missing/invalid. Fix data/prompts/night-shift.prompt.json");
+        toast.error("Night shift prompt JSON is missing/invalid. Fix data/prompts/workflows/night-shift.prompt.json");
         return;
       }
       const badgeBlock = await buildBadgeAndInstructionsBlock(projectId, projectPath, badges, extraInstructions);
@@ -580,7 +580,7 @@ function WorkerNightShiftSection({
       const basePrompt =
         (await readProjectPromptJsonOrThrow(projectId, WORKER_NIGHT_SHIFT_PROMPT_PATH, projectPath))?.trim() ?? "";
       if (!basePrompt) {
-        toast.error("Night shift prompt JSON is missing/invalid. Fix data/prompts/night-shift.prompt.json");
+        toast.error("Night shift prompt JSON is missing/invalid. Fix data/prompts/workflows/night-shift.prompt.json");
         return;
       }
       setNightShiftCircleState(true, "create", 0);
@@ -661,7 +661,7 @@ function WorkerNightShiftSection({
     try {
       const analyzePrompt = await readProjectPromptJsonOrEmpty(projectId, WORKER_ANALYZE_PROJECT_PROMPT_PATH, projectPath);
       if (!analyzePrompt?.trim()) {
-        toast.error("Analyze project prompt not found. Create data/prompts/analyze-project.prompt.json");
+        toast.error("Analyze project prompt not found. Create data/prompts/workflows/analyze-project.prompt.json");
         clearIdeaDrivenProgress();
         setIdeaDrivenChecklist([
           { id: "analyze", label: "Analyze project (prompt not found)", status: "done" },
@@ -669,7 +669,7 @@ function WorkerNightShiftSection({
           { id: "tickets", label: "Create tickets", status: "pending" },
           { id: "execute", label: "Execute circle", status: "pending" },
         ]);
-        appendIdeaDrivenLog("Analyze project prompt not found. Create data/prompts/analyze-project.prompt.json");
+        appendIdeaDrivenLog("Analyze project prompt not found. Create data/prompts/workflows/analyze-project.prompt.json");
         setIdeaDrivenAutoState({ phase: "analyze", pendingMilestones: [], currentMilestoneIndex: 0, allTickets: [], currentTicketIndex: 0 });
         setStartingIdeaDriven(false);
         return;
@@ -700,9 +700,9 @@ function WorkerNightShiftSection({
           const parsedIdea = parseIdeaFromOutput(outputContent || stdout);
 
           if (!parsedIdea) {
-            toast.error("Failed to parse idea from analysis output. Check data/prompts/idea-analysis-output.md");
+            toast.error("Failed to parse idea from analysis output. Check data/prompts/outputs/idea-analysis-output.md");
             setIdeaDrivenChecklistItemStatus("analyze", "done");
-            appendIdeaDrivenLog("Idea creation failed: Failed to parse idea from analysis output. Check data/prompts/idea-analysis-output.md");
+            appendIdeaDrivenLog("Idea creation failed: Failed to parse idea from analysis output. Check data/prompts/outputs/idea-analysis-output.md");
             setIdeaDrivenAutoState({ phase: null, pendingMilestones: [], currentMilestoneIndex: 0, allTickets: [], currentTicketIndex: 0 });
             setNightShiftActive(false);
             return;
@@ -750,7 +750,7 @@ function WorkerNightShiftSection({
           const milestonesPrompt = await readProjectPromptJsonOrEmpty(projectId, WORKER_IDEA_TO_MILESTONES_PROMPT_PATH, projectPath);
           if (!milestonesPrompt?.trim()) {
             toast.error("Milestones prompt not found.");
-            appendIdeaDrivenLog("Milestones prompt not found. Create data/prompts/idea-to-milestones.prompt.json (or milestone-to-tickets).");
+            appendIdeaDrivenLog("Milestones prompt not found. Create data/prompts/workflows/idea-to-milestones.prompt.json (or milestone-to-tickets).");
             return;
           }
 
@@ -824,7 +824,7 @@ function WorkerNightShiftSection({
       const parsedMilestones = parseMilestonesFromOutput(outputContent || "");
 
       if (parsedMilestones.length === 0) {
-        toast.error("No milestones parsed from output. Check data/prompts/milestones-output.md");
+        toast.error("No milestones parsed from output. Check data/prompts/outputs/milestones-output.md");
         setIdeaDrivenAutoState({ phase: null, pendingMilestones: [], currentMilestoneIndex: 0, allTickets: [], currentTicketIndex: 0 });
         setNightShiftActive(false);
         return;
@@ -1236,7 +1236,7 @@ function WorkerNightShiftSection({
           <div>
             <h3 className="text-xs font-semibold text-foreground tracking-tight">Night shift</h3>
             <p className="text-[10px] text-muted-foreground normal-case">
-              Prompt from data/prompts/night-shift.prompt.json runs on 3 agents; when one finishes, the same prompt runs again until you stop. Keep the paired .md and .json in sync.
+              Prompt from data/prompts/workflows/night-shift.prompt.json runs on 3 agents; when one finishes, the same prompt runs again until you stop. Keep the paired .md and .json in sync.
             </p>
           </div>
         </div>

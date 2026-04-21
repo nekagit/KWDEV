@@ -725,26 +725,34 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
                 />
               </div>
 
-              <div data-testid="planner-secondary-grid" className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                <div className="rounded-xl border border-border/40 bg-card/30 p-3 md:p-4">
-                  <div className="inline-flex items-center gap-2 mb-3">
-                    <Lightbulb className="size-4 text-amber-500" />
-                    <span className="text-sm font-semibold">Ideas</span>
+              <div data-testid="planner-secondary-tabs" className="rounded-xl border border-border/40 bg-card/30 p-3 md:p-4">
+                <Tabs defaultValue="planner-ideas" className="w-full">
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <p className="text-xs text-muted-foreground">Switch between idea intake and milestone planning.</p>
+                    <TabsList>
+                      <TabsTrigger value="planner-ideas" className="gap-1.5">
+                        <Lightbulb className="size-3.5" />
+                        Ideas
+                      </TabsTrigger>
+                      <TabsTrigger value="planner-milestones" className="gap-1.5">
+                        <Flag className="size-3.5" />
+                        Milestones
+                      </TabsTrigger>
+                    </TabsList>
                   </div>
-                  <ProjectIdeasDocTab project={project} projectId={projectId} docsRefreshKey={docsRefreshKey} />
-                </div>
 
-                <div className="rounded-xl border border-border/40 bg-card/30 p-3 md:p-4">
-                  <div className="inline-flex items-center gap-2 mb-3">
-                    <Flag className="size-4 text-fuchsia-400" />
-                    <span className="text-sm font-semibold">Milestones</span>
-                  </div>
-                  <ProjectMilestonesTab
-                    project={project}
-                    projectId={projectId}
-                    onTicketAdded={() => setPlannerRefreshKey((k) => k + 1)}
-                  />
-                </div>
+                  <TabsContent value="planner-ideas" className="mt-0">
+                    <ProjectIdeasDocTab project={project} projectId={projectId} docsRefreshKey={docsRefreshKey} />
+                  </TabsContent>
+
+                  <TabsContent value="planner-milestones" className="mt-0">
+                    <ProjectMilestonesTab
+                      project={project}
+                      projectId={projectId}
+                      onTicketAdded={() => setPlannerRefreshKey((k) => k + 1)}
+                    />
+                  </TabsContent>
+                </Tabs>
               </div>
             </div>
           </TabsContent>

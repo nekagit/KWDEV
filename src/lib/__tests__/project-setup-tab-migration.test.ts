@@ -52,4 +52,16 @@ describe("project setup tab migration", () => {
     const filesSource = fs.readFileSync(filesTabPath, "utf8");
     expect(filesSource).not.toContain('title="Refresh"');
   });
+
+  it("shows ADR under project mode and removes ADR from setup mode", () => {
+    const projectTabPath = path.join(
+      process.cwd(),
+      "src/components/organisms/Tabs/ProjectProjectTab.tsx"
+    );
+    const source = fs.readFileSync(projectTabPath, "utf8");
+    expect(source).toContain('const PROJECT_INNER_TABS = ["project-files", "adr"] as const;');
+    expect(source).toContain('const SETUP_INNER_TABS = ["prompts", "skills", "design", "rules", "mcp", "agents"] as const;');
+    expect(source).toContain('{mode === "project" && (');
+    expect(source).toContain('<TabsTrigger value="adr"');
+  });
 });

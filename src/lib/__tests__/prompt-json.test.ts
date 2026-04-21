@@ -57,8 +57,8 @@ describe("validatePromptFilePairs", () => {
     ]);
 
     expect(errors).toEqual([
-      "Missing data/prompts/night-shift.prompt.json (counterpart for night-shift.prompt.md).",
-      "Missing data/prompts/test.prompt.md (counterpart for test.prompt.json).",
+      "Missing data/prompts/workflows/night-shift.prompt.json (counterpart for night-shift.prompt.md).",
+      "Missing data/prompts/workflows/test.prompt.md (counterpart for test.prompt.json).",
     ]);
   });
 });

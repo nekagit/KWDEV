@@ -19,7 +19,7 @@ const PROMPTS_DIR = path.join(findDataDir(), "prompts");
 export type CursorPromptFileEntry = {
   /** Relative path from data/prompts (e.g. "design.prompt.md" or "sub/design.prompt.md") */
   relativePath: string;
-  /** Path under root (e.g. "data/prompts/design.prompt.md") */
+  /** Path under root (e.g. "data/prompts/workflows/design.prompt.md") */
   path: string;
   /** File name (e.g. "design.prompt.md") */
   name: string;

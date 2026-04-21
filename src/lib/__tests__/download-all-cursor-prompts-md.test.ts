@@ -12,8 +12,8 @@ function file(
   overrides: Partial<CursorPromptFileWithContent> = {}
 ): CursorPromptFileWithContent {
   return {
-    relativePath: "night-shift.prompt.md",
-    path: "data/prompts/night-shift.prompt.md",
+    relativePath: "workflows/night-shift.prompt.md",
+    path: "data/prompts/workflows/night-shift.prompt.md",
     name: "night-shift.prompt.md",
     content: "# Night shift\n\nRun without a ticket.",
     updatedAt: "2025-02-18T12:00:00.000Z",
@@ -32,9 +32,9 @@ describe("buildCursorPromptsMarkdown", () => {
   });
 
   it("includes one file as ## heading, Updated, and content", () => {
-    const f = file({ path: "data/prompts/implement.prompt.md", content: "Implement phase." });
+    const f = file({ path: "data/prompts/workflows/implement.prompt.md", content: "Implement phase." });
     const md = buildCursorPromptsMarkdown([f], exportedAt);
-    expect(md).toContain("## data/prompts/implement.prompt.md");
+    expect(md).toContain("## data/prompts/workflows/implement.prompt.md");
     expect(md).toContain("**Updated:** " + f.updatedAt);
     expect(md).toContain("Implement phase.");
     expect(md).toContain("---");

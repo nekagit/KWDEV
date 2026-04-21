@@ -4,7 +4,18 @@ use rusqlite::Connection;
 
 /// Valid doc_type values for project_docs table.
 pub const PROJECT_DOC_TYPES: &[&str] =
-    &["ideas", "design", "architecture", "testing", "documentation", "project_info"];
+    &[
+        "ideas",
+        "design",
+        "architecture",
+        "testing",
+        "documentation",
+        "project_info",
+        "setup_prompts",
+        "setup_skills",
+        "setup_rules",
+        "setup_agents",
+    ];
 
 pub fn get_project_doc(
     conn: &Connection,
@@ -80,7 +91,13 @@ pub fn get_all_project_docs(
 }
 
 /// Valid config_type values for project_configs table.
-pub const PROJECT_CONFIG_TYPES: &[&str] = &["frontend", "backend", "static_analysis_tools"];
+pub const PROJECT_CONFIG_TYPES: &[&str] = &[
+    "frontend",
+    "backend",
+    "static_analysis_tools",
+    "setup_mcp_servers",
+    "setup_migrations",
+];
 
 pub fn get_project_config(
     conn: &Connection,

@@ -1,12 +1,19 @@
 # data/prompts
 
-This folder holds all **prompt files** used by the app (worker, night shift, analyze, idea-driven flow). The app reads paths from `src/lib/cursor-paths.ts` (e.g. `data/prompts/analyze-project.prompt.md`).
+This folder holds all prompt assets used by the app (worker, night shift, analyze, idea-driven flow). The app reads canonical paths from `src/lib/cursor-paths.ts` (e.g. `data/prompts/workflows/analyze-project.prompt.md`).
+
+## Subfolders
+
+- `workflows/` - runtime prompt pairs (`*.prompt.md` and `*.prompt.json`)
+- `outputs/` - generated output artifacts (`*-output.md`)
+- `templates/` - reusable prompt template JSON files
+- `docs/` - prompt structure documentation
 
 ## File types
 
-- **`*.prompt.md`** — Markdown prompts run by the agent (night shift, fix-bug, analyze-project, etc.).
-- **`*.prompt.json`** — Structured JSON version of each `*.prompt.md`. Same base name (e.g. `fix-bug.prompt.json` for `fix-bug.prompt.md`). Contains the full prompt content in structured form plus a full copy of the markdown (`source_markdown`). No information is lost. See [.cursor/docs/prompt-json-schema.md](.cursor/docs/prompt-json-schema.md) for the schema.
-- **`*-output.md`** — Output files written by the agent (e.g. `idea-analysis-output.md`, `milestones-output.md`, `tickets-output.md`).
+- **`workflows/*.prompt.md`** — Markdown prompts run by the agent (night shift, fix-bug, analyze-project, etc.).
+- **`workflows/*.prompt.json`** — Structured JSON version of each `*.prompt.md` with the same stem.
+- **`outputs/*-output.md`** — Output files written by the agent (e.g. `idea-analysis-output.md`, `milestones-output.md`, `tickets-output.md`).
 
 ## JSON prompt files (from .prompt.md)
 

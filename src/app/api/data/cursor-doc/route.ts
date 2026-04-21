@@ -9,7 +9,7 @@ const ALLOWED_PREFIXES = [".cursor/", "data/prompts/", "data/agents/"];
 
 /**
  * GET: Read a file from process.cwd() under .cursor/, data/prompts/, or data/agents/.
- * Query param: path = relative path (e.g. "data/prompts/implement-all.prompt.md", ".cursor/0. ideas/ideas.md").
+ * Query param: path = relative path (e.g. "data/prompts/workflows/implement-all.prompt.md", ".cursor/0. ideas/ideas.md").
  * Used as fallback when project repo read returns empty so tabs show content when project is the app repo.
  */
 export async function GET(request: NextRequest) {

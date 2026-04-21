@@ -46,10 +46,10 @@ export function validatePromptFilePairs(fileNames: string[]): string[] {
   const errors: string[] = [];
   for (const [stem, flags] of seen.entries()) {
     if (!flags.hasJson) {
-      errors.push(`Missing data/prompts/${stem}.prompt.json (counterpart for ${stem}.prompt.md).`);
+      errors.push(`Missing data/prompts/workflows/${stem}.prompt.json (counterpart for ${stem}.prompt.md).`);
     }
     if (!flags.hasMd) {
-      errors.push(`Missing data/prompts/${stem}.prompt.md (counterpart for ${stem}.prompt.json).`);
+      errors.push(`Missing data/prompts/workflows/${stem}.prompt.md (counterpart for ${stem}.prompt.json).`);
     }
   }
   return errors.sort();
