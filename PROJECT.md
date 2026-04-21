@@ -5,14 +5,17 @@ KWDEV is a project/workflow workspace focused on agent-driven software execution
 
 ## Core Areas
 - **Projects page**: central project navigation and details.
+- **Project tab (inside project details)**: focused on project files workspace management.
+- **Setup tab (inside project details)**: workspace setup tabs for Prompts, Skills, Design, Rules, MCP, ADR, and Agents.
+- **Bottom project circles**: project detail bottom circles are user-reorderable via drag-and-drop and persisted locally.
 - **Worker tab**: agent execution workflows (Vibing, Agents, terminals, queue, history).
 - **Planner tab**: ticket and kanban planning.
 - **Control tab**: implementation logging and outcomes.
 - **Versioning tab**: git-focused project visibility.
 
 ## Worker Visual System (current)
-- Worker top-level sections now use a shared colorful surface system defined in `src/lib/worker-run-layout.ts` (`WORKER_RUN_SECTION_SURFACE_CLASSNAME`).
-- Unified colorful section surfaces are applied across:
+- Worker top-level sections now use a shared flat neutral surface system defined in `src/lib/worker-run-layout.ts` (`WORKER_RUN_SECTION_SURFACE_CLASSNAME`).
+- Unified neutral section surfaces are applied across:
   - Status
   - Queue
   - Agents (existing colorful baseline)
@@ -20,10 +23,10 @@ KWDEV is a project/workflow workspace focused on agent-driven software execution
   - Vibing
   - Quality
   - Terminal Output
-- Goal: consistent card language from Status through Terminal Output while keeping distinct color accents per section.
+- Goal: consistent card language from Status through Terminal Output with reduced visual noise and no gradients.
 - Border density has been reduced across Worker surfaces and nested content blocks (especially Agents and Night Shift) to avoid card-in-card visual noise.
-- Worker action buttons are standardized toward colorful gradient actions for primary flows (start/stop/clear/terminal actions) to keep interaction styling consistent.
-- Additional taste cleanup pass further flattens Worker wrappers (top app row, terminal shell, nested cards) and keeps colorful section surfaces as the main visual containers.
+- Worker action buttons in Agents/Vibing are standardized to solid foreground fills for primary flows.
+- Additional taste cleanup keeps Worker wrappers (top app row, terminal shell, nested cards) flat and minimal.
 
 ## Worker Architecture (current)
 - Worker run orchestration is centered on `src/store/run-store.ts`.
@@ -36,18 +39,19 @@ KWDEV is a project/workflow workspace focused on agent-driven software execution
 - UI component: `src/components/organisms/Tabs/ProjectWorkerAgentsSection.tsx`.
 - Tabbed sections (one tab per area):
   - Testing Agent
-  - Cleanup Agent
-  - Refactor Agent
+  - Cleanup + Refactor
   - Night Shift
 - Default tab is Testing Agent.
 - Agent cards use icon-based status badges and single-line action controls (start/stop/clear output).
+- A top-right `Run All` action starts Testing and Cleanup + Refactor loops together and also triggers Night Shift in idea-driven mode.
 - Night Shift is presented with the same card design language as the other agent panels.
-- Cleanup and Refactor now use the same loop principle as Testing (start loop, auto-replenish on run exit, stop prevents new iterations).
+- Night Shift tab content is force-mounted so idea-driven starts can be triggered from `Run All` even when the Night Shift tab is not currently open.
+- Cleanup + Refactor uses the same loop principle as Testing (start loop, auto-replenish on run exit, stop prevents new iterations).
 
 ## Testing Agent Loop (MVP)
 - Designed to mirror Night Shift loop semantics.
 - Start flow:
-  1. Generate prompt from project context + optional `data/prompts/testing-agent.prompt.md`.
+  1. Generate prompt from project context + optional `data/prompts/testing-agent.prompt.json` (`source_markdown` payload).
   2. Create an iteration entry for UI visibility.
   3. Enqueue run through `runTempTicket(...)` with testing-agent run metadata.
 - Loop continuation:
@@ -70,18 +74,24 @@ KWDEV is a project/workflow workspace focused on agent-driven software execution
   - modify code-related files only,
   - do not modify `.md` files.
 
-## Cleanup + Refactor Agent Loops
-- Cleanup and Refactor loops follow the same orchestration pattern as Testing:
+## Cleanup + Refactor Agent Loop
+- Combined Cleanup + Refactor loop follows the same orchestration pattern as Testing:
   1. Generate iteration prompt from project context plus optional prompt template files.
   2. Create iteration entries immediately for UI visibility.
   3. Enqueue run via `runTempTicket(...)` with loop-specific run metadata.
   4. On `script-exited`, hydration completes iteration output/artifact extraction and triggers replenish callback if loop is still active.
 - Prompt template paths:
-  - `data/prompts/cleanup-agent.prompt.md`
-  - `data/prompts/refactor-agent.prompt.md`
+  - `data/prompts/cleanup-refactor-agent.prompt.json` (optional, fallback prompt is used when missing)
 - Agent prompts now explicitly enforce code-only scope:
   - modify only code-related files (source/tests/code tooling config),
   - do not modify any `.md` files.
+- Selected Quality tools are loaded from project config key `cleanup_refactor_tools` and injected into each Cleanup + Refactor iteration prompt as explicit focus areas.
+
+## Prompt Runtime Source (current)
+- Runtime prompt loading is JSON-primary for worker flows.
+- `data/prompts/*.prompt.json` is the execution source, parsed from `source_markdown`.
+- `data/prompts/*.prompt.md` remains the editable markdown companion and must stay paired with the same stem.
+- Prompt initialization now validates that each prompt stem has both files (`.prompt.md` and `.prompt.json`) and reports missing counterparts explicitly.
 
 ## Vibing Section
 - Vibing now focuses on:

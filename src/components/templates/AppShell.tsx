@@ -18,6 +18,11 @@ import { CommandPalette } from "@/components/organisms/CommandPalette";
 import { SkipToMainContent } from "@/components/molecules/Accessible/SkipToMainContent";
 import { RunStatusAnnouncer } from "@/components/molecules/Accessible/RunStatusAnnouncer";
 import { BackToTop } from "@/components/molecules/Buttons/BackToTop";
+import {
+  TOP_NAV_ACTIVE_CLASSNAME,
+  TOP_NAV_BASE_LINK_CLASSNAME,
+  TOP_NAV_INACTIVE_CLASSNAME,
+} from "@/lib/top-nav-style";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -103,7 +108,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <RunStatusAnnouncer />
       {/* Top navbar: app-wide, full width, does not scroll away */}
       <header
-        className="shrink-0 h-12 w-full border-b border-border/60 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 flex items-center px-4 gap-x-1"
+        className="shrink-0 h-12 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 flex items-center px-4 gap-x-1"
         aria-label="App navigation"
       >
         {appNavItems.map((item) => {
@@ -114,10 +119,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                TOP_NAV_BASE_LINK_CLASSNAME,
                 isActive
-                  ? "bg-primary/10 text-foreground"
-                  : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                  ? TOP_NAV_ACTIVE_CLASSNAME
+                  : TOP_NAV_INACTIVE_CLASSNAME
               )}
             >
               <Icon

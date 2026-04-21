@@ -6,14 +6,14 @@ import {
 
 describe("worker-agents-sections", () => {
   it("opens section when currently closed", () => {
-    expect(toggleWorkerAgentsSection(["testing"], "cleanup")).toEqual(["testing", "cleanup"]);
+    expect(toggleWorkerAgentsSection(["testing"], "cleanup-refactor")).toEqual(["testing", "cleanup-refactor"]);
   });
 
   it("closes section when currently open", () => {
-    expect(toggleWorkerAgentsSection(["testing", "cleanup"], "cleanup")).toEqual(["testing"]);
+    expect(toggleWorkerAgentsSection(["testing", "cleanup-refactor"], "cleanup-refactor")).toEqual(["testing"]);
   });
 
   it("defaults to multiple open sections", () => {
-    expect(DEFAULT_OPEN_WORKER_AGENT_SECTIONS).toEqual(["testing", "cleanup", "refactor"]);
+    expect(DEFAULT_OPEN_WORKER_AGENT_SECTIONS).toEqual(["testing", "cleanup-refactor"]);
   });
 });

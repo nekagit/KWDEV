@@ -9,7 +9,7 @@ export const WORKER_TOP_APPS_ROW_CLASSNAME =
 
 export function getWorkerTopAppButtonClassName(isActive: boolean, activeClassName: string): string {
   const baseClassName =
-    "group flex min-w-[150px] flex-col items-center justify-center gap-2 rounded-2xl border-0 p-3 transition-all";
+    "group flex min-w-[150px] flex-col items-center justify-center gap-1.5 rounded-2xl border-0 px-3 py-2 transition-all";
   if (isActive) return `${baseClassName} ${activeClassName} border-0`;
   return `${baseClassName} bg-transparent hover:bg-muted/45`;
 }

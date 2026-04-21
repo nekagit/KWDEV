@@ -124,7 +124,7 @@ export function TerminalSlot({
             {/* Terminal Header */}
             <div
                 className={cn(
-                    "flex items-center justify-between px-3.5 py-2.5",
+                    "flex items-center justify-between gap-2 px-3.5 py-2.5 min-w-0",
                     headerBg
                 )}
             >
@@ -161,21 +161,21 @@ export function TerminalSlot({
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-end gap-1.5 min-w-0 flex-wrap">
                     <Button
                         variant="ghost"
                         size="sm"
-                        className="h-6 px-1.5 text-[10px] gap-1 text-muted-foreground hover:text-foreground"
+                        className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
                         onClick={() => copyTextToClipboard(displayLogLines.join("\n"))}
                         title="Copy output to clipboard"
+                        aria-label="Copy output to clipboard"
                     >
                         <Copy className="size-3" />
-                        Copy
                     </Button>
                     <Button
                         variant="ghost"
                         size="sm"
-                        className="h-6 px-1.5 text-[10px] gap-1 text-muted-foreground hover:text-foreground"
+                        className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
                         onClick={() => {
                             const text = displayLogLines.join("\n");
                             if (!text.trim()) {
@@ -186,9 +186,9 @@ export function TerminalSlot({
                             downloadRunOutput(text, label);
                         }}
                         title="Download output as file"
+                        aria-label="Download output as file"
                     >
                         <Download className="size-3" />
-                        Download
                     </Button>
                     {run?.localUrl && (
                         <a
@@ -204,7 +204,7 @@ export function TerminalSlot({
                     {/* Status badge */}
                     <div
                         className={cn(
-                            "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-medium tabular-nums",
+                            "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-medium tabular-nums max-w-full",
                             statusColor === "sky-running" && "bg-sky-500/15 text-sky-400",
                             statusColor === "sky-done" && "bg-sky-500/15 text-sky-400",
                             statusColor === "rose" && "bg-rose-500/15 text-rose-400",
@@ -229,11 +229,11 @@ export function TerminalSlot({
                 <div
                     ref={scrollRef}
                     className={cn(
-                        "overflow-y-auto overflow-x-auto w-full custom-scrollbar",
+                        "overflow-y-auto overflow-x-hidden w-full max-w-full custom-scrollbar",
                         heightClass === "h-full" ? "flex-1 min-h-0" : heightClass
                     )}
                 >
-                    <div className="p-3 font-mono text-xs leading-[1.65]">
+                    <div className="block w-full min-w-0 p-3 font-mono text-xs leading-[1.65]">
                         {displayLogLines.length === 0 && !running && (
                             <div className="flex flex-col items-center justify-center min-h-[200px] gap-3 text-center">
                                 <Terminal className="size-8 text-muted-foreground/20" />
@@ -256,7 +256,7 @@ export function TerminalSlot({
                         {displayLogLines.map((line, i) => (
                             <div
                                 key={i}
-                                className="py-0.5 pr-2 text-muted-foreground/90 whitespace-pre break-words hover:text-foreground hover:bg-muted/20 rounded-sm transition-colors duration-150"
+                                className="py-0.5 pr-2 text-muted-foreground/90 whitespace-pre-wrap break-all hover:text-foreground hover:bg-muted/20 rounded-sm transition-colors duration-150"
                             >
                                 {line}
                             </div>

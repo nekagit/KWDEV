@@ -2,7 +2,7 @@
  * Shared nav items for sidebar and project-details top accordion.
  * Single source of truth for app navigation links.
  */
-import { Github, Folders, Building2, Settings, Keyboard, Moon } from "lucide-react";
+import { Github, Folders, Settings } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export type SidebarNavItem = {
@@ -16,10 +16,7 @@ export type SidebarNavItem = {
 const items: SidebarNavItem[] = [
   { href: "/github", label: "GitHub", icon: Github, iconColor: "text-slate-300" },
   { href: "/projects", label: "Projects", icon: Folders, iconColor: "text-sky-400", section: "work" },
-  { href: "/company", label: "Company", icon: Building2, iconColor: "text-violet-400", section: "work" },
   { href: "/configuration", label: "Configuration", icon: Settings, iconColor: "text-amber-400", section: "system" },
-  { href: "/shortcuts", label: "Shortcuts", icon: Keyboard, iconColor: "text-emerald-400", section: "system" },
-  { href: "/loading-screen", label: "Loading", icon: Moon, iconColor: "text-cyan-400", section: "system" },
 ];
 
 export function getSidebarNavItemsFlat(): SidebarNavItem[] {

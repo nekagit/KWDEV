@@ -7,9 +7,8 @@ import { useRouter } from "next/navigation";
 /**
  * Shortcuts redirect page: /shortcuts
  *
- * Redirects to the Dashboard with ?openShortcuts=1 so the app opens the
- * keyboard shortcuts modal. Aligns with /run, /testing as
- * top-level routes and gives a bookmarkable URL for the shortcuts help.
+ * Redirects to Configuration with ?openShortcuts=1 so the page opens the
+ * keyboard shortcuts modal in the right section.
  */
 export default function ShortcutsRedirectPage() {
   const router = useRouter();
@@ -18,7 +17,7 @@ export default function ShortcutsRedirectPage() {
   useEffect(() => {
     if (didRedirect.current) return;
     didRedirect.current = true;
-    router.replace("/?openShortcuts=1");
+    router.replace("/configuration?openShortcuts=1");
   }, [router]);
 
   return (

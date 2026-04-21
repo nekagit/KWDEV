@@ -11,6 +11,8 @@ export const VALID_PROJECT_DETAIL_TABS = [
   "ideas",
   "milestones",
   "todo",
+  "run",
+  "setup",
   "worker",
   "control",
   "git",

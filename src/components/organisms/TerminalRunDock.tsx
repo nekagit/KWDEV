@@ -32,9 +32,9 @@ export function TerminalRunDock() {
   };
 
   const hasRunning = runningRuns.some((r) => r.status === "running");
-  if (!hasRunning) return null;
-
   const runningOnly = runningRuns.filter((r) => r.status === "running");
+
+  if (!hasRunning) return null;
 
   return (
     <div

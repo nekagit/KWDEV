@@ -1,11 +1,9 @@
 "use client";
 
 /** Project Project Tab component. */
-import { useState, useEffect, useCallback, useRef } from "react";
-import { Loader2, FileText, FolderOpen, FolderInput, RefreshCw, Play, Square, FolderGit2, Bot, Folder, MonitorUp, MessageSquare, Hammer, Trash2, Plug, ListChecks } from "lucide-react";
-import { listProjectFiles, readProjectFile, readProjectFileOrEmpty, updateProject, writeProjectFile, deleteProjectPath, type FileEntry } from "@/lib/api-projects";
-import { isTauri } from "@/lib/tauri";
-import { useRunStore } from "@/store/run-store";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { Loader2, FileText, FolderOpen, FolderInput, FolderGit2, Bot, Folder, MessageSquare, Plug, ListChecks, Star, Palette } from "lucide-react";
+import { listProjectFiles, readProjectFile, writeProjectFile, type FileEntry } from "@/lib/api-projects";
 import type { Project } from "@/types/project";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { EmptyState } from "@/components/molecules/Display/EmptyState";
@@ -21,14 +19,6 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { PROJECT_DIR } from "@/lib/cursor-paths";
-import { getDefaultProjectFilesPath } from "@/lib/project-files-default-path";
-import { TerminalSlot } from "@/components/molecules/Display/TerminalSlot";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { ProjectFilesTab } from "@/components/organisms/Tabs/ProjectFilesTab";
 import { ProjectAgentsSection } from "@/components/organisms/Tabs/ProjectAgentsSection";
 import { ProjectMcpSection } from "@/components/organisms/Tabs/ProjectMcpSection";
@@ -41,6 +31,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PromptRecordsPageContent } from "@/components/organisms/PromptRecordsPageContent";
+import { ProjectDesignTab } from "@/components/organisms/Tabs/ProjectDesignTab";
 
 type InitializeAllChecklistItem = {
   categorySlug: string;
@@ -80,14 +71,10 @@ function formatUpdatedAt(updatedAt: string): string {
   }
 }
 
-/** Extract port from a localhost URL (e.g. http://localhost:3000 -> 3000). */
-function getPortFromLocalUrl(url: string): number | null {
-  const m = url.match(/:(\d+)(?:\/|$)/);
-  return m ? parseInt(m[1], 10) : null;
-}
-
 const ADR_DIR = ".cursor/adr";
 const RULES_DIR = ".cursor/rules";
+const PROJECT_INNER_TABS = ["project-files"] as const;
+const SETUP_INNER_TABS = ["prompts", "skills", "design", "rules", "mcp", "adr", "agents"] as const;
 
 /** Rule categories: slug (folder name) and display label. Order matches Rules tab. */
 const RULES_CATEGORIES = [
@@ -107,17 +94,10 @@ interface ProjectProjectTabProps {
   project: Project;
   projectId: string;
   docsRefreshKey?: number;
-  /** Called after project is updated (e.g. run port saved) so parent can refetch. */
-  onProjectUpdate?: () => void;
+  mode: "project" | "setup";
 }
 
-export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjectUpdate }: ProjectProjectTabProps) {
-  const runNpmScript = useRunStore((s) => s.runNpmScript);
-  const runNpmScriptInExternalTerminal = useRunStore((s) => s.runNpmScriptInExternalTerminal);
-  const runBuildDesktop = useRunStore((s) => s.runBuildDesktop);
-  const runCopyBuildToDesktop = useRunStore((s) => s.runCopyBuildToDesktop);
-  const stopRun = useRunStore((s) => s.stopRun);
-  const runningRuns = useRunStore((s) => s.runningRuns);
+export function ProjectProjectTab({ project, projectId, docsRefreshKey, mode }: ProjectProjectTabProps) {
   const [adrEntries, setAdrEntries] = useState<FileEntry[]>([]);
   const [rulesEntriesByCategory, setRulesEntriesByCategory] = useState<Record<string, FileEntry[]>>({});
   const [rulesCategoryTab, setRulesCategoryTab] = useState<string>("design");
@@ -125,26 +105,20 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
   const [rulesTemplatePayload, setRulesTemplatePayload] = useState<CursorRulesTemplateResponse | null>(null);
   const [rulesTemplateLoading, setRulesTemplateLoading] = useState(false);
   const [initializeAllLoading, setInitializeAllLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [scripts, setScripts] = useState<Record<string, string>>({});
-  const [loadingScripts, setLoadingScripts] = useState(false);
-  const [lastRunId, setLastRunId] = useState<string | null>(null);
-  const [savingPort, setSavingPort] = useState(false);
-  const [folderRefreshKey, setFolderRefreshKey] = useState(0);
-  const [projectFilesActionLoading, setProjectFilesActionLoading] = useState<"rebuild" | "desktop" | "deleteAll" | null>(null);
-  const [projectFilesCurrentPath, setProjectFilesCurrentPath] = useState(getDefaultProjectFilesPath());
-  const [projectFilesEntries, setProjectFilesEntries] = useState<FileEntry[]>([]);
   const [rulePreview, setRulePreview] = useState<{ name: string; content: string } | null>(null);
   const [rulePreviewLoading, setRulePreviewLoading] = useState(false);
   const cancelledRef = useRef(false);
-  const scriptsCancelledRef = useRef(false);
-
-  /** Inner tabs: Project Files first, then Run, Prompts, Rules, MCP, ADR, Agents. */
-  const INNER_TAB_VALUES = ["project-files", "run", "prompts", "rules", "mcp", "adr", "agents"] as const;
+  /** Inner tabs: project mode only shows files; setup mode shows prompts/skills/rules/mcp/adr/agents. */
+  const INNER_TAB_VALUES = useMemo(
+    () => (mode === "project" ? PROJECT_INNER_TABS : SETUP_INNER_TABS),
+    [mode]
+  );
   const [innerTab, setInnerTab] = useState<string>(() => {
-    if (typeof window === "undefined") return "project-files";
+    if (typeof window === "undefined") return INNER_TAB_VALUES[0];
     const h = window.location.hash.slice(1).toLowerCase();
-    return INNER_TAB_VALUES.includes(h as (typeof INNER_TAB_VALUES)[number]) ? h : "project-files";
+    return INNER_TAB_VALUES.includes(h as (typeof INNER_TAB_VALUES)[number])
+      ? h
+      : INNER_TAB_VALUES[0];
   });
 
   useEffect(() => {
@@ -152,12 +126,14 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
       const h = window.location.hash.slice(1).toLowerCase();
       if (INNER_TAB_VALUES.includes(h as (typeof INNER_TAB_VALUES)[number])) {
         setInnerTab(h);
+      } else {
+        setInnerTab(INNER_TAB_VALUES[0]);
       }
     };
     syncFromHash();
     window.addEventListener("hashchange", syncFromHash);
     return () => window.removeEventListener("hashchange", syncFromHash);
-  }, []);
+  }, [INNER_TAB_VALUES]);
 
   // Sync inner tab to URL hash so the current view is shareable.
   useEffect(() => {
@@ -167,7 +143,7 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
   }, [innerTab]);
 
   const loadAdrAndRules = useCallback(async () => {
-    if (!project.repoPath) return;
+    if (mode !== "setup" || !project.repoPath) return;
     cancelledRef.current = false;
     try {
       const adrList = await listProjectFiles(projectId, ADR_DIR, project.repoPath);
@@ -176,7 +152,7 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
     } catch {
       if (!cancelledRef.current) setAdrEntries([]);
     }
-  }, [projectId, project.repoPath]);
+  }, [mode, projectId, project.repoPath]);
 
   const loadRulesForCategory = useCallback(
     async (categorySlug: string) => {
@@ -317,16 +293,16 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
     return () => {
       cancelledRef.current = true;
     };
-  }, [loadAdrAndRules, docsRefreshKey, folderRefreshKey]);
+  }, [loadAdrAndRules, docsRefreshKey]);
 
   useEffect(() => {
-    if (project.repoPath && innerTab === "rules") {
+    if (mode === "setup" && project.repoPath && innerTab === "rules") {
       loadRulesForCategory(rulesCategoryTab);
     }
-  }, [project.repoPath, innerTab, rulesCategoryTab, loadRulesForCategory, docsRefreshKey, folderRefreshKey]);
+  }, [mode, project.repoPath, innerTab, rulesCategoryTab, loadRulesForCategory, docsRefreshKey]);
 
   useEffect(() => {
-    if (!project.repoPath || innerTab !== "rules") return;
+    if (mode !== "setup" || !project.repoPath || innerTab !== "rules") return;
     let cancelled = false;
     setRulesTemplateLoading(true);
     fetch("/api/data/cursor-rules-template")
@@ -346,46 +322,7 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
     return () => {
       cancelled = true;
     };
-  }, [project.repoPath, innerTab, docsRefreshKey, folderRefreshKey]);
-
-  const loadScripts = useCallback((): Promise<void> => {
-    if (!project.repoPath) {
-      setScripts({});
-      return Promise.resolve();
-    }
-    scriptsCancelledRef.current = false;
-    setLoadingScripts(true);
-    return readProjectFileOrEmpty(projectId, "package.json", project.repoPath)
-      .then((raw) => {
-        if (scriptsCancelledRef.current) return;
-        try {
-          const pkg = raw?.trim() ? (JSON.parse(raw) as Record<string, unknown>) : {};
-          const s = pkg.scripts as Record<string, string> | undefined;
-          setScripts(s && typeof s === "object" ? s : {});
-        } catch {
-          setScripts({});
-        }
-      })
-      .catch((err) => {
-        if (!scriptsCancelledRef.current) setScripts({});
-        throw err;
-      })
-      .finally(() => {
-        if (!scriptsCancelledRef.current) setLoadingScripts(false);
-      });
-  }, [projectId, project.repoPath]);
-
-  useEffect(() => {
-    if (!project.repoPath) {
-      setScripts({});
-      return;
-    }
-    scriptsCancelledRef.current = false;
-    loadScripts();
-    return () => {
-      scriptsCancelledRef.current = true;
-    };
-  }, [loadScripts, project.repoPath]);
+  }, [mode, project.repoPath, innerTab, docsRefreshKey]);
 
   if (!project.repoPath) {
     return (
@@ -401,36 +338,47 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
     <div className="space-y-6">
       <Tabs value={innerTab} onValueChange={setInnerTab} className="w-full">
         <TabsList className="flex flex-wrap gap-1 bg-muted/50 border border-border/40 rounded-lg p-1 mb-4">
-          <TabsTrigger value="project-files" className="gap-1.5 text-xs data-[state=active]:bg-background">
-            <FolderGit2 className="size-3.5" />
-            Project Files
-          </TabsTrigger>
-          <TabsTrigger value="run" className="gap-1.5 text-xs data-[state=active]:bg-background">
-            <Play className="size-3.5" />
-            Run
-          </TabsTrigger>
-          <TabsTrigger value="prompts" className="gap-1.5 text-xs data-[state=active]:bg-background">
-            <MessageSquare className="size-3.5" />
-            Prompts
-          </TabsTrigger>
-          <TabsTrigger value="rules" className="gap-1.5 text-xs data-[state=active]:bg-background">
-            <Folder className="size-3.5" />
-            Rules
-          </TabsTrigger>
-          <TabsTrigger value="mcp" className="gap-1.5 text-xs data-[state=active]:bg-background">
-            <Plug className="size-3.5" />
-            MCP
-          </TabsTrigger>
-          <TabsTrigger value="adr" className="gap-1.5 text-xs data-[state=active]:bg-background">
-            <FileText className="size-3.5" />
-            ADR
-          </TabsTrigger>
-          <TabsTrigger value="agents" className="gap-1.5 text-xs data-[state=active]:bg-background">
-            <Bot className="size-3.5" />
-            Agents
-          </TabsTrigger>
+          {mode === "project" && (
+            <TabsTrigger value="project-files" className="gap-1.5 text-xs data-[state=active]:bg-background">
+              <FolderGit2 className="size-3.5" />
+              Project Files
+            </TabsTrigger>
+          )}
+          {mode === "setup" && (
+            <>
+              <TabsTrigger value="prompts" className="gap-1.5 text-xs data-[state=active]:bg-background">
+                <MessageSquare className="size-3.5" />
+                Prompts
+              </TabsTrigger>
+              <TabsTrigger value="skills" className="gap-1.5 text-xs data-[state=active]:bg-background">
+                <Star className="size-3.5" />
+                Skills
+              </TabsTrigger>
+              <TabsTrigger value="design" className="gap-1.5 text-xs data-[state=active]:bg-background">
+                <Palette className="size-3.5" />
+                Design
+              </TabsTrigger>
+              <TabsTrigger value="rules" className="gap-1.5 text-xs data-[state=active]:bg-background">
+                <Folder className="size-3.5" />
+                Rules
+              </TabsTrigger>
+              <TabsTrigger value="mcp" className="gap-1.5 text-xs data-[state=active]:bg-background">
+                <Plug className="size-3.5" />
+                MCP
+              </TabsTrigger>
+              <TabsTrigger value="adr" className="gap-1.5 text-xs data-[state=active]:bg-background">
+                <FileText className="size-3.5" />
+                ADR
+              </TabsTrigger>
+              <TabsTrigger value="agents" className="gap-1.5 text-xs data-[state=active]:bg-background">
+                <Bot className="size-3.5" />
+                Agents
+              </TabsTrigger>
+            </>
+          )}
         </TabsList>
 
+        {mode === "setup" && (
         <TabsContent value="rules" className="mt-0">
           <ScrollArea className="h-[calc(100vh-14rem)]">
             <div className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden data-[state=open]:border-teal-500/30 p-5 pr-4">
@@ -560,7 +508,9 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
             </div>
           </ScrollArea>
         </TabsContent>
+        )}
 
+        {mode === "setup" && (
         <TabsContent value="mcp" className="mt-0">
           <ScrollArea className="h-[calc(100vh-14rem)]">
             <div className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden p-5 pr-4">
@@ -568,7 +518,9 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
             </div>
           </ScrollArea>
         </TabsContent>
+        )}
 
+        {mode === "setup" && (
         <TabsContent value="adr" className="mt-0">
           <ScrollArea className="h-[calc(100vh-14rem)]">
             <div className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden p-5 pr-4">
@@ -600,302 +552,52 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
             </div>
           </ScrollArea>
         </TabsContent>
+        )}
 
+        {mode === "setup" && (
         <TabsContent value="prompts" className="mt-0">
           <div className="rounded-xl border border-border/40 bg-card/50 backdrop-blur-sm p-4 md:p-6 min-h-0 min-w-0">
             <PromptRecordsPageContent projectId={projectId} />
           </div>
         </TabsContent>
+        )}
 
+        {mode === "setup" && (
+        <TabsContent value="skills" className="mt-0">
+          <div className="rounded-xl border border-border/40 bg-card/50 backdrop-blur-sm p-4 md:p-6">
+            <div className="inline-flex items-center gap-2 mb-2">
+              <Star className="size-4 text-amber-400" />
+              <span className="text-sm font-semibold">Skills</span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Skills tab is now available in Project. Use this section to track and curate project-specific skills.
+            </p>
+          </div>
+        </TabsContent>
+        )}
+
+        {mode === "setup" && (
+        <TabsContent value="design" className="mt-0">
+          <div className="rounded-xl border border-border/40 bg-card/50 backdrop-blur-sm p-4 md:p-6">
+            <ProjectDesignTab project={project} projectId={projectId} showHeader={false} />
+          </div>
+        </TabsContent>
+        )}
+
+        {mode === "project" && (
         <TabsContent value="project-files" className="mt-0">
           <div className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden p-5 pr-4">
             <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-between gap-2">
-                  <Button variant="ghost" size="sm" onClick={() => setFolderRefreshKey((k) => k + 1)} className="gap-1.5">
-                    <RefreshCw className="h-3.5 w-3.5" />
-                    Refresh
-                  </Button>
-                <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="gap-1.5"
-                      disabled={!isTauri || projectFilesActionLoading != null}
-                      onClick={async () => {
-                        setProjectFilesActionLoading("rebuild");
-                        try {
-                          const ok = await runBuildDesktop();
-                          if (ok) toast.success("Rebuild started in Terminal.");
-                          else toast.error(useRunStore.getState().error ?? "Failed to rebuild.");
-                        } finally {
-                          setProjectFilesActionLoading(null);
-                        }
-                      }}
-                      title="Runs npm run build:desktop (desktop app only)"
-                    >
-                      {projectFilesActionLoading === "rebuild" ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <Hammer className="h-3.5 w-3.5" />
-                      )}
-                      Rebuild
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="gap-1.5 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                      disabled={projectFilesActionLoading != null || projectFilesEntries.filter((e) => e.name !== "." && e.name !== "..").length === 0}
-                      onClick={async () => {
-                        const toDelete = projectFilesEntries.filter(
-                          (e) => e.name !== "." && e.name !== ".."
-                        );
-                        if (toDelete.length === 0) return;
-                        setProjectFilesActionLoading("deleteAll");
-                        try {
-                          const base = projectFilesCurrentPath || "";
-                          // Delete files first, then directories (recursive). Skip entries with empty or invalid path.
-                          const filesFirst = [...toDelete].sort((a, b) =>
-                            a.isDirectory === b.isDirectory ? 0 : a.isDirectory ? 1 : -1
-                          );
-                          let deleted = 0;
-                          for (const e of filesFirst) {
-                            const name = (e.name ?? "").trim();
-                            if (!name || name === "." || name === "..") continue;
-                            const relPath = base ? `${base}/${name}` : name;
-                            if (!relPath || relPath === "." || relPath === "..") continue;
-                            await deleteProjectPath(
-                              projectId,
-                              relPath,
-                              project.repoPath ?? undefined,
-                              e.isDirectory
-                            );
-                            deleted += 1;
-                          }
-                          if (deleted > 0) toast.success(`Deleted ${deleted} item(s).`);
-                          else toast.error("No valid paths to delete.");
-                          setFolderRefreshKey((k) => k + 1);
-                        } catch (e) {
-                          toast.error(e instanceof Error ? e.message : "Failed to delete some items");
-                        } finally {
-                          setProjectFilesActionLoading(null);
-                        }
-                      }}
-                      title="Delete all files and folders in the current project files folder"
-                    >
-                      {projectFilesActionLoading === "deleteAll" ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <Trash2 className="h-3.5 w-3.5" />
-                      )}
-                      Delete all
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="gap-1.5"
-                      disabled={!isTauri || projectFilesActionLoading != null}
-                      onClick={async () => {
-                        setProjectFilesActionLoading("desktop");
-                        try {
-                          const ok = await runCopyBuildToDesktop();
-                          if (ok) toast.success("Copy-to-Desktop started in Terminal.");
-                          else toast.error(useRunStore.getState().error ?? "Failed to put on Desktop.");
-                        } finally {
-                          setProjectFilesActionLoading(null);
-                        }
-                      }}
-                      title="Runs script/tauri/copy-build-to-desktop.mjs (desktop app only)"
-                    >
-                      {projectFilesActionLoading === "desktop" ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <MonitorUp className="h-3.5 w-3.5" />
-                      )}
-                      Put on Desktop
-                    </Button>
-                </div>
-              </div>
               <ProjectFilesTab
                 project={project}
                 projectId={projectId}
-                onStateChange={(path, entries) => {
-                  setProjectFilesCurrentPath(path);
-                  setProjectFilesEntries(entries);
-                }}
               />
             </div>
           </div>
         </TabsContent>
+        )}
 
-        <TabsContent value="run" className="mt-0">
-          <ScrollArea className="h-[calc(100vh-14rem)]">
-            <div className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden p-5 pr-4 space-y-3">
-              <div className="flex items-start justify-between gap-3 mb-4">
-                <p className="text-xs text-muted-foreground flex-1 min-w-0">
-                  Run npm scripts from the project directory. On macOS, each script opens in Terminal.app; on other platforms output appears below (localhost URL becomes &quot;Open app&quot;).
-                </p>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="shrink-0 gap-1.5 text-xs"
-                        disabled={loadingScripts || !project.repoPath}
-                        onClick={() => {
-                          loadScripts().then(() => toast.success("Scripts refreshed")).catch(() => toast.error("Failed to load scripts"));
-                        }}
-                        aria-label="Reload scripts from package.json"
-                      >
-                        <RefreshCw className={cn("size-3.5", loadingScripts && "animate-spin")} />
-                        Refresh
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      Reload scripts from package.json
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-              {loadingScripts ? (
-                <div className="flex items-center gap-2 py-4 text-muted-foreground">
-                  <Loader2 className="size-4 animate-spin" />
-                  <span className="text-xs">Loading package.json…</span>
-                </div>
-              ) : Object.keys(scripts).length === 0 ? (
-                <p className="text-xs text-muted-foreground py-4 rounded-lg border border-border/40 bg-muted/10 px-4">
-                  No package.json or no scripts found. Add a package.json with a <code className="rounded bg-muted px-1 font-mono">scripts</code> section to run commands from here.
-                </p>
-              ) : (
-                <>
-                  <div className="space-y-3">
-                  <div className="flex flex-wrap gap-2">
-                    {Object.entries(scripts).map(([name]) => {
-                      const canRun = isTauri && project.repoPath;
-                      return (
-                        <TooltipProvider key={name}>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="inline-flex">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="gap-1.5 text-xs"
-                                  disabled={!canRun}
-                                  onClick={async () => {
-                                    if (!canRun || !project.repoPath) return;
-                                    try {
-                                      const opened = await runNpmScriptInExternalTerminal(project.repoPath, name);
-                                      if (opened) {
-                                        toast.success("Opened in Terminal.");
-                                        return;
-                                      }
-                                      const err = useRunStore.getState().error ?? "";
-                                      if (err.includes("only supported on macOS")) {
-                                        const runId = await runNpmScript(project.repoPath, name);
-                                        if (runId) {
-                                          setLastRunId(runId);
-                                          toast.success("Running. Output below.");
-                                        }
-                                      } else {
-                                        toast.error(err || "Failed to open terminal");
-                                      }
-                                    } catch (e) {
-                                      toast.error(e instanceof Error ? e.message : "Failed to start");
-                                    }
-                                  }}
-                                >
-                                  <Play className="size-3" />
-                                  {name}
-                                </Button>
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              {canRun ? `npm run ${name} (opens Terminal on Mac)` : "Run scripts in Tauri app"}
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      );
-                    })}
-                  </div>
-                  {!isTauri && Object.keys(scripts).length > 0 && (
-                    <p className="text-[11px] text-muted-foreground">
-                      Run scripts from the Tauri desktop app to see output here.
-                    </p>
-                  )}
-                  {lastRunId && (() => {
-                    const run = runningRuns.find((r) => r.runId === lastRunId);
-                    if (!run) return null;
-                    const isRunning = run.status === "running";
-                    const portFromUrl = run.localUrl ? getPortFromLocalUrl(run.localUrl) : null;
-                    const canSavePort =
-                      portFromUrl != null &&
-                      (project.runPort == null || project.runPort !== portFromUrl);
-                    return (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between gap-2 flex-wrap">
-                          <span className="text-xs font-medium text-muted-foreground">{run.label}</span>
-                          <div className="flex items-center gap-2">
-                            {canSavePort && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="gap-1.5 text-xs"
-                                disabled={savingPort}
-                                onClick={async () => {
-                                  if (portFromUrl == null) return;
-                                  setSavingPort(true);
-                                  try {
-                                    await updateProject(projectId, { runPort: portFromUrl });
-                                    onProjectUpdate?.();
-                                    toast.success("Run port saved. Use View Running Project in the top bar.");
-                                  } catch (e) {
-                                    toast.error(e instanceof Error ? e.message : "Failed to save port");
-                                  } finally {
-                                    setSavingPort(false);
-                                  }
-                                }}
-                              >
-                                {savingPort ? <Loader2 className="size-3 animate-spin" /> : null}
-                                Use as project URL
-                              </Button>
-                            )}
-                            {isRunning && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="gap-1.5 text-xs text-destructive hover:bg-destructive/10"
-                                onClick={() => stopRun(lastRunId)}
-                              >
-                                <Square className="size-3" />
-                                Stop
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                        <TerminalSlot
-                          run={{
-                            runId: run.runId,
-                            label: run.label,
-                            logLines: run.logLines,
-                            status: run.status,
-                            startedAt: run.startedAt,
-                            doneAt: run.doneAt,
-                            localUrl: run.localUrl,
-                          }}
-                          slotIndex={0}
-                          heightClass="h-[240px]"
-                        />
-                      </div>
-                    );
-                  })()}
-                </div>
-                </>
-              )}
-            </div>
-          </ScrollArea>
-        </TabsContent>
-
+        {mode === "setup" && (
         <TabsContent value="agents" className="mt-0">
           <ScrollArea className="h-[calc(100vh-14rem)]">
             <div className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden p-5 pr-4">
@@ -903,8 +605,10 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
             </div>
           </ScrollArea>
         </TabsContent>
+        )}
       </Tabs>
 
+      {mode === "setup" && (
       <Dialog open={!!rulePreview || rulePreviewLoading} onOpenChange={(open) => !open && setRulePreview(null)}>
         <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
           <DialogHeader>
@@ -924,6 +628,7 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, onProjec
           </ScrollArea>
         </DialogContent>
       </Dialog>
+      )}
     </div>
   );
 }

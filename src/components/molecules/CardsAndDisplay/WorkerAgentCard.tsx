@@ -96,7 +96,7 @@ export function WorkerAgentCard({
             size="icon"
             onClick={onSubmit}
             disabled={loading || disabled}
-            className="h-12 w-12 rounded-xl shrink-0 bg-cyan-500 text-cyan-50 hover:bg-cyan-400"
+            className="h-12 w-12 rounded-xl shrink-0 bg-foreground text-background hover:bg-foreground/90"
             title={buttonTitle}
             aria-label={buttonLabel}
           >

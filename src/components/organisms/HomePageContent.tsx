@@ -12,7 +12,7 @@ export function HomePageContent() {
       <div className="container max-w-2xl mx-auto py-12 px-4">
         <h1 className="text-2xl font-semibold text-foreground mb-4">Welcome</h1>
         <p className="text-muted-foreground mb-6">
-          Use the sidebar to open Projects, Company, Configuration, or Shortcuts.
+          Use the sidebar to open Projects and Configuration.
         </p>
         <nav className="flex flex-wrap gap-3">
           <Link href="/projects" className="text-primary hover:underline">

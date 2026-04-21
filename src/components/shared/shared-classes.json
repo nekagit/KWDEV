@@ -400,12 +400,6 @@
       "13": "px-3 py-2 border-t border-border bg-muted/30 text-[10px] text-muted-foreground flex items-center gap-4",
       "14": "w-full flex items-center gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors"
     },
-    "components/organisms/CompanyPageContent.tsx": {
-      "0": "space-y-0",
-      "1": "mb-3",
-      "2": "h-5 w-5 text-muted-foreground",
-      "3": "mt-4 text-muted-foreground"
-    },
     "components/organisms/ConfigurationPageContent.tsx": {
       "0": "container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6 pb-12",
       "1": "flex flex-wrap items-center justify-end gap-3",

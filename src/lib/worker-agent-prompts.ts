@@ -3,39 +3,26 @@ type WorkerPromptProject = {
   repoPath?: string | null;
 };
 
-export function buildCleanupAgentPrompt(
+export function buildCleanupRefactorAgentPrompt(
   project: WorkerPromptProject,
   template: string,
-  iterationIndex: number
+  iterationIndex: number,
+  qualityFocusLabels: string[]
 ): string {
   const intro = template.trim()
     ? template.trim()
-    : "Act as a cleanup agent. Remove stale artifacts, tidy project files, and report cleanup changes.";
-  return [
-    intro,
-    "",
-    "## Project context",
-    `- Project: ${project.name ?? "Unknown project"}`,
-    `- Repository path: ${project.repoPath ?? "Unknown path"}`,
-    `- Iteration: ${iterationIndex}`,
-    "",
-    "## Output requirements",
-    "- Show the concrete prompt intent for this iteration.",
-    "- Perform cleanup and hygiene tasks for this codebase.",
-    "- Report removed/updated files and why.",
-    "- Only modify code-related files (source, tests, and code tooling config).",
-    "- Do NOT modify any `.md` files.",
-  ].join("\n");
-}
+    : "Act as a cleanup + refactor agent. Improve structure and maintainability while keeping the repository tidy and preserving behavior.";
+  const qualityFocusSection =
+    qualityFocusLabels.length > 0
+      ? [
+          "## Quality focus",
+          ...qualityFocusLabels.map((label) => `- ${label}`),
+        ]
+      : [
+          "## Quality focus",
+          "- No explicit quality focus was selected. Use your judgment to prioritize the highest-impact cleanup and refactor opportunities.",
+        ];
 
-export function buildRefactorAgentPrompt(
-  project: WorkerPromptProject,
-  template: string,
-  iterationIndex: number
-): string {
-  const intro = template.trim()
-    ? template.trim()
-    : "Act as a refactor agent. Improve structure and maintainability while preserving behavior.";
   return [
     intro,
     "",
@@ -44,10 +31,12 @@ export function buildRefactorAgentPrompt(
     `- Repository path: ${project.repoPath ?? "Unknown path"}`,
     `- Iteration: ${iterationIndex}`,
     "",
+    ...qualityFocusSection,
+    "",
     "## Output requirements",
     "- Show the concrete prompt intent for this iteration.",
-    "- Refactor code paths without changing expected behavior.",
-    "- Report structural improvements and touched files.",
+    "- Perform cleanup and refactor work without changing expected behavior.",
+    "- Report structural improvements, cleanup actions, and touched files.",
     "- Only modify code-related files (source, tests, and code tooling config).",
     "- Do NOT modify any `.md` files.",
   ].join("\n");

@@ -15,6 +15,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { ButtonGroup } from "@/components/molecules/ControlsAndButtons/ButtonGroup";
 import { Dialog } from "@/components/molecules/FormsAndDialogs/Dialog";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { getClasses } from "@/components/molecules/tailwind-molecules";
 import { cn } from "@/lib/utils";
 import { copyChangedFilesListToClipboard, downloadChangedFilesAsMarkdown } from "@/lib/export-versioning-changed-files";

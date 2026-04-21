@@ -38,6 +38,16 @@ export type TodosKanbanData = {
   columns: Record<string, KanbanColumn>;
 };
 
+function isDoneStatus(status: string | undefined): boolean {
+  if (!status) return false;
+  const normalized = status.trim().toLowerCase();
+  return normalized === "done" || normalized === "complete" || normalized === "completed";
+}
+
+function isTicketDone(ticket: ParsedTicket): boolean {
+  return ticket.done || isDoneStatus(ticket.status);
+}
+
 const TICKET_REF_RE = /#(\d+)/g;
 
 const PRIORITY_HEADER_RE = /^###\s+(P[0-3])\b/m;
@@ -114,7 +124,7 @@ export function buildKanbanFromMd(
     testing: { name: "Testing", items: [] },
   };
   for (const t of tickets) {
-    if (t.done) {
+    if (isTicketDone(t)) {
       columns.done.items.push(t);
     } else if (inProgressSet.has(t.id)) {
       columns.in_progress.items.push(t);
@@ -144,7 +154,7 @@ export function applyInProgressState(
     testing: { name: "Testing", items: [] },
   };
   for (const t of data.tickets) {
-    if (t.done) {
+    if (isTicketDone(t)) {
       columns.done.items.push(t);
     } else if (inProgressSet.has(t.id)) {
       columns.in_progress.items.push(t);

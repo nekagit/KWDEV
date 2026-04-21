@@ -15,11 +15,12 @@ describe("worker-run-layout", () => {
     expect(getWorkerRunSectionsGridClassName(1)).toContain("lg:grid-cols-1");
   });
 
-  it("uses colorful gradient surfaces for all worker section cards", () => {
+  it("uses flat, neutral surfaces for all worker section cards", () => {
     const surfaces = Object.values(WORKER_RUN_SECTION_SURFACE_CLASSNAME);
     expect(surfaces).toHaveLength(8);
     for (const surfaceClassName of surfaces) {
-      expect(surfaceClassName).toContain("bg-gradient-to-br");
+      expect(surfaceClassName).not.toContain("bg-gradient-to-br");
+      expect(surfaceClassName).toContain("bg-muted/30");
       expect(surfaceClassName).toContain("rounded-2xl");
       expect(surfaceClassName).toContain("overflow-hidden");
     }

@@ -3,7 +3,7 @@
 /** Loading Screen Page Content component. */
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Copy, ExternalLink } from "lucide-react";
+import { ArrowLeft, Copy, ExternalLink, FolderOpen, Settings } from "lucide-react";
 import { RainEffect } from "@/components/molecules/VisualEffects/RainEffect";
 import { CursorLightGlow } from "@/components/molecules/VisualEffects/CursorLightGlow";
 import { StarField } from "@/components/molecules/VisualEffects/StarField";
@@ -76,6 +76,53 @@ export function LoadingScreenPageContent() {
       <StarField />
       <MoonGraphic />
       <KwcodeBranding />
+
+      <div className="absolute inset-0 z-10 flex items-center justify-center px-4 pointer-events-none">
+        <section className="pointer-events-auto w-full max-w-2xl rounded-2xl border border-white/20 bg-black/45 backdrop-blur-md p-6 sm:p-8 text-white">
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">Loading screen preview</h1>
+          <p className="mt-2 text-sm sm:text-base text-white/80 leading-relaxed">
+            This page lets you preview the ambient loading theme in full screen. Use it as a visual
+            check for branding, motion, and contrast while tuning the app experience.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-2 text-xs text-white/70">
+            <span className="rounded-full border border-white/25 px-2 py-1">Stars + moon</span>
+            <span className="rounded-full border border-white/25 px-2 py-1">Cursor glow</span>
+            <span className="rounded-full border border-white/25 px-2 py-1">Rain effect</span>
+          </div>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link href="/" className="inline-flex">
+              <Button
+                type="button"
+                variant="outline"
+                className="h-9 gap-2 border-white/35 text-white hover:bg-white/10 hover:text-white"
+              >
+                <ArrowLeft className="size-4 shrink-0" aria-hidden />
+                Back to home
+              </Button>
+            </Link>
+            <Link href="/configuration" className="inline-flex">
+              <Button
+                type="button"
+                variant="outline"
+                className="h-9 gap-2 border-white/35 text-white hover:bg-white/10 hover:text-white"
+              >
+                <Settings className="size-4 shrink-0" aria-hidden />
+                Open configuration
+              </Button>
+            </Link>
+            <Link href="/projects" className="inline-flex">
+              <Button
+                type="button"
+                variant="outline"
+                className="h-9 gap-2 border-white/35 text-white hover:bg-white/10 hover:text-white"
+              >
+                <FolderOpen className="size-4 shrink-0" aria-hidden />
+                Open projects
+              </Button>
+            </Link>
+          </div>
+        </section>
+      </div>
 
       <div className="absolute top-4 left-4 z-10 flex flex-col gap-3">
         <Breadcrumb

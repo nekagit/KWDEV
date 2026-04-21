@@ -102,8 +102,8 @@
       "lastProcessedAt": "2026-04-17T11:19:08Z"
     },
     "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/fd87b06e-4a3c-4c0d-ac29-d1e3e64dbd9a/fd87b06e-4a3c-4c0d-ac29-d1e3e64dbd9a.jsonl": {
-      "mtimeMs": 1776426621,
-      "lastProcessedAt": "2026-04-17T13:19:41Z"
+      "mtimeMs": 1776436463,
+      "lastProcessedAt": "2026-04-21T07:06:10Z"
     },
     "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/fdbf1e10-c055-4964-bb56-305e624967fd/fdbf1e10-c055-4964-bb56-305e624967fd.jsonl": {
       "mtimeMs": 1773689326,
@@ -118,12 +118,12 @@
       "lastProcessedAt": "2026-04-17T13:19:41Z"
     },
     "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/4e0fee95-853c-421d-b1cc-bc729f2a743e/4e0fee95-853c-421d-b1cc-bc729f2a743e.jsonl": {
-      "mtimeMs": 1776431702,
-      "lastProcessedAt": "2026-04-17T13:19:41Z"
+      "mtimeMs": 1776433082,
+      "lastProcessedAt": "2026-04-21T07:06:10Z"
     },
     "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/c4e38b96-1576-42fa-ae47-ea9d704faabc/c4e38b96-1576-42fa-ae47-ea9d704faabc.jsonl": {
-      "mtimeMs": 1776431949,
-      "lastProcessedAt": "2026-04-17T13:19:41Z"
+      "mtimeMs": 1776434825,
+      "lastProcessedAt": "2026-04-21T07:06:10Z"
     },
     "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/43d77526-ccc4-4242-8c75-760b54c49c7f/43d77526-ccc4-4242-8c75-760b54c49c7f.jsonl": {
       "mtimeMs": 1776426003,
@@ -134,16 +134,92 @@
       "lastProcessedAt": "2026-04-17T13:19:41Z"
     },
     "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/3411de1a-867d-4e5a-a5d4-a633059e0aec/3411de1a-867d-4e5a-a5d4-a633059e0aec.jsonl": {
-      "mtimeMs": 1776431931,
-      "lastProcessedAt": "2026-04-17T13:19:41Z"
+      "mtimeMs": 1776433065,
+      "lastProcessedAt": "2026-04-21T07:06:10Z"
     },
     "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/fd308c41-30e7-4a0c-b7ff-7c23829d2d01/fd308c41-30e7-4a0c-b7ff-7c23829d2d01.jsonl": {
       "mtimeMs": 1776426695,
       "lastProcessedAt": "2026-04-17T13:19:41Z"
     },
     "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/e8f8d35a-aeda-4ca5-ba8e-702b5793557d/e8f8d35a-aeda-4ca5-ba8e-702b5793557d.jsonl": {
-      "mtimeMs": 1776431905,
-      "lastProcessedAt": "2026-04-17T13:19:41Z"
+      "mtimeMs": 1776434858,
+      "lastProcessedAt": "2026-04-21T07:06:10Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/fd87b06e-4a3c-4c0d-ac29-d1e3e64dbd9a/subagents/e999c8e1-57a5-4f5d-8a4a-a9400d97b61a.jsonl": {
+      "mtimeMs": 1776425446,
+      "lastProcessedAt": "2026-04-21T07:06:10Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/fd87b06e-4a3c-4c0d-ac29-d1e3e64dbd9a/subagents/1f9535e5-2c43-4479-991f-2ba616f8f963.jsonl": {
+      "mtimeMs": 1776425442,
+      "lastProcessedAt": "2026-04-21T07:06:10Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/fd87b06e-4a3c-4c0d-ac29-d1e3e64dbd9a/subagents/4aef85be-54fb-415a-96a1-29f3aaa4085b.jsonl": {
+      "mtimeMs": 1776424753,
+      "lastProcessedAt": "2026-04-21T07:06:10Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/3fe228ca-91dc-411d-9b3a-b10a189560da/3fe228ca-91dc-411d-9b3a-b10a189560da.jsonl": {
+      "mtimeMs": 1776436546,
+      "lastProcessedAt": "2026-04-21T07:06:10Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/5606d871-f95b-43be-930c-6b976c9de15b/5606d871-f95b-43be-930c-6b976c9de15b.jsonl": {
+      "mtimeMs": 1776436769,
+      "lastProcessedAt": "2026-04-21T07:06:10Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/38f904b0-8ab4-420c-80ac-ca4b5a236349/38f904b0-8ab4-420c-80ac-ca4b5a236349.jsonl": {
+      "mtimeMs": 1776755196,
+      "lastProcessedAt": "2026-04-21T10:38:51Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/135146d0-7586-4df0-8b5a-a6b9aea413ec/135146d0-7586-4df0-8b5a-a6b9aea413ec.jsonl": {
+      "mtimeMs": 1776511451,
+      "lastProcessedAt": "2026-04-21T07:06:10Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/cf9c3b1e-b050-4cb8-b4b0-5ef494ad0596/cf9c3b1e-b050-4cb8-b4b0-5ef494ad0596.jsonl": {
+      "mtimeMs": 1776755179,
+      "lastProcessedAt": "2026-04-21T10:38:51Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/cf9c3b1e-b050-4cb8-b4b0-5ef494ad0596/subagents/6c2f81de-27ef-4019-b344-eac206f5e1fe.jsonl": {
+      "mtimeMs": 1776754553,
+      "lastProcessedAt": "2026-04-21T07:06:10Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/cf9c3b1e-b050-4cb8-b4b0-5ef494ad0596/subagents/5dfe8ae9-feb3-4ecf-a9c2-c8f355757907.jsonl": {
+      "mtimeMs": 1776755177,
+      "lastProcessedAt": "2026-04-21T10:38:51Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/cf9c3b1e-b050-4cb8-b4b0-5ef494ad0596/subagents/ec03643b-4832-4d17-9275-1a1aa0d3f240.jsonl": {
+      "mtimeMs": 1776754579,
+      "lastProcessedAt": "2026-04-21T07:06:10Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/f9edb91d-b274-49d3-96b7-e1f2271b8dbb/f9edb91d-b274-49d3-96b7-e1f2271b8dbb.jsonl": {
+      "mtimeMs": 1776436585,
+      "lastProcessedAt": "2026-04-21T07:06:10Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/ca1d5a7a-afec-4834-a88a-bf20ddb1083a/ca1d5a7a-afec-4834-a88a-bf20ddb1083a.jsonl": {
+      "mtimeMs": 1776436632,
+      "lastProcessedAt": "2026-04-21T07:06:10Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/431813e8-5268-4de9-8f9e-d2a161882f26/431813e8-5268-4de9-8f9e-d2a161882f26.jsonl": {
+      "mtimeMs": 1776755010,
+      "lastProcessedAt": "2026-04-21T07:06:10Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/e8f8d35a-aeda-4ca5-ba8e-702b5793557d/subagents/3fdadaf8-ec6b-43ed-bc2e-c9c47ecab79e.jsonl": {
+      "mtimeMs": 1776431985,
+      "lastProcessedAt": "2026-04-21T07:06:10Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/e545bb1b-6e84-4983-be1b-fea3d3128eb2/e545bb1b-6e84-4983-be1b-fea3d3128eb2.jsonl": {
+      "mtimeMs": 1776436524,
+      "lastProcessedAt": "2026-04-21T07:06:10Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/df4a36a8-19e1-470b-bcd7-7cbd770601df/df4a36a8-19e1-470b-bcd7-7cbd770601df.jsonl": {
+      "mtimeMs": 1776767890,
+      "lastProcessedAt": "2026-04-21T10:38:51Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/df4a36a8-19e1-470b-bcd7-7cbd770601df/subagents/7882eca8-d5ad-4bc2-92d6-0f723bc4e2a1.jsonl": {
+      "mtimeMs": 1776767899,
+      "lastProcessedAt": "2026-04-21T10:38:51Z"
+    },
+    "/Users/nenadkalicanin/.cursor/projects/Users-nenadkalicanin-Documents-KW-Products-KWDEV/agent-transcripts/996374b5-defa-4316-b525-36fa0b52b05f/996374b5-defa-4316-b525-36fa0b52b05f.jsonl": {
+      "mtimeMs": 1776767900,
+      "lastProcessedAt": "2026-04-21T10:38:51Z"
     }
   }
 }

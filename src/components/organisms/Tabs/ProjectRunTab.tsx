@@ -5,7 +5,16 @@ import { useState, useCallback, useEffect, useMemo, useRef, Fragment } from "rea
 import type { Project } from "@/types/project";
 import type { NightShiftCirclePhase, RunInfo } from "@/types/run";
 import { MAX_TERMINAL_SLOTS } from "@/types/run";
-import { readProjectFileOrEmpty, listProjectFiles, updateProject, loadWorkspaceAgentsContent, getProjectConfig, setProjectConfig } from "@/lib/api-projects";
+import {
+  readProjectFileOrEmpty,
+  readProjectPromptJsonOrEmpty,
+  readProjectPromptJsonOrThrow,
+  listProjectFiles,
+  updateProject,
+  loadWorkspaceAgentsContent,
+  getProjectConfig,
+  setProjectConfig,
+} from "@/lib/api-projects";
 import { debugIngest } from "@/lib/debug-ingest";
 import { fetchProjectTicketsAndKanban } from "@/lib/fetch-project-tickets-and-kanban";
 import { invoke, isTauri, projectIdArgPayload, projectIdArgOptionalPayload, createPlanTicketPayload, setPlanKanbanStatePayload } from "@/lib/tauri";
@@ -77,7 +86,6 @@ import {
   Zap,
   CheckCircle2,
   Circle,
-  Activity,
   MonitorUp,
   Bug,
   ListTodo,
@@ -134,7 +142,6 @@ import { computeRunHistoryStats, formatRunHistoryStatsToolbar } from "@/lib/run-
 import { copyRunHistoryStatsSummaryToClipboard } from "@/lib/copy-run-history-stats-summary";
 import { downloadRunHistoryStatsAsJson, copyRunHistoryStatsAsJsonToClipboard } from "@/lib/download-run-history-stats-json";
 import { downloadRunHistoryStatsAsCsv, copyRunHistoryStatsAsCsvToClipboard } from "@/lib/download-run-history-stats-csv";
-import { StatusPill } from "@/components/molecules/Displays/DisplayPrimitives";
 import { TerminalSlot } from "@/components/molecules/Display/TerminalSlot";
 import { WorkerAgentCard } from "@/components/molecules/CardsAndDisplay/WorkerAgentCard";
 import { ProjectWorkerAgentsSection } from "@/components/organisms/Tabs/ProjectWorkerAgentsSection";
@@ -199,7 +206,7 @@ async function loadAllAgentsContent(projectId: string, repoPath: string): Promis
   }
 }
 
-/** Fallback when project has no data/prompts/fix-bug.prompt.md */
+/** Fallback when project has no data/prompts/fix-bug.prompt.json */
 const DEBUG_ASSISTANT_PROMPT_FALLBACK = `You are a debugging assistant in the current workspace. The user has pasted error/log output below. Identify the root cause, apply the fix in this workspace (edit files, run commands), and state what you fixed. Work only in this repo; be specific. If logs refer to another path, say so.
 
 ERROR/LOG INFORMATION:
@@ -441,14 +448,14 @@ const NIGHT_SHIFT_PHASE_FALLBACK: Record<NightShiftCirclePhase, string> = {
   create: "Focus on creating: add a new changelog-worthy capability; new files and clear boundaries, then run npm run verify.\n\n",
 };
 
-/** Load phase prompt from data/prompts/{phase}.prompt.md; fallback to default if missing or empty. */
+/** Load phase prompt from data/prompts/{phase}.prompt.json; fallback to default if missing or empty. */
 async function loadPhasePrompt(
   projectId: string,
   projectPath: string,
   phase: NightShiftCirclePhase
 ): Promise<string> {
   const path = WORKER_NIGHT_SHIFT_PHASE_PROMPT_PATHS[phase];
-  const content = (await readProjectFileOrEmpty(projectId, path, projectPath))?.trim() ?? "";
+  const content = (await readProjectPromptJsonOrEmpty(projectId, path, projectPath))?.trim() ?? "";
   return content ? content + "\n\n" : NIGHT_SHIFT_PHASE_FALLBACK[phase];
 }
 
@@ -534,9 +541,9 @@ function WorkerNightShiftSection({
     setStarting(true);
     try {
       const basePrompt =
-        (await readProjectFileOrEmpty(projectId, WORKER_NIGHT_SHIFT_PROMPT_PATH, projectPath))?.trim() ?? "";
+        (await readProjectPromptJsonOrThrow(projectId, WORKER_NIGHT_SHIFT_PROMPT_PATH, projectPath))?.trim() ?? "";
       if (!basePrompt) {
-        toast.error("Night shift prompt is empty. Add content to data/prompts/night-shift.prompt.md");
+        toast.error("Night shift prompt JSON is missing/invalid. Fix data/prompts/night-shift.prompt.json");
         return;
       }
       const badgeBlock = await buildBadgeAndInstructionsBlock(projectId, projectPath, badges, extraInstructions);
@@ -545,7 +552,7 @@ function WorkerNightShiftSection({
       setNightShiftActive(true);
       setNightShiftReplenishCallback(async (slot: 1 | 2 | 3) => {
         const base =
-          (await readProjectFileOrEmpty(projectId, WORKER_NIGHT_SHIFT_PROMPT_PATH, projectPath))?.trim() ?? "";
+          (await readProjectPromptJsonOrEmpty(projectId, WORKER_NIGHT_SHIFT_PROMPT_PATH, projectPath))?.trim() ?? "";
         if (base) {
           const agents = await loadAllAgentsContent(projectId, projectPath);
           const full = (base + badgeBlock + agents).trim();
@@ -571,9 +578,9 @@ function WorkerNightShiftSection({
     setStarting(true);
     try {
       const basePrompt =
-        (await readProjectFileOrEmpty(projectId, WORKER_NIGHT_SHIFT_PROMPT_PATH, projectPath))?.trim() ?? "";
+        (await readProjectPromptJsonOrThrow(projectId, WORKER_NIGHT_SHIFT_PROMPT_PATH, projectPath))?.trim() ?? "";
       if (!basePrompt) {
-        toast.error("Night shift prompt is empty. Add content to data/prompts/night-shift.prompt.md");
+        toast.error("Night shift prompt JSON is missing/invalid. Fix data/prompts/night-shift.prompt.json");
         return;
       }
       setNightShiftCircleState(true, "create", 0);
@@ -592,7 +599,7 @@ function WorkerNightShiftSection({
         if (phase == null) return;
         const buildPromptForPhase = async (p: NightShiftCirclePhase) => {
           const base =
-            (await readProjectFileOrEmpty(projectId, WORKER_NIGHT_SHIFT_PROMPT_PATH, projectPath))?.trim() ?? "";
+            (await readProjectPromptJsonOrEmpty(projectId, WORKER_NIGHT_SHIFT_PROMPT_PATH, projectPath))?.trim() ?? "";
           const phasePrompt = await loadPhasePrompt(projectId, projectPath, p);
           const instructionsPart = extraInstructions.trim() ? "\n\n## Additional instructions\n\n" + extraInstructions.trim() + "\n\n" : "";
           const agents = await loadAllAgentsContent(projectId, projectPath);
@@ -652,9 +659,9 @@ function WorkerNightShiftSection({
     setIdeaDrivenDialogOpen(false);
 
     try {
-      const analyzePrompt = await readProjectFileOrEmpty(projectId, WORKER_ANALYZE_PROJECT_PROMPT_PATH, projectPath);
+      const analyzePrompt = await readProjectPromptJsonOrEmpty(projectId, WORKER_ANALYZE_PROJECT_PROMPT_PATH, projectPath);
       if (!analyzePrompt?.trim()) {
-        toast.error("Analyze project prompt not found. Create data/prompts/analyze-project.prompt.md");
+        toast.error("Analyze project prompt not found. Create data/prompts/analyze-project.prompt.json");
         clearIdeaDrivenProgress();
         setIdeaDrivenChecklist([
           { id: "analyze", label: "Analyze project (prompt not found)", status: "done" },
@@ -662,7 +669,7 @@ function WorkerNightShiftSection({
           { id: "tickets", label: "Create tickets", status: "pending" },
           { id: "execute", label: "Execute circle", status: "pending" },
         ]);
-        appendIdeaDrivenLog("Analyze project prompt not found. Create data/prompts/analyze-project.prompt.md");
+        appendIdeaDrivenLog("Analyze project prompt not found. Create data/prompts/analyze-project.prompt.json");
         setIdeaDrivenAutoState({ phase: "analyze", pendingMilestones: [], currentMilestoneIndex: 0, allTickets: [], currentTicketIndex: 0 });
         setStartingIdeaDriven(false);
         return;
@@ -740,10 +747,10 @@ function WorkerNightShiftSection({
             currentTicketIndex: 0,
           });
 
-          const milestonesPrompt = await readProjectFileOrEmpty(projectId, WORKER_IDEA_TO_MILESTONES_PROMPT_PATH, projectPath);
+          const milestonesPrompt = await readProjectPromptJsonOrEmpty(projectId, WORKER_IDEA_TO_MILESTONES_PROMPT_PATH, projectPath);
           if (!milestonesPrompt?.trim()) {
             toast.error("Milestones prompt not found.");
-            appendIdeaDrivenLog("Milestones prompt not found. Create data/prompts/idea-to-milestones.prompt.md (or milestone-to-tickets).");
+            appendIdeaDrivenLog("Milestones prompt not found. Create data/prompts/idea-to-milestones.prompt.json (or milestone-to-tickets).");
             return;
           }
 
@@ -799,6 +806,18 @@ function WorkerNightShiftSection({
     }
   }, [projectId, projectPath, project?.ideaIds, runTempTicket, setNightShiftActive, setNightShiftIdeaDrivenState, setIdeaDrivenAutoState, clearIdeaDrivenProgress, setIdeaDrivenChecklist, appendIdeaDrivenLog, setIdeaDrivenChecklistItemStatus]);
 
+  useEffect(() => {
+    const onRunAll = () => {
+      const state = getState();
+      if (state.nightShiftIdeaDrivenMode || state.ideaDrivenAutoPhase != null) {
+        return;
+      }
+      void handleAutoIdeaDriven();
+    };
+    window.addEventListener("worker-run-night-shift-idea-driven", onRunAll);
+    return () => window.removeEventListener("worker-run-night-shift-idea-driven", onRunAll);
+  }, [getState, handleAutoIdeaDriven]);
+
   const handleMilestonesComplete = useCallback(async (ideaId: number) => {
     try {
       const outputContent = await readProjectFileOrEmpty(projectId, WORKER_MILESTONES_OUTPUT_PATH, projectPath);
@@ -847,7 +866,7 @@ function WorkerNightShiftSection({
       const phasePrompt = await loadPhasePrompt(projectId, projectPath, "implement");
       const ticketBlock = buildTicketPromptBlock(ticketForState, null);
       const header = `Night shift — Implement for ticket #${ticket.number}: ${ticket.title}\n\n`;
-      const base = (await readProjectFileOrEmpty(projectId, WORKER_NIGHT_SHIFT_PROMPT_PATH, projectPath))?.trim() ?? "";
+      const base = (await readProjectPromptJsonOrEmpty(projectId, WORKER_NIGHT_SHIFT_PROMPT_PATH, projectPath))?.trim() ?? "";
       const agents = await loadAllAgentsContent(projectId, projectPath);
       const prompt = (header + base + "\n\n" + phasePrompt + "\n\n" + ticketBlock + "\n\n" + agents).trim();
       const label = `Night shift — Implement #${ticket.number}: ${ticket.title}`;
@@ -1006,7 +1025,7 @@ function WorkerNightShiftSection({
                   appendIdeaDrivenLog("Fetching next idea…");
                   toast.success("Auto Idea-driven: fetching next idea…");
 
-                  const analyzePrompt = await readProjectFileOrEmpty(projectId, WORKER_ANALYZE_PROJECT_PROMPT_PATH, projectPath);
+                  const analyzePrompt = await readProjectPromptJsonOrEmpty(projectId, WORKER_ANALYZE_PROJECT_PROMPT_PATH, projectPath);
                   if (!analyzePrompt?.trim()) {
                     appendIdeaDrivenLog("Analyze prompt not found. Stopping.");
                     await doCleanupAndStop();
@@ -1058,7 +1077,7 @@ function WorkerNightShiftSection({
                         allTickets: [],
                         currentTicketIndex: 0,
                       });
-                      const milestonesPrompt = await readProjectFileOrEmpty(projectId, WORKER_IDEA_TO_MILESTONES_PROMPT_PATH, projectPath);
+                      const milestonesPrompt = await readProjectPromptJsonOrEmpty(projectId, WORKER_IDEA_TO_MILESTONES_PROMPT_PATH, projectPath);
                       if (!milestonesPrompt?.trim()) {
                         toast.error("Milestones prompt not found.");
                         appendIdeaDrivenLog("Milestones prompt not found. Stopping.");
@@ -1118,7 +1137,7 @@ function WorkerNightShiftSection({
     }
 
     const milestone = milestones[milestoneIndex];
-    const ticketsPrompt = await readProjectFileOrEmpty(projectId, WORKER_MILESTONE_TO_TICKETS_PROMPT_PATH, projectPath);
+    const ticketsPrompt = await readProjectPromptJsonOrEmpty(projectId, WORKER_MILESTONE_TO_TICKETS_PROMPT_PATH, projectPath);
     if (!ticketsPrompt?.trim()) {
       toast.error("Tickets prompt not found.");
       return;
@@ -1217,7 +1236,7 @@ function WorkerNightShiftSection({
           <div>
             <h3 className="text-xs font-semibold text-foreground tracking-tight">Night shift</h3>
             <p className="text-[10px] text-muted-foreground normal-case">
-              Prompt from data/prompts/night-shift.prompt.md runs on 3 agents; when one finishes, the same prompt runs again until you stop. Edit that file to change the prompt.
+              Prompt from data/prompts/night-shift.prompt.json runs on 3 agents; when one finishes, the same prompt runs again until you stop. Keep the paired .md and .json in sync.
             </p>
           </div>
         </div>
@@ -1681,7 +1700,7 @@ export function ProjectRunTab({ project, projectId, agentProvider = "cursor" }: 
     }
     try {
       const implementAllMd = repoPath
-        ? (await readProjectFileOrEmpty(projectId, WORKER_IMPLEMENT_ALL_PROMPT_PATH, repoPath))?.trim() ?? ""
+        ? (await readProjectPromptJsonOrEmpty(projectId, WORKER_IMPLEMENT_ALL_PROMPT_PATH, repoPath))?.trim() ?? ""
         : "";
       let gitRefAtStart = "";
       if (isTauri) {
@@ -1925,13 +1944,13 @@ export function ProjectRunTab({ project, projectId, agentProvider = "cursor" }: 
   const openWorkerAppSections = topWorkerApps.filter((app) => openWorkerApps.includes(app.id));
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-4">
       {!isTauri && (
         <div className="rounded-xl bg-amber-500/12 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">
           <strong>Worker agents require the desktop app.</strong> Run the app with Tauri (e.g. <code className="rounded bg-amber-500/20 px-1">npm run tauri dev</code> from the repo or install the desktop build) to use Asking, Plan, Fast development, Debugging, and Night shift.
         </div>
       )}
-      <div className="rounded-2xl bg-gradient-to-br from-card/85 via-card/80 to-indigo-500/[0.08] p-4">
+      <div className="rounded-2xl bg-card/80 px-3 py-2">
         <div className={WORKER_TOP_APPS_ROW_CLASSNAME}>
           {topWorkerApps.map((app) => {
             const Icon = app.icon;
@@ -2652,111 +2671,6 @@ function WorkerHistorySection({ embedded = false }: { embedded?: boolean } = {})
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   Status Bar — live overview of running terminals
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-function WorkerStatusBar() {
-  const runningRuns = useRunStore((s) => s.runningRuns);
-  const pendingQueueLength = useRunStore((s) => s.pendingTempTicketQueue.length);
-  const clearPendingTempTicketQueue = useRunStore((s) => s.clearPendingTempTicketQueue);
-  const implementAllRuns = runningRuns.filter(isImplementAllRun);
-  const runningCount = implementAllRuns.filter((r) => r.status === "running").length;
-  const doneCount = implementAllRuns.filter((r) => r.status === "done").length;
-  const totalCount = implementAllRuns.length;
-
-  const handleClearQueue = () => {
-    clearPendingTempTicketQueue();
-    toast.success("Queue cleared. All queued tasks removed.");
-  };
-
-  return (
-    <div className={cn("relative p-5 backdrop-blur-sm", WORKER_RUN_SECTION_SURFACE_CLASSNAME.status)}>
-      {/* Decorative orb */}
-      <div className="absolute -top-12 -right-12 size-32 rounded-full bg-sky-500/[0.08] blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-8 -left-8 size-24 rounded-full bg-teal-500/[0.06] blur-2xl pointer-events-none" />
-
-      <div className="relative z-10 flex items-center justify-between gap-4 flex-wrap">
-        {/* Title */}
-        <div className="flex items-center gap-3">
-          <div className={cn(
-            "flex items-center justify-center size-9 rounded-xl transition-all duration-500",
-            runningCount > 0
-              ? "bg-sky-500/20 shadow-lg shadow-sky-500/10"
-              : "bg-muted/40"
-          )}>
-            <Activity className={cn(
-              "size-4.5 transition-colors duration-300",
-              runningCount > 0 ? "text-sky-400 animate-pulse" : "text-muted-foreground"
-            )} />
-          </div>
-          <div>
-            <h2 className="text-sm font-semibold tracking-tight text-foreground">
-              Worker
-            </h2>
-            <p className="text-[11px] text-muted-foreground normal-case">
-              {runningCount > 0
-                ? `${runningCount} terminal${runningCount > 1 ? "s" : ""} running`
-                : totalCount > 0
-                  ? "All terminals idle"
-                  : "No runs yet"}
-            </p>
-          </div>
-        </div>
-
-        {/* Status pills + Clear queue */}
-        <div className="flex items-center gap-2">
-          {pendingQueueLength > 0 && (
-            <>
-              <StatusPill
-                icon={<Circle className="size-3" />}
-                label="Queued"
-                count={pendingQueueLength}
-                color="violet"
-                pulse
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleClearQueue}
-                className="h-7 gap-1.5 text-xs rounded-lg border-violet-500/40 text-violet-600 dark:text-violet-400 hover:bg-violet-500/10 hover:border-violet-500/60"
-                title="Clear all queued tasks"
-                aria-label="Clear all queued tasks"
-              >
-                <X className="size-3" />
-                Clear queue
-              </Button>
-            </>
-          )}
-          {totalCount > 0 && (
-            <>
-              <StatusPill
-                icon={<Zap className="size-3" />}
-                label="Running"
-                count={runningCount}
-                color={runningCount > 0 ? "sky" : "muted"}
-                pulse={runningCount > 0}
-              />
-              <StatusPill
-                icon={<CheckCircle2 className="size-3" />}
-                label="Done"
-                count={doneCount}
-                color={doneCount > 0 ? "sky" : "muted"}
-              />
-              <StatusPill
-                icon={<Circle className="size-3" />}
-                label="Total"
-                count={totalCount}
-                color="muted"
-              />
-            </>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
    Pending queue — list of queued tasks with delete per entry
    ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -2808,8 +2722,6 @@ function WorkerPendingQueueSection() {
     </div>
   );
 }
-
-/* StatusPill is now imported from @/components/shared/DisplayPrimitives */
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Fast development — type command, run agent immediately
@@ -2876,9 +2788,9 @@ function WorkerAskingSection({ projectId, projectPath, agentProvider = "cursor" 
 
   return (
     <WorkerAgentCard
-      bgColor="bg-sky-500/[0.06]"
-      iconBg="bg-sky-500/10"
-      iconColor="text-sky-400"
+      bgColor="bg-card"
+      iconBg="bg-muted"
+      iconColor="text-foreground/80"
       icon={MessageCircleQuestion}
       title="Asking"
       description="Ask questions about the project; the agent answers only (no file changes), using the terminal below"
@@ -3037,9 +2949,9 @@ function WorkerFastDevelopmentSection({
 
   return (
     <WorkerAgentCard
-      bgColor="bg-sky-500/[0.06]"
-      iconBg="bg-sky-500/10"
-      iconColor="text-sky-400"
+      bgColor="bg-card"
+      iconBg="bg-muted"
+      iconColor="text-foreground/80"
       icon={Zap}
       title="Fast"
       description="Enter a command or task; the agent runs immediately in this project"
@@ -3219,7 +3131,7 @@ function WorkerDebuggingSection({
     try {
       const fixBugMd =
         repoPath && projectId
-          ? (await readProjectFileOrEmpty(projectId, WORKER_FIX_BUG_PROMPT_PATH, repoPath))?.trim()
+          ? (await readProjectPromptJsonOrEmpty(projectId, WORKER_FIX_BUG_PROMPT_PATH, repoPath))?.trim()
           : "";
       const basePrompt = fixBugMd || DEBUG_ASSISTANT_PROMPT_FALLBACK;
       const promptWithLogs = basePrompt.endsWith("\n") ? basePrompt + logs : basePrompt + "\n\n" + logs;
@@ -3244,9 +3156,9 @@ function WorkerDebuggingSection({
 
   return (
     <WorkerAgentCard
-      bgColor="bg-orange-500/[0.06]"
-      iconBg="bg-orange-500/10"
-      iconColor="text-orange-400"
+      bgColor="bg-card"
+      iconBg="bg-muted"
+      iconColor="text-foreground/80"
       icon={Bug}
       title="Debugging"
       description="Paste error logs below; run the terminal agent to diagnose and fix (runs in this project)"
@@ -3649,11 +3561,11 @@ function WorkerVibingSection({
   agentProvider?: "cursor" | "claude" | "gemini";
 }) {
   return (
-    <div className="rounded-2xl border border-cyan-500/20 overflow-hidden bg-gradient-to-br from-cyan-500/[0.12] via-indigo-500/[0.08] to-violet-500/[0.1]">
+    <div className="rounded-2xl border border-border/60 overflow-hidden bg-muted/30">
       <div className="px-5 pt-5 pb-3">
         <div className="flex items-center gap-2.5">
-          <div className="flex items-center justify-center size-7 shrink-0 rounded-lg bg-cyan-500/15">
-            <Sparkles className="size-3.5 text-cyan-300" />
+          <div className="flex items-center justify-center size-7 shrink-0 rounded-lg bg-muted">
+            <Sparkles className="size-3.5 text-foreground/80" />
           </div>
           <div className="min-w-0">
             <h3 className="text-xs font-semibold text-foreground tracking-tight">
@@ -3667,7 +3579,7 @@ function WorkerVibingSection({
       </div>
       <div className="px-5 pb-5">
         <Tabs defaultValue="asking" className="w-full">
-          <TabsList className="flex w-full h-9 rounded-lg bg-cyan-500/[0.1] p-1 gap-0.5">
+          <TabsList className="flex w-full h-9 rounded-lg bg-muted p-1 gap-0.5">
             <TabsTrigger value="asking" className="flex-1 min-w-0 text-xs rounded-md truncate">
               Asking
             </TabsTrigger>
@@ -3685,7 +3597,7 @@ function WorkerVibingSection({
             <WorkerAskingSection projectId={projectId} projectPath={projectPath} agentProvider={agentProvider} />
           </TabsContent>
           <TabsContent value="planning" className="mt-4 px-0 pt-0">
-            <div className="rounded-2xl border border-cyan-500/25 overflow-hidden bg-cyan-500/[0.08]">
+            <div className="rounded-2xl border border-border/60 overflow-hidden bg-card">
               <ProjectPlanTab project={project} projectId={projectId} agentProvider={agentProvider} />
             </div>
           </TabsContent>

@@ -4,12 +4,20 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   CheckCircle2,
   Layers,
   ArrowRight,
   Archive,
   RotateCcw,
   Trash2,
+  Info,
 } from "lucide-react";
 import type { ParsedTicket } from "@/lib/todos-kanban";
 import { cn, humanizeAgentId } from "@/lib/utils";
@@ -30,6 +38,13 @@ interface KanbanTicketCardProps {
   onArchive: (ticketId: string) => Promise<void>;
   onMoveToInProgress: (ticketId: string) => Promise<void>;
 }
+
+export const KANBAN_TICKET_TITLE_CLASS =
+  "text-sm font-semibold leading-snug text-foreground/90 group-hover/link:text-primary transition-colors break-words whitespace-normal";
+export const KANBAN_TICKET_DESCRIPTION_CLASS =
+  "hidden";
+export const KANBAN_TICKET_FEATURE_CLASS =
+  "text-[10px] font-medium text-muted-foreground break-words whitespace-normal";
 
 export const KanbanTicketCard: React.FC<KanbanTicketCardProps> = ({
   ticket,
@@ -64,6 +79,31 @@ export const KanbanTicketCard: React.FC<KanbanTicketCardProps> = ({
               <div className={cn("size-1.5 rounded-full shrink-0", priorityColor.split(" ")[1])} />
               <span className="text-[10px] font-medium leading-none text-muted-foreground">{ticket.priority}</span>
             </div>
+            {ticket.description && (
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="size-6 text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                    title="Show full prompt"
+                    aria-label={`Show full prompt for ticket #${ticket.number}`}
+                  >
+                    <Info className="size-3.5" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
+                  <DialogHeader>
+                    <DialogTitle className="pr-8">{ticket.title}</DialogTitle>
+                  </DialogHeader>
+                  <div className="flex-1 min-h-0 overflow-auto rounded-md border bg-muted/30 p-4">
+                    <pre className="whitespace-pre-wrap break-words text-sm font-sans text-foreground">
+                      {ticket.description}
+                    </pre>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
           </div>
 
           {/* Actions (visible on hover or always for essential) */}
@@ -127,29 +167,22 @@ export const KanbanTicketCard: React.FC<KanbanTicketCardProps> = ({
 
         <Link href={`/tickets/${ticket.id}?projectId=${projectId}`} className="group/link block">
           <h4
-            className={cn(
-              "text-sm font-semibold leading-snug text-foreground/90 group-hover/link:text-primary transition-colors line-clamp-2",
-              isDone && "line-through text-muted-foreground"
-            )}
+            className={cn(KANBAN_TICKET_TITLE_CLASS, isDone && "line-through text-muted-foreground")}
           >
             {ticket.title}
           </h4>
         </Link>
       </div>
 
-      {/* Description */}
-      {ticket.description && (
-        <p className="text-xs text-muted-foreground/80 leading-relaxed line-clamp-2">
-          {ticket.description}
-        </p>
-      )}
+      {/* Hidden inline description; full prompt is shown in info dialog to keep card width compact. */}
+      {ticket.description && <p className={KANBAN_TICKET_DESCRIPTION_CLASS}>{ticket.description}</p>}
 
       {/* Footer: Feature + Agent badges */}
       <div className="mt-auto pt-2 flex flex-wrap items-center gap-2 border-t border-border/30">
         {ticket.featureName && (
           <div className="flex items-center gap-1.5">
             <Layers className="size-3 shrink-0 text-violet-400" />
-            <span className="text-[10px] font-medium text-muted-foreground truncate max-w-full">
+            <span className={KANBAN_TICKET_FEATURE_CLASS}>
               {ticket.featureName}
             </span>
           </div>

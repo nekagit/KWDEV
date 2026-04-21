@@ -41,3 +41,43 @@
     - App buttons are borderless and selected state uses filled accent style.
     - Active app icon container uses stronger filled color treatment.
 
+- `src/components/organisms/Tabs/ProjectRunTab.tsx` (Terminal section cleanup)
+  - Regression coverage:
+    - `src/lib/__tests__/worker-run-sections.test.ts`
+    - `src/lib/__tests__/worker-run-layout.test.ts`
+    - `src/lib/__tests__/worker-run-top-apps.test.ts`
+  - Covered behavior:
+    - Terminal section remains accessible from top Worker apps.
+    - Worker top app interactions and section layout behavior continue to work after removing terminal header sub-sections.
+
+- `src/components/molecules/Display/TerminalSlot.tsx`
+  - Manual verification:
+    - Header copy/download controls are icon-only while preserving `title` and `aria-label`.
+
+- `src/components/organisms/ProjectDetailsPageContent.tsx` (bottom tabs surface cleanup)
+  - `src/lib/__tests__/project-details-bottom-tabs-style.test.ts`
+  - Coverage:
+    - Bottom fixed project tabs do not use `bg-sidebar` gray background styling.
+    - Bottom tab triggers use color-filled styling and remove previous gray muted hover/border pattern.
+
+- `src/components/organisms/Tabs/ProjectWorkerAgentsSection.tsx` (agent prompt info icon)
+  - Regression coverage:
+    - `src/lib/__tests__/project-worker-agents-layout.test.ts`
+  - Covered behavior:
+    - Testing and Cleanup + Refactor agents expose prompt info metadata used by info-icon tooltips.
+    - Night Shift intentionally has no prompt info metadata.
+
+- `src/components/templates/AppShell.tsx` (top nav active style alignment)
+  - Regression coverage:
+    - `src/lib/__tests__/top-nav-style.test.ts`
+  - Covered behavior:
+    - Top navbar active navigation uses the same blue filled active treatment as project bottom tabs (`bg-blue-500/90` + white foreground).
+
+- `src/components/organisms/ProjectDetailsPageContent.tsx` (planner unification)
+  - Regression coverage:
+    - `src/lib/__tests__/project-details-planner-unification.test.ts`
+  - Covered behavior:
+    - Ideas and Milestones are no longer separate bottom tabs.
+    - Planner tab now contains organized sections for planner board, ideas, and milestones.
+    - Planner secondary areas use a responsive two-column grid on large screens.
+

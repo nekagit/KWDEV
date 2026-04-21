@@ -17,14 +17,12 @@ export type WorkerRunSectionSurfaceId =
   | "night-shift";
 
 export const WORKER_RUN_SECTION_SURFACE_CLASSNAME: Record<WorkerRunSectionSurfaceId, string> = {
-  status: "rounded-2xl border border-sky-500/20 overflow-hidden bg-gradient-to-br from-sky-500/[0.12] via-cyan-500/[0.08] to-teal-500/[0.1]",
-  queue: "rounded-2xl border border-violet-500/20 overflow-hidden bg-gradient-to-br from-violet-500/[0.12] via-purple-500/[0.08] to-fuchsia-500/[0.1]",
-  agents: "rounded-2xl border border-cyan-500/20 overflow-hidden bg-gradient-to-br from-cyan-500/[0.12] via-indigo-500/[0.08] to-violet-500/[0.1]",
-  vibing: "rounded-2xl border border-indigo-500/20 overflow-hidden bg-gradient-to-br from-indigo-500/[0.12] via-violet-500/[0.08] to-fuchsia-500/[0.1]",
-  enhancements: "rounded-2xl border border-violet-500/20 overflow-hidden bg-gradient-to-br from-violet-500/[0.12] via-purple-500/[0.08] to-indigo-500/[0.1]",
-  "terminal-output":
-    "rounded-2xl border border-teal-500/20 overflow-hidden bg-gradient-to-br from-teal-500/[0.12] via-cyan-500/[0.08] to-emerald-500/[0.1]",
-  history: "rounded-2xl border border-slate-500/20 overflow-hidden bg-gradient-to-br from-slate-500/[0.12] via-zinc-500/[0.08] to-stone-500/[0.1]",
-  "night-shift":
-    "rounded-2xl border border-purple-500/20 overflow-hidden bg-gradient-to-br from-purple-500/[0.12] via-violet-500/[0.08] to-fuchsia-500/[0.1]",
+  status: "rounded-2xl border border-border/60 overflow-hidden bg-muted/30",
+  queue: "rounded-2xl border border-border/60 overflow-hidden bg-muted/30",
+  agents: "rounded-2xl border border-border/60 overflow-hidden bg-muted/30",
+  vibing: "rounded-2xl border border-border/60 overflow-hidden bg-muted/30",
+  enhancements: "rounded-2xl border border-border/60 overflow-hidden bg-muted/30",
+  "terminal-output": "rounded-2xl border border-border/60 overflow-hidden bg-muted/30",
+  history: "rounded-2xl border border-border/60 overflow-hidden bg-muted/30",
+  "night-shift": "rounded-2xl border border-border/60 overflow-hidden bg-muted/30",
 };

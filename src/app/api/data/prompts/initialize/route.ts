@@ -7,6 +7,7 @@ import path from "path";
 import fs from "fs";
 import { getPrompts, createOrUpdatePrompt } from "@/lib/data/prompts";
 import { getProjectById, updateProject } from "@/lib/data/projects";
+import { validatePromptFilePairs } from "@/lib/prompt-json";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +47,8 @@ function readPromptsDir(dataDir: string): FileEntry[] {
   const results: FileEntry[] = [];
   if (!fs.existsSync(promptsDir) || !fs.statSync(promptsDir).isDirectory()) return results;
 
+  const promptFileNames: string[] = [];
+
   function walk(dir: string, prefix: string): void {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
     for (const entry of entries) {
@@ -58,6 +61,7 @@ function readPromptsDir(dataDir: string): FileEntry[] {
         const isPromptMd = lower.endsWith(".prompt.md");
         const isPromptJson = lower.endsWith(".prompt.json");
         if (!isPromptMd && !isPromptJson) continue;
+        promptFileNames.push(entry.name);
         const stem = isPromptMd
           ? path.basename(entry.name, ".prompt.md")
           : path.basename(entry.name, ".prompt.json");
@@ -72,6 +76,10 @@ function readPromptsDir(dataDir: string): FileEntry[] {
     }
   }
   walk(promptsDir, "");
+  const pairErrors = validatePromptFilePairs(promptFileNames);
+  if (pairErrors.length > 0) {
+    throw new Error(pairErrors.join(" "));
+  }
   return results;
 }
 

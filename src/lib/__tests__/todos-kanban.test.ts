@@ -156,6 +156,31 @@ describe("applyInProgressState", () => {
     expect(updated.columns.in_progress.items).toHaveLength(1);
     expect(updated.columns.in_progress.items[0].id).toBe("ticket-2");
   });
+
+  it("treats complete-style status values as done even if done flag is false", () => {
+    const ticket = {
+      id: "ticket-9",
+      number: 9,
+      title: "Finalize task",
+      priority: "P1",
+      featureName: "General",
+      done: false,
+      status: "Complete",
+    } as unknown as ParsedTicket;
+    const data: TodosKanbanData = {
+      tickets: [ticket],
+      parsedAt: new Date().toISOString(),
+      columns: {
+        backlog: { name: "Backlog", items: [] },
+        in_progress: { name: "In progress", items: [] },
+        done: { name: "Done", items: [] },
+        testing: { name: "Testing", items: [] },
+      },
+    };
+    const updated = applyInProgressState(data, []);
+    expect(updated.columns.done.items).toHaveLength(1);
+    expect(updated.columns.done.items[0].id).toBe("ticket-9");
+  });
 });
 
 describe("markTicketsDone", () => {

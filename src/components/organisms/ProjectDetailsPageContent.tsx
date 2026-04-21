@@ -19,11 +19,12 @@ import {
   Hash,
   Flag,
   ClipboardList,
-  Pencil,
   Lightbulb,
   Activity,
+  Bot,
+  Play,
   ExternalLink,
-  Monitor,
+  SlidersHorizontal,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Project } from "@/types/project";
@@ -36,9 +37,10 @@ import { ProjectProjectTab } from "@/components/organisms/Tabs/ProjectProjectTab
 import { ProjectControlTab } from "@/components/organisms/Tabs/ProjectControlTab";
 import { ProjectIdeasDocTab } from "@/components/organisms/Tabs/ProjectIdeasDocTab";
 import { ProjectRunTab } from "@/components/organisms/Tabs/ProjectRunTab";
+import { ProjectBottomRunTab } from "@/components/organisms/Tabs/ProjectBottomRunTab";
 import { ErrorBoundary } from "@/components/organisms/ErrorBoundary";
 import { cn } from "@/lib/utils";
-import { SectionCard, MetadataBadge, CountBadge } from "@/components/molecules/Displays/DisplayPrimitives";
+import { MetadataBadge, CountBadge } from "@/components/molecules/Displays/DisplayPrimitives";
 import {
   Dialog,
   DialogContent,
@@ -48,7 +50,6 @@ import {
 } from "@/components/ui/dialog";
 import { Dialog as SharedDialog } from "@/components/molecules/FormsAndDialogs/Dialog";
 import { ButtonGroup } from "@/components/molecules/ControlsAndButtons/ButtonGroup";
-import { Input } from "@/components/ui/input";
 import { recordProjectVisit } from "@/lib/recent-projects";
 import {
   getProjectDetailTabPreference,
@@ -59,25 +60,81 @@ import { useSetPageTitle } from "@/context/page-title-context";
 import { toast } from "sonner";
 import { Breadcrumb } from "@/components/molecules/Navigation/Breadcrumb";
 import { debugIngest } from "@/lib/debug-ingest";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const TAB_ROW_1 = [
-  { value: "project", label: "Project", icon: FolderOpen, color: "text-sky-400", activeGlow: "shadow-sky-500/10" },
+  {
+    value: "project",
+    label: "Project",
+    icon: FolderOpen,
+    color: "text-sky-400",
+    fill: "bg-sky-500/15",
+    activeFill: "data-[state=active]:bg-sky-500/90",
+    activeGlow: "data-[state=active]:shadow-sky-500/30",
+  },
 ] as const;
 
 const TAB_ROW_2 = [
-  { value: "ideas", label: "Ideas", icon: Lightbulb, color: "text-amber-500", activeGlow: "shadow-amber-500/10" },
-  { value: "milestones", label: "Milestones", icon: Flag, color: "text-fuchsia-400", activeGlow: "shadow-fuchsia-500/10" },
-  { value: "todo", label: "Planner", icon: ListTodo, color: "text-blue-400", activeGlow: "shadow-blue-500/10" },
-  { value: "worker", label: "Worker", icon: Activity, color: "text-sky-500", activeGlow: "shadow-sky-500/10" },
-  { value: "control", label: "Control", icon: ClipboardList, color: "text-slate-400", activeGlow: "shadow-slate-500/10" },
-  { value: "git", label: "Versioning", icon: FolderGit2, color: "text-amber-400", activeGlow: "shadow-amber-500/10" },
+  {
+    value: "run",
+    label: "Run",
+    icon: Play,
+    color: "text-emerald-400",
+    fill: "bg-emerald-500/15",
+    activeFill: "data-[state=active]:bg-emerald-500/90",
+    activeGlow: "data-[state=active]:shadow-emerald-500/30",
+  },
+  {
+    value: "setup",
+    label: "Setup",
+    icon: SlidersHorizontal,
+    color: "text-violet-400",
+    fill: "bg-violet-500/15",
+    activeFill: "data-[state=active]:bg-violet-500/90",
+    activeGlow: "data-[state=active]:shadow-violet-500/30",
+  },
+  {
+    value: "worker",
+    label: "Worker",
+    icon: Bot,
+    color: "text-sky-500",
+    fill: "bg-cyan-500/15",
+    activeFill: "data-[state=active]:bg-cyan-500/90",
+    activeGlow: "data-[state=active]:shadow-cyan-500/30",
+  },
+  {
+    value: "todo",
+    label: "Planner",
+    icon: ListTodo,
+    color: "text-blue-400",
+    fill: "bg-blue-500/15",
+    activeFill: "data-[state=active]:bg-blue-500/90",
+    activeGlow: "data-[state=active]:shadow-blue-500/30",
+  },
+  {
+    value: "control",
+    label: "Control",
+    icon: ClipboardList,
+    color: "text-slate-400",
+    fill: "bg-slate-500/20",
+    activeFill: "data-[state=active]:bg-slate-500/90",
+    activeGlow: "data-[state=active]:shadow-slate-500/30",
+  },
+  {
+    value: "git",
+    label: "Versioning",
+    icon: FolderGit2,
+    color: "text-amber-400",
+    fill: "bg-amber-500/15",
+    activeFill: "data-[state=active]:bg-amber-500/90",
+    activeGlow: "data-[state=active]:shadow-amber-500/30",
+  },
 ] as const;
+
+const BOTTOM_TAB_ORDER_STORAGE_KEY = "kwdev-project-bottom-tab-order";
+const ALL_BOTTOM_TABS = [...TAB_ROW_1, ...TAB_ROW_2] as const;
+const DEFAULT_BOTTOM_TAB_ORDER = ["project", "run", "setup", "todo", "worker", "control", "git"] as const;
+const LEGACY_BOTTOM_TAB_ORDER = ["project", "todo", "run", "setup", "worker", "control", "git"] as const;
 
 /** Valid tab values for URL ?tab= (deep link). */
 const VALID_PROJECT_TABS = new Set([
@@ -125,6 +182,11 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("worker");
+  const [bottomTabOrder, setBottomTabOrder] = useState<string[]>(
+    [...DEFAULT_BOTTOM_TAB_ORDER]
+  );
+  const [draggedBottomTab, setDraggedBottomTab] = useState<string | null>(null);
+  const [dragOverBottomTab, setDragOverBottomTab] = useState<string | null>(null);
   // Sync active tab from URL ?tab= when valid (deep link; one-way: URL → tab).
   useEffect(() => {
     if (tabFromUrl && (VALID_PROJECT_TABS as Set<string>).has(tabFromUrl)) {
@@ -137,8 +199,53 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
     const saved = getProjectDetailTabPreference(projectId);
     setActiveTab(saved);
   }, [projectId, tabFromUrl]);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const fallback = [...DEFAULT_BOTTOM_TAB_ORDER];
+    try {
+      const raw = window.localStorage.getItem(BOTTOM_TAB_ORDER_STORAGE_KEY);
+      if (!raw) {
+        setBottomTabOrder(fallback);
+        return;
+      }
+      const parsed = JSON.parse(raw) as unknown;
+      if (!Array.isArray(parsed)) {
+        setBottomTabOrder(fallback);
+        return;
+      }
+      const validSet = new Set(fallback);
+      const deduped = parsed.filter(
+        (value): value is string => typeof value === "string" && validSet.has(value)
+      );
+      const isLegacyDefault =
+        deduped.length === LEGACY_BOTTOM_TAB_ORDER.length &&
+        deduped.every((value, index) => value === LEGACY_BOTTOM_TAB_ORDER[index]);
+      const sourceOrder = isLegacyDefault ? fallback : deduped;
+      const completed = [...sourceOrder, ...fallback.filter((value) => !sourceOrder.includes(value))];
+      const todoIndex = completed.indexOf("todo");
+      const workerIndex = completed.indexOf("worker");
+      if (todoIndex > workerIndex) {
+        const [planner] = completed.splice(todoIndex, 1);
+        completed.splice(workerIndex, 0, planner);
+      }
+      setBottomTabOrder(completed);
+    } catch {
+      setBottomTabOrder(fallback);
+    }
+  }, []);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(
+        BOTTOM_TAB_ORDER_STORAGE_KEY,
+        JSON.stringify(bottomTabOrder)
+      );
+    } catch {
+      // ignore localStorage errors
+    }
+  }, [bottomTabOrder]);
   const [viewRunningOpen, setViewRunningOpen] = useState(false);
-  const [portEdit, setPortEdit] = useState(false);
+  const [viewRunningPort, setViewRunningPort] = useState<number | null>(null);
   const [portInput, setPortInput] = useState("");
   const [savingPort, setSavingPort] = useState(false);
   const [plannerRefreshKey, setPlannerRefreshKey] = useState(0);
@@ -157,6 +264,36 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
     setAgentProviderState(provider);
     if (projectId) setAgentProvider(projectId, provider);
   }, [projectId]);
+
+  useEffect(() => {
+    if (project?.runPort != null) setPortInput(String(project.runPort));
+  }, [project?.runPort]);
+
+  // Autosave runPort shortly after user edits a valid value.
+  useEffect(() => {
+    if (!projectId || !mountedRef.current) return;
+    const trimmed = portInput.trim();
+    if (!trimmed) return;
+    const parsed = parseInt(trimmed, 10);
+    if (Number.isNaN(parsed) || parsed < 1 || parsed > 65535) return;
+    if (project?.runPort === parsed) return;
+
+    const timeout = window.setTimeout(async () => {
+      setSavingPort(true);
+      try {
+        const updated = await updateProject(projectId, { runPort: parsed });
+        if (mountedRef.current && updated?.runPort != null) {
+          setProject((p) => (p ? { ...p, runPort: updated.runPort } : p));
+        }
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Failed to save port");
+      } finally {
+        setSavingPort(false);
+      }
+    }, 500);
+
+    return () => window.clearTimeout(timeout);
+  }, [portInput, project?.runPort, projectId]);
 
   const mountedRef = useRef(true);
   const setPageTitle = useSetPageTitle();
@@ -204,6 +341,21 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
     window.addEventListener("ticket-implementation-done", handler);
     return () => window.removeEventListener("ticket-implementation-done", handler);
   }, [projectId]);
+  const handleBottomTabDrop = useCallback(
+    (targetValue: string) => {
+      if (!draggedBottomTab || draggedBottomTab === targetValue) return;
+      setBottomTabOrder((previous) => {
+        const fromIndex = previous.indexOf(draggedBottomTab);
+        const toIndex = previous.indexOf(targetValue);
+        if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) return previous;
+        const next = [...previous];
+        const [moved] = next.splice(fromIndex, 1);
+        next.splice(toIndex, 0, moved);
+        return next;
+      });
+    },
+    [draggedBottomTab]
+  );
 
   const fetchProject = useCallback(async () => {
     setLoading(true);
@@ -330,6 +482,10 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
 
   const designCount = project.designIds?.length ?? 0;
   const architectureCount = project.architectureIds?.length ?? 0;
+  const bottomTabMap = new Map(ALL_BOTTOM_TABS.map((tab) => [tab.value, tab] as const));
+  const orderedBottomTabs = bottomTabOrder
+    .map((value) => bottomTabMap.get(value))
+    .filter((tab): tab is (typeof ALL_BOTTOM_TABS)[number] => !!tab);
 
   return (
     <ErrorBoundary fallbackTitle="Project detail error">
@@ -357,177 +513,16 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
               </div>
               <div className="flex items-center justify-center overflow-x-auto">
                 <div className="flex items-center gap-2 whitespace-nowrap">
-                  {/* Agent Provider Switcher — selected button always black */}
-                  <div className="flex items-center justify-center gap-1 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => handleProviderChange("cursor")}
-                      className={cn(
-                        "px-2.5 py-1 text-xs font-medium rounded-l-md border transition-colors",
-                        agentProvider === "cursor"
-                          ? "bg-black text-white border-black dark:bg-white dark:text-black dark:border-white"
-                          : "bg-muted/40 text-muted-foreground border-border hover:bg-black/10 hover:text-foreground hover:border-black/30 dark:hover:bg-white/10 dark:hover:border-white/30"
-                      )}
-                    >
-                      Cursor
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleProviderChange("claude")}
-                      className={cn(
-                        "px-2.5 py-1 text-xs font-medium border border-l-0 transition-colors",
-                        agentProvider === "claude"
-                          ? "bg-black text-white border-black dark:bg-white dark:text-black dark:border-white"
-                          : "bg-muted/40 text-muted-foreground border-border hover:bg-black/10 hover:text-foreground hover:border-black/30 dark:hover:bg-white/10 dark:hover:border-white/30"
-                      )}
-                    >
-                      Claude
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleProviderChange("gemini")}
-                      className={cn(
-                        "px-2.5 py-1 text-xs font-medium rounded-r-md border border-l-0 transition-colors",
-                        agentProvider === "gemini"
-                          ? "bg-black text-white border-black dark:bg-white dark:text-black dark:border-white"
-                          : "bg-muted/40 text-muted-foreground border-border hover:bg-black/10 hover:text-foreground hover:border-black/30 dark:hover:bg-white/10 dark:hover:border-white/30"
-                      )}
-                    >
-                      Gemini
-                    </button>
-                  </div>
-                  {/* Run port: display or set localhost port for View Running Project (always show so port can be set even without repo path) */}
-                  <>
-                    {project.runPort != null ? (
-                      portEdit ? (
-                        <div className="flex items-center gap-1.5">
-                          <Input
-                            type="number"
-                            min={1}
-                            max={65535}
-                            placeholder="Port"
-                            value={portInput}
-                            onChange={(e) => setPortInput(e.target.value)}
-                            className="h-7 w-20 text-xs font-mono"
-                          />
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-7 px-2 text-[10px]"
-                            disabled={savingPort}
-                            onClick={async () => {
-                              const num = parseInt(portInput, 10);
-                              if (Number.isNaN(num) || num < 1 || num > 65535) {
-                                toast.error("Enter a port between 1 and 65535");
-                                return;
-                              }
-                              setSavingPort(true);
-                              try {
-                                const updated = await updateProject(projectId, { runPort: num });
-                                if (mountedRef.current && updated?.runPort != null) {
-                                  setProject((p) => (p ? { ...p, runPort: updated.runPort } : p));
-                                }
-                                await fetchProject();
-                                setPortEdit(false);
-                                setPortInput("");
-                                toast.success("Run port updated.");
-                              } catch (err) {
-                                toast.error(err instanceof Error ? err.message : "Failed to save port");
-                              } finally {
-                                setSavingPort(false);
-                              }
-                            }}
-                          >
-                            {savingPort ? <Loader2 className="size-3 animate-spin" /> : "Save"}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 px-1.5"
-                            onClick={() => {
-                              setPortEdit(false);
-                              setPortInput("");
-                            }}
-                          >
-                            Cancel
-                          </Button>
-                        </div>
-                      ) : (
-                        <MetadataBadge
-                          icon={<Monitor className="size-3" />}
-                          color="bg-sky-500/10 border-sky-500/20 text-sky-600 dark:text-sky-400"
-                        >
-                          <span className="normal-case font-mono">
-                            localhost:{project.runPort}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setPortInput(String(project.runPort ?? ""));
-                              setPortEdit(true);
-                            }}
-                            className="ml-1 rounded p-0.5 hover:bg-sky-500/20"
-                            aria-label="Change port"
-                          >
-                            <Pencil className="size-2.5" />
-                          </button>
-                        </MetadataBadge>
-                      )
-                    ) : (
-                      <div className="flex items-center gap-1.5">
-                        <Input
-                          type="number"
-                          min={1}
-                          max={65535}
-                          placeholder="Port"
-                          value={portInput}
-                          onChange={(e) => setPortInput(e.target.value)}
-                          className="h-7 w-20 text-xs font-mono"
-                        />
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-7 px-2 text-[10px] font-semibold uppercase tracking-wider gap-1"
-                          disabled={savingPort}
-                          onClick={async () => {
-                            const num = parseInt(portInput, 10);
-                            if (Number.isNaN(num) || num < 1 || num > 65535) {
-                              toast.error("Enter a port between 1 and 65535");
-                              return;
-                            }
-                            setSavingPort(true);
-                            try {
-                              const updated = await updateProject(projectId, { runPort: num });
-                              if (mountedRef.current && updated?.runPort != null) {
-                                setProject((p) => (p ? { ...p, runPort: updated.runPort } : p));
-                              }
-                              await fetchProject();
-                              setPortInput("");
-                              toast.success("Run port saved.");
-                            } catch (err) {
-                              toast.error(err instanceof Error ? err.message : "Failed to save port");
-                            } finally {
-                              setSavingPort(false);
-                            }
-                          }}
-                        >
-                          {savingPort ? <Loader2 className="size-3 animate-spin" /> : "Set port"}
-                        </Button>
-                      </div>
-                    )}
-                  </>
-                  {/* View Running Project: opens modal with iframe (always visible; disabled until port is set) */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-7 px-2.5 text-[10px] font-semibold uppercase tracking-wider gap-1.5 border-sky-500/30 hover:bg-sky-500/5 hover:border-sky-500/50 transition-all duration-300 shadow-sm"
-                    title={project.runPort == null ? "Set run port above first" : "Open running app in modal"}
-                    onClick={() => setViewRunningOpen(true)}
-                    disabled={project.runPort == null}
-                  >
-                    <Monitor className="size-3 text-sky-500" />
-                    View Running Project
-                  </Button>
+                  <Select value={agentProvider} onValueChange={(value: AgentProvider) => handleProviderChange(value)}>
+                    <SelectTrigger className="h-7 min-w-[106px] text-xs">
+                      <SelectValue placeholder="Provider" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cursor">Cursor</SelectItem>
+                      <SelectItem value="claude">Claude</SelectItem>
+                      <SelectItem value="gemini">Gemini</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <div className="flex justify-end">
@@ -573,7 +568,7 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
             </Dialog>
 
             {/* Project Title & Description */}
-            <div className="space-y-1">
+            <div className="space-y-1 py-1">
               <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
                 <div className="flex justify-start">
                   {prevId ? (
@@ -598,8 +593,8 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
                     </span>
                   )}
                 </div>
-                <div className="min-w-0 flex items-center justify-center gap-2">
-                  <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground leading-tight text-center">
+                <div className="min-w-0 flex items-center justify-center gap-2 py-1.5">
+                  <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground leading-tight text-center py-1">
                     {project.name}
                   </h1>
                 </div>
@@ -692,25 +687,23 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
           data-testid="project-detail-tabs"
         >
           {/* Main content: selected tab; pb clears fixed bottom nav */}
-          <div className="flex-1 min-w-0 min-h-0 flex flex-col overflow-auto px-6 pb-20">
+          <div className="flex-1 min-w-0 min-h-0 flex flex-col overflow-y-auto overflow-x-hidden px-6 pb-20">
           {/* ── Project Tab ── */}
           <TabsContent
             value="project"
             key={`${projectId}-project`}
             className="mt-0 animate-in fade-in-0 slide-in-from-bottom-2 duration-300"
           >
-            <ProjectProjectTab project={project} projectId={projectId} docsRefreshKey={docsRefreshKey} onProjectUpdate={fetchProject} />
+            <ProjectProjectTab project={project} projectId={projectId} docsRefreshKey={docsRefreshKey} mode="project" />
           </TabsContent>
 
-          {/* ── Ideas Tab ── */}
+          {/* ── Setup Tab ── */}
           <TabsContent
-            value="ideas"
-            key={`${projectId}-ideas`}
+            value="setup"
+            key={`${projectId}-setup`}
             className="mt-0 animate-in fade-in-0 slide-in-from-bottom-2 duration-300"
           >
-            <div className="rounded-xl border border-border/40 bg-card/50 backdrop-blur-sm p-4 md:p-6">
-              <ProjectIdeasDocTab project={project} projectId={projectId} docsRefreshKey={docsRefreshKey} />
-            </div>
+            <ProjectProjectTab project={project} projectId={projectId} docsRefreshKey={docsRefreshKey} mode="setup" />
           </TabsContent>
 
           {/* ── Planner Tab ── */}
@@ -719,27 +712,40 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
             key={`${projectId}-todo`}
             className="mt-0 animate-in fade-in-0 slide-in-from-bottom-2 duration-300 overflow-y-auto min-h-0"
           >
-            <div key={plannerRefreshKey} className="rounded-xl border border-border/40 bg-card/50 backdrop-blur-sm p-4 md:p-6 min-h-0">
-              <ProjectTicketsTab
-                project={project}
-                projectId={projectId}
-                fetchProject={fetchProject}
-              />
-            </div>
-          </TabsContent>
+            <div key={plannerRefreshKey} className="rounded-xl border border-border/40 bg-card/50 backdrop-blur-sm p-4 md:p-6 min-h-0 space-y-4">
+              <div className="space-y-3">
+                <div className="inline-flex items-center gap-2">
+                  <ListTodo className="size-4 text-blue-400" />
+                  <span className="text-sm font-semibold">Planner board</span>
+                </div>
+                <ProjectTicketsTab
+                  project={project}
+                  projectId={projectId}
+                  fetchProject={fetchProject}
+                />
+              </div>
 
-          {/* ── Milestones Tab ── */}
-          <TabsContent
-            value="milestones"
-            key={`${projectId}-milestones`}
-            className="mt-0 animate-in fade-in-0 slide-in-from-bottom-2 duration-300"
-          >
-            <div className="rounded-xl border border-border/40 bg-card/50 backdrop-blur-sm p-4 md:p-6">
-              <ProjectMilestonesTab
-                project={project}
-                projectId={projectId}
-                onTicketAdded={() => setPlannerRefreshKey((k) => k + 1)}
-              />
+              <div data-testid="planner-secondary-grid" className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <div className="rounded-xl border border-border/40 bg-card/30 p-3 md:p-4">
+                  <div className="inline-flex items-center gap-2 mb-3">
+                    <Lightbulb className="size-4 text-amber-500" />
+                    <span className="text-sm font-semibold">Ideas</span>
+                  </div>
+                  <ProjectIdeasDocTab project={project} projectId={projectId} docsRefreshKey={docsRefreshKey} />
+                </div>
+
+                <div className="rounded-xl border border-border/40 bg-card/30 p-3 md:p-4">
+                  <div className="inline-flex items-center gap-2 mb-3">
+                    <Flag className="size-4 text-fuchsia-400" />
+                    <span className="text-sm font-semibold">Milestones</span>
+                  </div>
+                  <ProjectMilestonesTab
+                    project={project}
+                    projectId={projectId}
+                    onTicketAdded={() => setPlannerRefreshKey((k) => k + 1)}
+                  />
+                </div>
+              </div>
             </div>
           </TabsContent>
 
@@ -765,6 +771,25 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
             )}
           </TabsContent>
 
+          <TabsContent
+            value="run"
+            key={`${projectId}-run`}
+            className="mt-0 animate-in fade-in-0 slide-in-from-bottom-2 duration-300"
+          >
+            <ProjectBottomRunTab
+              project={project}
+              projectId={projectId}
+              portInput={portInput}
+              onPortInputChange={setPortInput}
+              savingPort={savingPort}
+              onOpenRunningModal={(port) => {
+                setViewRunningPort(port);
+                setViewRunningOpen(true);
+              }}
+              onProjectUpdate={fetchProject}
+            />
+          </TabsContent>
+
           {/* ── Versioning Tab ── */}
           <TabsContent
             value="git"
@@ -777,29 +802,54 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
 
           {/* Bottom navigation: fixed, always visible */}
           <TabsList
-            className="fixed bottom-0 left-0 right-0 z-40 inline-flex flex-row flex-nowrap gap-1 w-full shrink-0 overflow-x-auto overflow-y-hidden rounded-none rounded-t-xl border-t border-border/60 bg-sidebar backdrop-blur-sm p-2 min-h-[3.5rem] justify-around md:justify-evenly"
+            className="fixed bottom-3 left-1/2 z-40 inline-flex w-auto max-w-[calc(100vw-1rem)] -translate-x-1/2 flex-row flex-nowrap items-center justify-center gap-2 overflow-x-auto overflow-y-hidden rounded-full border-0 bg-transparent p-2 shadow-none backdrop-blur-none"
             aria-label="Project sections"
           >
-            {[...TAB_ROW_1, ...TAB_ROW_2].map((tab) => (
+            {orderedBottomTabs.map((tab) => (
               <TabsTrigger
                 key={tab.value}
                 value={tab.value}
                 data-testid={`tab-${tab.value}`}
+                draggable
+                onDragStart={(event) => {
+                  setDraggedBottomTab(tab.value);
+                  setDragOverBottomTab(tab.value);
+                  event.dataTransfer.effectAllowed = "move";
+                  event.dataTransfer.setData("text/plain", tab.value);
+                }}
+                onDragOver={(event) => {
+                  event.preventDefault();
+                  event.dataTransfer.dropEffect = "move";
+                  setDragOverBottomTab(tab.value);
+                }}
+                onDrop={(event) => {
+                  event.preventDefault();
+                  handleBottomTabDrop(tab.value);
+                  setDraggedBottomTab(null);
+                  setDragOverBottomTab(null);
+                }}
+                onDragEnd={() => {
+                  setDraggedBottomTab(null);
+                  setDragOverBottomTab(null);
+                }}
                 className={cn(
-                  "relative flex flex-col sm:flex-row items-center gap-1 sm:gap-2 rounded-lg px-3 py-2.5 min-w-[4rem] sm:min-w-0 sm:flex-1 max-w-[6rem] sm:max-w-none text-xs font-semibold transition-all duration-200 justify-center shrink-0",
-                  "data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:text-foreground data-[state=inactive]:hover:bg-muted/60",
-                  "data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-border/60",
-                  activeTab === tab.value && tab.activeGlow
+                  "group relative inline-flex size-11 shrink-0 items-center justify-center rounded-full border-0 p-0 text-xs font-semibold transition-all duration-200",
+                  tab.fill,
+                  "text-muted-foreground hover:text-foreground",
+                  "data-[state=active]:text-white data-[state=active]:border-0",
+                  dragOverBottomTab === tab.value && draggedBottomTab !== tab.value && "ring-2 ring-primary/60",
+                  tab.activeFill,
+                  tab.activeGlow
                 )}
               >
                 <tab.icon
                   className={cn(
                     "size-5 shrink-0 transition-colors duration-200",
-                    tab.color,
-                    activeTab !== tab.value && "opacity-90"
+                    activeTab === tab.value ? "text-white" : tab.color,
+                    activeTab !== tab.value && "opacity-90 group-hover:opacity-100"
                   )}
                 />
-                <span className="truncate">{tab.label}</span>
+                <span className="sr-only">{tab.label}</span>
               </TabsTrigger>
             ))}
           </TabsList>
@@ -813,10 +863,10 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
             <DialogTitle className="text-sm font-medium">Running project</DialogTitle>
           </DialogHeader>
           <div className="flex-1 min-h-0 flex flex-col gap-2 px-4 pb-4 overflow-hidden">
-            {project?.runPort != null && (
+            {viewRunningPort != null && (
               <>
                 <a
-                  href={`http://localhost:${project.runPort}`}
+                  href={`http://localhost:${viewRunningPort}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline shrink-0"
@@ -830,7 +880,7 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
                 <div className="flex-1 min-h-0 rounded-md border border-border bg-muted/30 overflow-hidden">
                   <iframe
                     title="Running project"
-                    src={`http://localhost:${project.runPort}`}
+                    src={`http://localhost:${viewRunningPort}`}
                     className="w-full h-full min-h-[400px] block rounded-md border-0"
                     style={{ height: "100%" }}
                   />

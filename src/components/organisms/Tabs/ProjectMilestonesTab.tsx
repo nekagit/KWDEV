@@ -26,12 +26,7 @@ import { Dialog as SharedDialog } from "@/components/molecules/FormsAndDialogs/D
 import { ButtonGroup } from "@/components/molecules/ControlsAndButtons/ButtonGroup";
 import { GenericInputWithLabel } from "@/components/molecules/Form/GenericInputWithLabel";
 import { GenericTextareaWithLabel } from "@/components/molecules/Form/GenericTextareaWithLabel";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Removed: file-based milestone folder functions - milestones are now stored in the database only
 
@@ -289,127 +284,122 @@ export function ProjectMilestonesTab({
           </Button>
         </div>
       </div>
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <SectionCard accentColor="orange" tint={1} className="flex-1 min-h-0 flex flex-col">
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="milestones-list" className="border-none">
-              <AccordionTrigger className="py-0 hover:no-underline">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-orange-500" />
-                  <span className="text-sm font-semibold">Milestones</span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="pt-3">
-                <p className="text-xs text-muted-foreground mb-3">
-                  DB entries with an id for tickets and implementation log. Click a row to view content; use actions to edit, delete, or convert to tickets.
-                </p>
-                <div className="rounded-md border border-border/60 overflow-hidden flex-1 min-h-0 flex flex-col">
-                  <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[1%]">#</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead className="hidden sm:table-cell">Slug</TableHead>
-                <TableHead className="w-[100px] text-right">Updated</TableHead>
-                <TableHead className="w-[1%] text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {milestones.map((m) => (
-                <TableRow
-                  key={m.id}
-                  className={cn(
-                    "cursor-pointer",
-                    selectedMilestoneId === m.id && "bg-muted/60"
-                  )}
-                  onClick={() => setSelectedMilestoneId(m.id)}
-                >
-                  <TableCell className="font-mono text-xs text-muted-foreground">{m.id}</TableCell>
-                  <TableCell className="font-medium">{m.name}</TableCell>
-                  <TableCell className="hidden sm:table-cell font-mono text-xs text-muted-foreground">{m.slug || "—"}</TableCell>
-                  <TableCell className="text-right text-muted-foreground text-xs">{formatUpdatedAt(m.updated_at ?? "")}</TableCell>
-                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-7"
-                        onClick={() => {
-                          setSelectedMilestoneId(m.id);
-                          setConvertTicketsOpen(true);
-                        }}
-                        title="Convert to tickets"
-                      >
-                        <ListTodo className="size-3" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-7"
-                        onClick={(e) => { e.preventDefault(); openEdit(m); }}
-                        title="Edit"
-                      >
-                        <Pencil className="size-3" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-7 text-destructive hover:text-destructive"
-                        disabled={deleteSaving}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleDeleteMilestone(m.id);
-                        }}
-                        title="Delete"
-                      >
-                        {deleteSaving ? <Loader2 className="size-3 animate-spin" /> : <Trash2 className="size-3" />}
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-                  </Table>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </SectionCard>
+      <SectionCard accentColor="orange" tint={1} className="flex-1 min-h-0 flex flex-col">
+        <Tabs defaultValue="milestones" className="w-full">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <p className="text-xs text-muted-foreground">
+              DB entries with an id for tickets and implementation log. Select a row, then switch tabs to review content.
+            </p>
+            <TabsList>
+              <TabsTrigger value="milestones">Milestones</TabsTrigger>
+              <TabsTrigger value="content" disabled={selectedMilestoneId == null}>
+                Content
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-        {selectedMilestoneId != null && (() => {
-          const selected = milestones.find((m) => m.id === selectedMilestoneId);
-          if (!selected) return null;
-          const hasContent = selected.content != null && selected.content.trim() !== "";
-          return (
-            <SectionCard accentColor="orange" tint={2} className="flex-1 min-h-0 flex flex-col">
-              <Accordion type="single" collapsible className="w-full">
-                <AccordionItem value="milestone-content" className="border-none">
-                  <AccordionTrigger className="py-0 hover:no-underline">
-                    <div className="flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-orange-500" />
-                      <span className="text-sm font-semibold">Content - {selected.name}</span>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="pt-3">
-                    <div className="rounded-md border border-border/60 overflow-hidden flex-1 min-h-[120px] flex flex-col">
-                      {hasContent ? (
-                        <div className={cn("p-3 pr-4 overflow-y-auto", markdownClasses)}>
-                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{selected.content}</ReactMarkdown>
-                        </div>
-                      ) : (
-                        <div className="p-4 text-sm text-muted-foreground italic">
-                          No content for this milestone. Use Edit to add markdown content.
-                        </div>
+          <TabsContent value="milestones" className="mt-0">
+            <div className="rounded-md border border-border/60 overflow-hidden flex-1 min-h-0 flex flex-col">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[1%]">#</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead className="hidden sm:table-cell">Slug</TableHead>
+                    <TableHead className="w-[100px] text-right">Updated</TableHead>
+                    <TableHead className="w-[1%] text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {milestones.map((m) => (
+                    <TableRow
+                      key={m.id}
+                      className={cn(
+                        "cursor-pointer",
+                        selectedMilestoneId === m.id && "bg-muted/60"
                       )}
+                      onClick={() => setSelectedMilestoneId(m.id)}
+                    >
+                      <TableCell className="font-mono text-xs text-muted-foreground">{m.id}</TableCell>
+                      <TableCell className="font-medium">{m.name}</TableCell>
+                      <TableCell className="hidden sm:table-cell font-mono text-xs text-muted-foreground">{m.slug || "—"}</TableCell>
+                      <TableCell className="text-right text-muted-foreground text-xs">{formatUpdatedAt(m.updated_at ?? "")}</TableCell>
+                      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-7"
+                            onClick={() => {
+                              setSelectedMilestoneId(m.id);
+                              setConvertTicketsOpen(true);
+                            }}
+                            title="Convert to tickets"
+                          >
+                            <ListTodo className="size-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-7"
+                            onClick={(e) => { e.preventDefault(); openEdit(m); }}
+                            title="Edit"
+                          >
+                            <Pencil className="size-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-7 text-destructive hover:text-destructive"
+                            disabled={deleteSaving}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleDeleteMilestone(m.id);
+                            }}
+                            title="Delete"
+                          >
+                            {deleteSaving ? <Loader2 className="size-3 animate-spin" /> : <Trash2 className="size-3" />}
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="content" className="mt-0">
+            {selectedMilestoneId != null ? (() => {
+              const selected = milestones.find((m) => m.id === selectedMilestoneId);
+              if (!selected) return null;
+              const hasContent = selected.content != null && selected.content.trim() !== "";
+              return (
+                <div className="rounded-md border border-border/60 overflow-hidden flex-1 min-h-[120px] flex flex-col">
+                  <div className="flex items-center gap-2 border-b border-border/60 px-3 py-2 bg-muted/20">
+                    <FileText className="h-4 w-4 text-orange-500" />
+                    <span className="text-sm font-semibold">Content - {selected.name}</span>
+                  </div>
+                  {hasContent ? (
+                    <div className={cn("p-3 pr-4 overflow-y-auto", markdownClasses)}>
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{selected.content}</ReactMarkdown>
                     </div>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            </SectionCard>
-          );
-        })()}
-      </div>
+                  ) : (
+                    <div className="p-4 text-sm text-muted-foreground italic">
+                      No content for this milestone. Use Edit to add markdown content.
+                    </div>
+                  )}
+                </div>
+              );
+            })() : (
+              <div className="rounded-md border border-border/60 p-4 text-sm text-muted-foreground italic">
+                Select a milestone from the Milestones tab to view content.
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </SectionCard>
 
       <SharedDialog
         isOpen={addOpen}

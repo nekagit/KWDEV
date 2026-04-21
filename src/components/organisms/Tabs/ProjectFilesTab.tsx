@@ -8,7 +8,6 @@ import {
     Loader2,
     ChevronRight,
     ArrowUpLeft,
-    RefreshCw,
     FileCode,
     FileJson,
     FileImage,
@@ -197,16 +196,6 @@ export function ProjectFilesTab({ project, projectId, onStateChange }: ProjectFi
                     </div>
                 </div>
 
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 shrink-0"
-                    onClick={() => void fetchFiles()}
-                    disabled={loading}
-                    title="Refresh"
-                >
-                    <RefreshCw className={cn("h-3.5 w-3.5", loading && "animate-spin")} />
-                </Button>
             </div>
 
             {/* Content */}

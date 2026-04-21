@@ -161,7 +161,7 @@ const NAV_ENTRIES: CommandPaletteEntry[] = [
   { href: "/design", label: "Design", icon: Palette },
   { href: "/architecture", label: "Architecture", icon: Building2 },
   { href: "/configuration", label: "Configuration", icon: Settings },
-  { href: "/shortcuts", label: "Shortcuts", icon: Keyboard },
+  { href: "/configuration?openShortcuts=1", label: "Shortcuts", icon: Keyboard },
   { href: "/loading-screen", label: "Loading", icon: Moon },
 ];
 
@@ -305,7 +305,7 @@ export function CommandPalette() {
   }, [activeProjects, projects, router]);
 
   const goToShortcuts = useCallback(() => {
-    router.push("/shortcuts");
+    router.push("/configuration?openShortcuts=1");
   }, [router]);
 
   const goToFirstProjectMilestones = useCallback(async () => {

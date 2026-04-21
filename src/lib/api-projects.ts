@@ -7,6 +7,7 @@ import { invoke, isTauri } from "@/lib/tauri";
 import type { Project } from "@/types/project";
 import type { RunMeta } from "@/types/run";
 import { ANALYZE_JOB_IDS, ANALYZE_QUEUE_PATH, getPromptPath, getOutputPath } from "@/lib/cursor-paths";
+import { extractPromptTextFromJson } from "@/lib/prompt-json";
 
 export type CreateProjectBody = {
   name: string;
@@ -180,6 +181,37 @@ export async function readProjectFileOrEmpty(
 ): Promise<string> {
   try {
     return await readProjectFile(projectId, relativePath, repoPath);
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * Read a runtime prompt JSON file from project repo and extract source_markdown.
+ * Throws explicit errors for missing/invalid prompt JSON.
+ */
+export async function readProjectPromptJsonOrThrow(
+  projectId: string,
+  relativePath: string,
+  repoPath?: string
+): Promise<string> {
+  const raw = await readProjectFile(projectId, relativePath, repoPath);
+  try {
+    return extractPromptTextFromJson(raw);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Invalid prompt JSON.";
+    throw new Error(`${relativePath}: ${message}`);
+  }
+}
+
+/** Read runtime prompt JSON, returning empty string if file is missing or invalid. */
+export async function readProjectPromptJsonOrEmpty(
+  projectId: string,
+  relativePath: string,
+  repoPath?: string
+): Promise<string> {
+  try {
+    return await readProjectPromptJsonOrThrow(projectId, relativePath, repoPath);
   } catch {
     return "";
   }

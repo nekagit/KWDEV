@@ -4,6 +4,7 @@ import {
   WORKER_AGENT_NIGHT_SHIFT_CARD_CLASSNAME,
   WORKER_AGENT_ACTIONS_ROW_CLASSNAME,
   WORKER_AGENT_TABS,
+  getWorkerAgentPromptInfo,
 } from "@/lib/project-worker-agents-layout";
 
 describe("project worker agents layout", () => {
@@ -33,11 +34,26 @@ describe("project worker agents layout", () => {
   });
 
   it("keeps each agent section in its own tab", () => {
-    expect(WORKER_AGENT_TABS.map((tab) => tab.id)).toEqual(["testing", "cleanup", "refactor", "night-shift"]);
+    expect(WORKER_AGENT_TABS.map((tab) => tab.id)).toEqual(["testing", "cleanup-refactor", "night-shift"]);
   });
 
   it("uses a flat bordered card style for night shift content", () => {
     expect(WORKER_AGENT_NIGHT_SHIFT_CARD_CLASSNAME).toContain("border-cyan-500/20");
     expect(WORKER_AGENT_NIGHT_SHIFT_CARD_CLASSNAME).toContain("bg-cyan-500/[0.08]");
+  });
+
+  it("exposes prompt info copy for testing and cleanup agents", () => {
+    expect(getWorkerAgentPromptInfo("testing")).toEqual({
+      title: "Testing Agent Prompt",
+      path: "data/prompts/testing-agent.prompt.json",
+      description: "Generates and runs a continuous test-focused iteration loop from project context.",
+    });
+    expect(getWorkerAgentPromptInfo("cleanup-refactor")).toEqual({
+      title: "Cleanup + Refactor Prompt",
+      path: "data/prompts/cleanup-refactor-agent.prompt.json",
+      description:
+        "Generates and runs a continuous cleanup/refactor loop based on selected Quality focus criteria.",
+    });
+    expect(getWorkerAgentPromptInfo("night-shift")).toBeNull();
   });
 });

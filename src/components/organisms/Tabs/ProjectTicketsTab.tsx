@@ -776,7 +776,7 @@ export function ProjectTicketsTab({
 
   // Compute stats for the summary bar
   const totalTickets = kanbanData?.tickets.length ?? 0;
-  const doneTickets = kanbanData?.tickets.filter((t) => t.done).length ?? 0;
+  const doneTickets = kanbanData?.columns.done?.items.length ?? 0;
   const progressPercent = totalTickets > 0 ? Math.round((doneTickets / totalTickets) * 100) : 0;
 
   return (
