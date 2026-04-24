@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import { runAgentPrompt } from "@/lib/agent-runner";
 import { parseAndValidate, generatePromptRecordSchema } from "@/lib/api-validation";
+import { buildUntrustedInputSection, safeJsonParseWithContract } from "@/lib/prompt-contracts";
 
 export const dynamic = "force-static";
 
@@ -11,11 +12,13 @@ export async function POST(request: NextRequest) {
   if (!parsed.success) return parsed.response;
   const { description, promptOnly } = parsed.data;
 
+  const descriptionBlock = buildUntrustedInputSection("DESCRIPTION", description);
   const prompt = `You output only a single JSON object with keys "title" and "content". No other text, no markdown.
 
 Generate a single Cursor/IDE prompt based on this description. The prompt will be used to instruct an AI assistant when working in a codebase.
 
-Description: ${description}
+Description payload:
+${descriptionBlock}
 
 Respond with a JSON object with exactly two keys:
 - "title": a short title for the prompt (e.g. "Refactor to use TypeScript")
@@ -27,15 +30,22 @@ Respond with a JSON object with exactly two keys:
 
   const cwd = path.resolve(process.cwd());
   try {
-    const raw = await runAgentPrompt(cwd, prompt);
-    const jsonMatch = raw.match(/\{[\s\S]*\}/);
-    const jsonStr = jsonMatch ? jsonMatch[0] : raw;
-    let parsedJson: { title?: string; content?: string };
-    try {
-      parsedJson = JSON.parse(jsonStr);
-    } catch {
+    let parsedJson: { title?: string; content?: string } = {};
+    let parsedOk = false;
+    let lastRaw = "";
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const strictSuffix = attempt === 0 ? "" : "\n\nIMPORTANT: Return strict JSON object only.";
+      lastRaw = await runAgentPrompt(cwd, prompt + strictSuffix);
+      const parsedResult = safeJsonParseWithContract(lastRaw, "object");
+      if (parsedResult.ok) {
+        parsedJson = parsedResult.data as { title?: string; content?: string };
+        parsedOk = true;
+        break;
+      }
+    }
+    if (!parsedOk) {
       return NextResponse.json(
-        { error: "Model did not return valid JSON", raw },
+        { error: "Model did not return strict JSON object", raw: lastRaw },
         { status: 502 }
       );
     }

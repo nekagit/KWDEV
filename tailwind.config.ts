@@ -77,13 +77,17 @@ export default {
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
 			},
+			fontFamily: {
+				sans: ['var(--font-inter)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+			},
 			boxShadow: {
-				'glow-sm': '0 0 8px -2px hsl(var(--primary) / 0.15)',
-				'glow': '0 0 16px -4px hsl(var(--primary) / 0.2)',
-				'glow-lg': '0 0 24px -6px hsl(var(--primary) / 0.25)',
-				'card': '0 1px 3px 0 hsl(0 0% 0% / 0.04), 0 2px 6px 0 hsl(0 0% 0% / 0.03)',
-				'card-hover': '0 4px 12px 0 hsl(0 0% 0% / 0.08), 0 2px 4px 0 hsl(0 0% 0% / 0.04)',
-				'elevated': '0 8px 24px -4px hsl(0 0% 0% / 0.1), 0 4px 8px -2px hsl(0 0% 0% / 0.06)',
+				'glow-sm': '0 0 12px -2px hsl(var(--primary) / 0.2)',
+				'glow': '0 0 24px -4px hsl(var(--primary) / 0.25)',
+				'glow-lg': '0 0 32px -6px hsl(var(--primary) / 0.3)',
+				'inner-bezel': 'inset 0 1px 0 0 hsl(0 0% 100% / 0.05)',
+				'card': '0 2px 8px -2px hsl(0 0% 0% / 0.05), 0 4px 16px -4px hsl(0 0% 0% / 0.02)',
+				'card-hover': '0 4px 16px -4px hsl(0 0% 0% / 0.08), 0 8px 24px -8px hsl(0 0% 0% / 0.04)',
+				'elevated': '0 12px 32px -4px hsl(0 0% 0% / 0.12), 0 4px 12px -4px hsl(0 0% 0% / 0.06)',
 			},
 			keyframes: {
 				'accordion-down': {

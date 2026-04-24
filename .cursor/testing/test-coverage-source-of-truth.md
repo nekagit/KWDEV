@@ -81,3 +81,24 @@
     - Planner tab now contains organized sections for planner board, ideas, and milestones.
     - Planner secondary areas use a responsive two-column grid on large screens.
 
+- `src/lib/db.ts`, `src/lib/data/projects.ts`, `src/store/run-store-hydration.tsx`, and DB API routes
+  - Regression coverage:
+    - `src/lib/__tests__/database-model-hardening.test.ts`
+    - `src/lib/__tests__/milestones-ideas-no-general-default.test.ts`
+  - Covered behavior:
+    - Schema includes hardening constraints/indexes and normalized project relationship join tables.
+    - DB integrity audit helper is available for orphan/enum drift checks.
+    - Milestones and ideas GET handlers are read-only (no destructive cleanup writes).
+    - Worker run completion uses a single transactional `/complete-run` endpoint for ticket-done + implementation-log persistence.
+
+- Strict planner interdependency (`ideas` -> `milestones` -> `plan_tickets`) and discrepancy reporting
+  - Regression coverage:
+    - `src/lib/__tests__/database-model-hardening.test.ts`
+    - `src/lib/__tests__/project-details-planner-unification.test.ts`
+    - `src/lib/__tests__/planner-integrity-automation.test.ts`
+  - Covered behavior:
+    - Schema hardening requires milestone/idea linkage for planner entities.
+    - Idea creation auto-generates linked milestone and templated tickets.
+    - Planner UI includes a secondary Discrepancies tab.
+    - Project integrity report endpoint exists for discrepancy audit + repair workflow.
+

@@ -6,6 +6,7 @@ import { runAgentPrompt } from "@/lib/agent-runner";
 import { stripTerminalArtifacts, MIN_DOCUMENT_LENGTH } from "@/lib/strip-terminal-artifacts";
 import { repoAllowed } from "@/lib/repo-allowed";
 import { getProjectById, getProjects } from "@/lib/data/projects";
+import { buildUntrustedInputSection } from "@/lib/prompt-contracts";
 
 export const dynamic = "force-static";
 
@@ -178,13 +179,16 @@ Rules:
     projectData ? "---" : "",
     "",
     "Current content of the target file (to update):",
-    currentContent || "(empty or file does not exist yet)",
+    buildUntrustedInputSection(
+      "CURRENT_DOCUMENT",
+      currentContent || "(empty or file does not exist yet)"
+    ),
     "",
     "---",
     "",
     "Instructions (prompt):",
     "",
-    promptContent.trim(),
+    buildUntrustedInputSection("PROMPT_INSTRUCTIONS", promptContent.trim()),
   ]
     .filter(Boolean)
     .join("\n");

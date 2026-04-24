@@ -7,7 +7,7 @@ import path from "path";
 import fs from "fs";
 import { getPrompts, createOrUpdatePrompt } from "@/lib/data/prompts";
 import { getProjectById, updateProject } from "@/lib/data/projects";
-import { validatePromptFilePairs } from "@/lib/prompt-json";
+import { promptsHaveDrift, validatePromptFilePairs } from "@/lib/prompt-json";
 
 export const dynamic = "force-dynamic";
 
@@ -48,6 +48,7 @@ function readPromptsDir(dataDir: string): FileEntry[] {
   if (!fs.existsSync(promptsDir) || !fs.statSync(promptsDir).isDirectory()) return results;
 
   const promptFileNames: string[] = [];
+  const stemToPair = new Map<string, { md?: string; json?: string }>();
 
   function walk(dir: string, prefix: string): void {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -65,10 +66,15 @@ function readPromptsDir(dataDir: string): FileEntry[] {
         const stem = isPromptMd
           ? path.basename(entry.name, ".prompt.md")
           : path.basename(entry.name, ".prompt.json");
+        const stemKey = prefix ? `${prefix}/${stem}` : stem;
         const title = `prompts/${stem}`;
         try {
           const content = fs.readFileSync(fullPath, "utf-8");
           results.push({ title, content });
+          const pair = stemToPair.get(stemKey) ?? {};
+          if (isPromptMd) pair.md = content;
+          if (isPromptJson) pair.json = content;
+          stemToPair.set(stemKey, pair);
         } catch {
           // skip
         }
@@ -79,6 +85,16 @@ function readPromptsDir(dataDir: string): FileEntry[] {
   const pairErrors = validatePromptFilePairs(promptFileNames);
   if (pairErrors.length > 0) {
     throw new Error(pairErrors.join(" "));
+  }
+  const driftErrors: string[] = [];
+  for (const [stem, pair] of stemToPair.entries()) {
+    if (!pair.md || !pair.json) continue;
+    if (promptsHaveDrift(pair.md, pair.json)) {
+      driftErrors.push(`Prompt drift detected for ${stem}: markdown and source_markdown differ.`);
+    }
+  }
+  if (driftErrors.length > 0) {
+    throw new Error(driftErrors.join(" "));
   }
   return results;
 }

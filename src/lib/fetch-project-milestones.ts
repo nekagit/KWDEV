@@ -30,7 +30,7 @@ function mapRawToMilestone(r: RawMilestone): MilestoneRecord {
 }
 
 /**
- * Fetches milestones for a project (ordered by name; "General Development" ensured by backend).
+ * Fetches milestones for a project (ordered by name).
  * Tauri: invoke get_project_milestones. Browser: GET /api/data/projects/:id/milestones.
  * Throws on error; caller handles toast/error state.
  */

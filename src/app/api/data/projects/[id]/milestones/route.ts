@@ -12,6 +12,7 @@ function rowToMilestone(r: MilestoneRow) {
   return {
     id: r.id,
     project_id: r.project_id,
+    idea_id: r.idea_id,
     name: r.name,
     slug: r.slug,
     content: r.content ?? undefined,
@@ -20,10 +21,7 @@ function rowToMilestone(r: MilestoneRow) {
   };
 }
 
-const GENERAL_DEVELOPMENT_NAME = "General Development";
-const GENERAL_DEVELOPMENT_SLUG = "general-development";
-
-/** GET: list milestones for project. Ensures "General Development" exists for the project. */
+/** GET: list milestones for project. */
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -31,24 +29,11 @@ export async function GET(
   try {
     const { id: projectId } = await params;
     const db = getDb();
-    let rows = db
+    const rows = db
       .prepare(
         "SELECT * FROM milestones WHERE project_id = ? ORDER BY name ASC"
       )
       .all(projectId) as MilestoneRow[];
-    const hasGeneralDev = rows.some((r) => r.name === GENERAL_DEVELOPMENT_NAME);
-    if (!hasGeneralDev) {
-      const now = new Date().toISOString();
-      db.prepare(
-        `INSERT INTO milestones (project_id, name, slug, content, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?)`
-      ).run(projectId, GENERAL_DEVELOPMENT_NAME, GENERAL_DEVELOPMENT_SLUG, null, now, now);
-      rows = db
-        .prepare(
-          "SELECT * FROM milestones WHERE project_id = ? ORDER BY name ASC"
-        )
-        .all(projectId) as MilestoneRow[];
-    }
     return NextResponse.json(rows.map(rowToMilestone));
   } catch (e) {
     console.error("Milestones GET error:", e);
@@ -59,7 +44,7 @@ export async function GET(
   }
 }
 
-/** POST: create milestone. Body: name, slug?, content? */
+/** POST: create milestone. Body: name, idea_id, slug?, content? */
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -68,9 +53,16 @@ export async function POST(
     const { id: projectId } = await params;
     const body = await request.json();
     const name = typeof body.name === "string" ? body.name.trim() : "";
+    const ideaId = typeof body.idea_id === "number" ? body.idea_id : typeof body.ideaId === "number" ? body.ideaId : null;
     if (!name) {
       return NextResponse.json(
         { error: "name is required" },
+        { status: 400 }
+      );
+    }
+    if (ideaId == null || !Number.isInteger(ideaId) || ideaId < 1) {
+      return NextResponse.json(
+        { error: "idea_id is required" },
         { status: 400 }
       );
     }
@@ -82,13 +74,19 @@ export async function POST(
       typeof body.content === "string" ? body.content.trim() : null;
 
     const db = getDb();
+    const linkedIdea = db
+      .prepare("SELECT id FROM ideas WHERE id = ? AND project_id = ?")
+      .get(ideaId, projectId) as { id: number } | undefined;
+    if (!linkedIdea) {
+      return NextResponse.json({ error: "idea_id does not exist for project" }, { status: 400 });
+    }
     const now = new Date().toISOString();
     const r = db
       .prepare(
-        `INSERT INTO milestones (project_id, name, slug, content, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?)`
+        `INSERT INTO milestones (project_id, idea_id, name, slug, content, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`
       )
-      .run(projectId, name, slug, content, now, now);
+      .run(projectId, ideaId, name, slug, content, now, now);
     const id = r.lastInsertRowid as number;
     const row = db
       .prepare("SELECT * FROM milestones WHERE id = ?")

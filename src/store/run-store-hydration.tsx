@@ -319,21 +319,12 @@ export function RunStoreHydration() {
         const ticketId = run.meta.ticketId;
         const success = effectiveExitCode === undefined || effectiveExitCode === 0;
 
-        // Mark ticket as Done in DB when run completed successfully (so it leaves In Progress).
-        if (success && projectId && ticketId) {
-          fetch(`/api/data/projects/${projectId}/tickets/${ticketId}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ done: true, status: "Done" }),
-          }).catch((err) =>
-            console.error("[run-exited] PATCH ticket done failed:", err)
-          );
-        }
-
-        // Ticket Implement All finished: record implementation_log entry (diff + summary).
+        // Ticket Implement All finished: mark ticket done and record implementation log.
         if (
+          success &&
           typeof run.meta.ticketNumber === "number" &&
           projectId &&
+          ticketId &&
           run.meta.repoPath
         ) {
           (async () => {
@@ -362,6 +353,12 @@ export function RunStoreHydration() {
             const completedAt = new Date().toISOString();
             try {
               if (isTauri) {
+                await invoke("update_plan_ticket", {
+                  projectId: run.meta!.projectId,
+                  ticketId: ticketId,
+                  done: true,
+                  status: "Done",
+                });
                 await invoke("append_implementation_log_entry", {
                   projectId: run.meta!.projectId,
                   runId: run_id,
@@ -374,10 +371,11 @@ export function RunStoreHydration() {
                   summary,
                 });
               } else {
-                const res = await fetch(`/api/data/projects/${run.meta!.projectId}/implementation-log`, {
+                const res = await fetch(`/api/data/projects/${run.meta!.projectId}/complete-run`, {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
+                    ticket_id: ticketId,
                     run_id,
                     ticket_number: run.meta!.ticketNumber,
                     ticket_title: run.meta!.ticketTitle ?? "",

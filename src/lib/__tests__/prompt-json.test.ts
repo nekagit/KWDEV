@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   extractPromptTextFromJson,
   getPromptStemFromFileName,
+  promptsHaveDrift,
   validatePromptFilePairs,
 } from "../prompt-json";
 
@@ -60,5 +61,19 @@ describe("validatePromptFilePairs", () => {
       "Missing data/prompts/workflows/night-shift.prompt.json (counterpart for night-shift.prompt.md).",
       "Missing data/prompts/workflows/test.prompt.md (counterpart for test.prompt.json).",
     ]);
+  });
+});
+
+describe("promptsHaveDrift", () => {
+  it("returns false for equivalent markdown text", () => {
+    const md = "# Title\n\nBody";
+    const json = JSON.stringify({ source_markdown: "  # Title\n\nBody\n" });
+    expect(promptsHaveDrift(md, json)).toBe(false);
+  });
+
+  it("returns true when markdown and JSON source differ", () => {
+    const md = "# Title\n\nBody A";
+    const json = JSON.stringify({ source_markdown: "# Title\n\nBody B" });
+    expect(promptsHaveDrift(md, json)).toBe(true);
   });
 });

@@ -12,6 +12,7 @@ function rowToMilestone(r: MilestoneRow) {
   return {
     id: r.id,
     project_id: r.project_id,
+    idea_id: r.idea_id,
     name: r.name,
     slug: r.slug,
     content: r.content ?? undefined,
@@ -50,7 +51,7 @@ export async function GET(
   }
 }
 
-/** PATCH: update milestone. Body: partial { name, slug, content } */
+/** PATCH: update milestone. Body: partial { name, slug, content, idea_id } */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; milestoneId: string }> }
@@ -87,6 +88,16 @@ export async function PATCH(
       updates.push("content = ?");
       values.push(typeof body.content === "string" ? body.content.trim() : null);
     }
+    let nextIdeaId: number | null = null;
+    if (typeof body.idea_id === "number") {
+      nextIdeaId = body.idea_id;
+      updates.push("idea_id = ?");
+      values.push(body.idea_id);
+    } else if (typeof body.ideaId === "number") {
+      nextIdeaId = body.ideaId;
+      updates.push("idea_id = ?");
+      values.push(body.ideaId);
+    }
 
     if (updates.length === 0) {
       return NextResponse.json(rowToMilestone(existing));
@@ -96,9 +107,23 @@ export async function PATCH(
     values.push(now);
     values.push(mid, projectId);
 
-    db.prepare(
-      `UPDATE milestones SET ${updates.join(", ")} WHERE id = ? AND project_id = ?`
-    ).run(...values);
+    db.transaction(() => {
+      if (nextIdeaId != null) {
+        const linkedIdea = db
+          .prepare("SELECT id FROM ideas WHERE id = ? AND project_id = ?")
+          .get(nextIdeaId, projectId) as { id: number } | undefined;
+        if (!linkedIdea) {
+          throw new Error("idea_id does not exist for project");
+        }
+      }
+      db.prepare(
+        `UPDATE milestones SET ${updates.join(", ")} WHERE id = ? AND project_id = ?`
+      ).run(...values);
+      if (nextIdeaId != null) {
+        db.prepare("UPDATE plan_tickets SET idea_id = ?, updated_at = ? WHERE project_id = ? AND milestone_id = ?")
+          .run(nextIdeaId, now, projectId, mid);
+      }
+    })();
 
     const row = db
       .prepare("SELECT * FROM milestones WHERE id = ? AND project_id = ?")
@@ -125,6 +150,15 @@ export async function DELETE(
       return NextResponse.json({ error: "Invalid milestone id" }, { status: 400 });
     }
     const db = getDb();
+    const linkedTicket = db
+      .prepare("SELECT id FROM plan_tickets WHERE project_id = ? AND milestone_id = ? LIMIT 1")
+      .get(projectId, mid) as { id: string } | undefined;
+    if (linkedTicket) {
+      return NextResponse.json(
+        { error: "Cannot delete milestone with linked tickets" },
+        { status: 409 }
+      );
+    }
     const r = db
       .prepare("DELETE FROM milestones WHERE id = ? AND project_id = ?")
       .run(mid, projectId);

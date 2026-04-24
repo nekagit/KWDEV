@@ -1,6 +1,7 @@
 /** route component. */
 import { NextRequest, NextResponse } from "next/server";
 import { getDb, type PlanTicketRow } from "@/lib/db";
+import { safeJsonArray } from "@/lib/db-json";
 
 export const dynamic = "force-static";
 
@@ -20,11 +21,11 @@ function rowToTicket(r: PlanTicketRow) {
     featureName: r.feature_name,
     done: r.done === 1,
     status: r.status as "Todo" | "Done",
-    milestone_id: r.milestone_id ?? undefined,
-    idea_id: r.idea_id ?? undefined,
-    milestoneId: r.milestone_id ?? undefined,
-    ideaId: r.idea_id ?? undefined,
-    agents: r.agents ? (JSON.parse(r.agents) as string[]) : undefined,
+    milestone_id: r.milestone_id,
+    idea_id: r.idea_id,
+    milestoneId: r.milestone_id,
+    ideaId: r.idea_id,
+    agents: safeJsonArray<string>(r.agents),
     created_at: r.created_at,
     updated_at: r.updated_at,
   };
@@ -104,21 +105,42 @@ export async function PATCH(
       updates.push("status = ?");
       values.push(body.status);
     }
-    if (typeof body.milestone_id === "number") {
-      updates.push("milestone_id = ?");
-      values.push(body.milestone_id);
-    } else if (typeof body.milestoneId === "number") {
-      updates.push("milestone_id = ?");
-      values.push(body.milestoneId);
+    const nextMilestoneId =
+      typeof body.milestone_id === "number"
+        ? body.milestone_id
+        : typeof body.milestoneId === "number"
+          ? body.milestoneId
+          : existing.milestone_id;
+    const nextIdeaId =
+      typeof body.idea_id === "number"
+        ? body.idea_id
+        : typeof body.ideaId === "number"
+          ? body.ideaId
+          : existing.idea_id;
+    if (!Number.isInteger(nextMilestoneId) || nextMilestoneId < 1) {
+      return NextResponse.json({ error: "milestone_id is required" }, { status: 400 });
     }
-    if (typeof body.idea_id === "number") {
-      updates.push("idea_id = ?");
-      values.push(body.idea_id);
-    } else if (typeof body.ideaId === "number") {
-      updates.push("idea_id = ?");
-      values.push(body.ideaId);
+    if (!Number.isInteger(nextIdeaId) || nextIdeaId < 1) {
+      return NextResponse.json({ error: "idea_id is required" }, { status: 400 });
     }
-    if (Array.isArray(body.agents)) {
+    const milestone = db
+      .prepare("SELECT idea_id FROM milestones WHERE id = ? AND project_id = ?")
+      .get(nextMilestoneId, projectId) as { idea_id: number } | undefined;
+    if (!milestone) {
+      return NextResponse.json({ error: "milestone_id does not exist for project" }, { status: 400 });
+    }
+    if (milestone.idea_id !== nextIdeaId) {
+      return NextResponse.json({ error: "ticket idea_id must match milestone idea_id" }, { status: 400 });
+    }
+    if (typeof body.milestone_id === "number" || typeof body.milestoneId === "number") {
+      updates.push("milestone_id = ?");
+      values.push(nextMilestoneId);
+    }
+    if (typeof body.idea_id === "number" || typeof body.ideaId === "number") {
+      updates.push("idea_id = ?");
+      values.push(nextIdeaId);
+    }
+    if (Array.isArray(body.agents) && body.agents.every((agent: unknown) => typeof agent === "string")) {
       updates.push("agents = ?");
       values.push(JSON.stringify(body.agents));
     }

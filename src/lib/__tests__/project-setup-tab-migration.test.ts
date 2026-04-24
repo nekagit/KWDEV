@@ -60,7 +60,7 @@ describe("project setup tab migration", () => {
     );
     const source = fs.readFileSync(projectTabPath, "utf8");
     expect(source).toContain('const PROJECT_INNER_TABS = ["project-files", "adr"] as const;');
-    expect(source).toContain('const SETUP_INNER_TABS = ["prompts", "skills", "design", "rules", "mcp", "agents"] as const;');
+    expect(source).toContain('const SETUP_INNER_TABS = ["architecture", "testing", "security", "skills", "design", "rules", "mcp", "agents"] as const;');
     expect(source).toContain('{mode === "project" && (');
     expect(source).toContain('<TabsTrigger value="adr"');
   });

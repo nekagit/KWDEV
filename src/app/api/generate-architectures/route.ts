@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import { runAgentPrompt } from "@/lib/agent-runner";
+import { buildUntrustedInputSection, safeJsonParseWithContract } from "@/lib/prompt-contracts";
 
 export const dynamic = "force-static";
 
@@ -24,6 +25,7 @@ export async function POST(request: NextRequest) {
     ? body.count
     : 3;
   const promptOnly = body.promptOnly === true;
+  const topicBlock = buildUntrustedInputSection("TOPIC", topic);
 
   if (!topic) {
     return NextResponse.json(
@@ -34,7 +36,7 @@ export async function POST(request: NextRequest) {
 
   const prompt = `You output only a JSON array of objects with keys "name", "description", "category", "practices", "scenarios". Category must be one of: ${CATEGORIES.join(", ")}. No other text, no markdown.
 
-Generate ${count} short architecture or best-practice definitions for software projects based on this topic or scenario: "${topic}"
+Generate ${count} short architecture or best-practice definitions for software projects based on the topic payload below.
 
 For each definition respond with a JSON array of objects. Each object must have:
 - "name": short name (e.g. "Domain-Driven Design (DDD)")
@@ -44,7 +46,9 @@ For each definition respond with a JSON array of objects. Each object must have:
 - "scenarios": when to use / specific scenarios (plain text, newlines ok)
 
 Output only a single JSON array, no markdown, no other text. Example format:
-[{"name":"...","description":"...","category":"ddd","practices":"- Point one\\n- Point two","scenarios":"When to use..."},...]`;
+[{"name":"...","description":"...","category":"ddd","practices":"- Point one\\n- Point two","scenarios":"When to use..."},...]
+
+${topicBlock}`;
 
   if (promptOnly) {
     return NextResponse.json({ prompt });
@@ -52,15 +56,22 @@ Output only a single JSON array, no markdown, no other text. Example format:
 
   const cwd = path.resolve(process.cwd());
   try {
-    const raw = await runAgentPrompt(cwd, prompt);
-    const jsonMatch = raw.match(/\[[\s\S]*\]/);
-    const jsonStr = jsonMatch ? jsonMatch[0] : raw;
-    let parsed: { name?: string; description?: string; category?: string; practices?: string; scenarios?: string }[];
-    try {
-      parsed = JSON.parse(jsonStr);
-    } catch {
+    let parsed: { name?: string; description?: string; category?: string; practices?: string; scenarios?: string }[] = [];
+    let parsedOk = false;
+    let lastRaw = "";
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const strictSuffix = attempt === 0 ? "" : "\n\nIMPORTANT: Return strict JSON array only.";
+      lastRaw = await runAgentPrompt(cwd, prompt + strictSuffix);
+      const parsedResult = safeJsonParseWithContract(lastRaw, "array");
+      if (parsedResult.ok) {
+        parsed = parsedResult.data as { name?: string; description?: string; category?: string; practices?: string; scenarios?: string }[];
+        parsedOk = true;
+        break;
+      }
+    }
+    if (!parsedOk) {
       return NextResponse.json(
-        { error: "Model did not return valid JSON array", raw },
+        { error: "Model did not return strict JSON array", raw: lastRaw },
         { status: 502 }
       );
     }

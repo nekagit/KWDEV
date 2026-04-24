@@ -2860,10 +2860,9 @@ function WorkerFastDevelopmentSection({
       const title = text.length > 120 ? `${text.slice(0, 117)}…` : text;
 
       const mils = await fetchProjectMilestones(projectId);
-      const general = mils.find((m) => m.name === "General Development");
-      const milestoneId = general?.id ?? mils[0]?.id;
+      const milestoneId = mils[0]?.id;
       if (milestoneId == null) {
-        toast.error("No milestone found. Add a milestone in the Milestones tab (e.g. General Development).");
+        toast.error("No milestone found. Add a milestone in the Milestones tab.");
         setLoading(false);
         return;
       }

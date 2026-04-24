@@ -1,6 +1,7 @@
 /** route component. */
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
+import { safeJsonArray } from "@/lib/db-json";
 
 export const dynamic = "force-static";
 
@@ -19,9 +20,9 @@ export async function GET(
     const row = db
       .prepare("SELECT in_progress_ids, updated_at FROM plan_kanban_state WHERE project_id = ?")
       .get(projectId) as { in_progress_ids: string; updated_at: string } | undefined;
-    const inProgressIds: string[] = row?.in_progress_ids
-      ? (JSON.parse(row.in_progress_ids) as string[])
-      : [];
+    const inProgressIds: string[] = safeJsonArray<string>(row?.in_progress_ids).filter(
+      (id): id is string => typeof id === "string"
+    );
     return NextResponse.json({ inProgressIds });
   } catch (e) {
     console.error("Kanban state GET error:", e);
@@ -43,6 +44,9 @@ export async function PATCH(
     const inProgressIds = Array.isArray(body.inProgressIds)
       ? body.inProgressIds.filter((id: unknown) => typeof id === "string")
       : [];
+    if (!Array.isArray(body.inProgressIds)) {
+      return NextResponse.json({ error: "inProgressIds must be an array of string ids" }, { status: 400 });
+    }
     const db = getDb();
     const now = new Date().toISOString();
     db.prepare(

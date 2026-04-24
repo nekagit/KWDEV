@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Loader2, Pencil, Plus, Trash2 } from "lucide-react";
+import { Loader2, Pencil, Plus, Trash2, Download } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -53,6 +53,38 @@ export function SetupEntityTableSection({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  const [importOpen, setImportOpen] = useState(false);
+  const [globalPrompts, setGlobalPrompts] = useState<any[]>([]);
+  const [globalLoading, setGlobalLoading] = useState(false);
+
+  const openImport = useCallback(async () => {
+    setImportOpen(true);
+    setGlobalLoading(true);
+    try {
+      const res = await fetch("/api/data/prompts/all-available");
+      if (res.ok) {
+        const data = await res.json();
+        setGlobalPrompts(data || []);
+      }
+    } catch {
+      toast.error("Failed to load generic prompts");
+    } finally {
+      setGlobalLoading(false);
+    }
+  }, []);
+
+  const handleImportPrompt = (p: any) => {
+    setForm({
+      ...EMPTY_FORM,
+      name: p.title || "",
+      description: "Imported from codebase",
+      content: p.content || "",
+      category: p.category || "",
+    });
+    setEditingId(null);
+    setImportOpen(false);
+    setOpen(true);
+  };
 
   const labels = useMemo(() => {
     const base = ENTITY_LABELS[entityType];
@@ -183,10 +215,18 @@ export function SetupEntityTableSection({
           placeholder={`Search ${entityType}...`}
           className="h-8 max-w-sm text-xs"
         />
-        <Button size="sm" className="h-8 text-xs gap-1.5" onClick={openCreate}>
-          <Plus className="size-3.5" />
-          {labels.addButton}
-        </Button>
+        <div className="flex items-center gap-2">
+          {entityType === "prompts" && (
+            <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" onClick={openImport}>
+              <Download className="size-3.5" />
+              Import
+            </Button>
+          )}
+          <Button size="sm" className="h-8 text-xs gap-1.5" onClick={openCreate}>
+            <Plus className="size-3.5" />
+            {labels.addButton}
+          </Button>
+        </div>
       </div>
       {loading ? (
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -277,6 +317,43 @@ export function SetupEntityTableSection({
                 Save
               </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={importOpen} onOpenChange={setImportOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Import Prompt from Codebase</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            {globalLoading ? (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Loader2 className="size-3.5 animate-spin" />
+                Loading...
+              </div>
+            ) : globalPrompts.length === 0 ? (
+              <p className="text-xs text-muted-foreground">No global prompts found.</p>
+            ) : (
+              <ScrollArea className="h-[400px]">
+                <div className="space-y-2 pr-4">
+                  {globalPrompts.map((p) => (
+                    <div key={p.id} className="p-3 border border-border/40 rounded-lg bg-card/50 flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">{p.title}</span>
+                        <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => handleImportPrompt(p)}>
+                          Import
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">{p.category || "General"}</p>
+                      <pre className="text-[10px] font-mono bg-muted/30 p-2 rounded max-h-[100px] overflow-hidden truncate whitespace-pre-wrap text-muted-foreground">
+                        {p.content}
+                      </pre>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            )}
           </div>
         </DialogContent>
       </Dialog>

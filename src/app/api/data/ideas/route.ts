@@ -35,9 +35,60 @@ function rowToRecord(r: IdeaRow): IdeaRecord {
   };
 }
 
-const GENERAL_DEVELOPMENT_TITLE = "General Development";
+function createLinkedMilestoneForIdea(
+  db: ReturnType<typeof getDb>,
+  args: { projectId: string; ideaId: number; title: string; now: string }
+): number {
+  const milestoneName = `${args.title} milestone`;
+  const baseSlug = milestoneName
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+  const milestoneSlug = `${baseSlug || "milestone"}-${args.ideaId}`;
+  const result = db
+    .prepare(
+      `INSERT INTO milestones (project_id, idea_id, name, slug, content, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`
+    )
+    .run(args.projectId, args.ideaId, milestoneName, milestoneSlug, null, args.now, args.now);
+  return result.lastInsertRowid as number;
+}
 
-/** GET: list ideas. Ensures "General Development" idea exists globally. */
+function createTemplateTicketsForIdea(
+  db: ReturnType<typeof getDb>,
+  args: { projectId: string; ideaId: number; milestoneId: number; title: string; now: string }
+): void {
+  const templates = [
+    { suffix: "Discovery", priority: "P1" },
+    { suffix: "Implementation", priority: "P1" },
+  ] as const;
+  for (const template of templates) {
+    const max = db
+      .prepare("SELECT COALESCE(MAX(number), 0) AS n FROM plan_tickets WHERE project_id = ?")
+      .get(args.projectId) as { n: number };
+    const number = max.n + 1;
+    const ticketId = `ticket-${args.projectId}-${number}`;
+    db.prepare(
+      `INSERT INTO plan_tickets (id, project_id, number, title, description, priority, feature_name, done, status, milestone_id, idea_id, agents, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'Todo', ?, ?, ?, ?, ?)`
+    ).run(
+      ticketId,
+      args.projectId,
+      number,
+      `${args.title} - ${template.suffix}`,
+      null,
+      template.priority,
+      args.title,
+      args.milestoneId,
+      args.ideaId,
+      null,
+      args.now,
+      args.now
+    );
+  }
+}
+
+/** GET: list ideas. */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -50,21 +101,6 @@ export async function GET(request: NextRequest) {
         .all(projectId) as IdeaRow[];
     } else {
       rows = db.prepare("SELECT * FROM ideas ORDER BY id ASC").all() as IdeaRow[];
-    }
-    const hasGeneralDev = rows.some((r) => r.title === GENERAL_DEVELOPMENT_TITLE);
-    if (!hasGeneralDev) {
-      const now = new Date().toISOString();
-      db.prepare(
-        `INSERT INTO ideas (project_id, title, description, category, body, source, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-      ).run(null, GENERAL_DEVELOPMENT_TITLE, "", "other", null, "manual", now, now);
-      if (projectId) {
-        rows = db
-          .prepare("SELECT * FROM ideas WHERE project_id = ? OR project_id IS NULL ORDER BY id ASC")
-          .all(projectId) as IdeaRow[];
-      } else {
-        rows = db.prepare("SELECT * FROM ideas ORDER BY id ASC").all() as IdeaRow[];
-      }
     }
     return NextResponse.json(rows.map(rowToRecord));
   } catch (e) {
@@ -91,10 +127,13 @@ export async function POST(request: NextRequest) {
     const source = body.source !== undefined && SOURCES.has(String(body.source))
       ? body.source
       : undefined;
-    const projectId = typeof body.project_id === "string" ? body.project_id : null;
+    const projectId = typeof body.project_id === "string" ? body.project_id.trim() : null;
 
     if (!title) {
       return NextResponse.json({ error: "title is required" }, { status: 400 });
+    }
+    if (!projectId) {
+      return NextResponse.json({ error: "project_id is required" }, { status: 400 });
     }
 
     const db = getDb();
@@ -112,14 +151,25 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const r = db
-      .prepare(
-        `INSERT INTO ideas (project_id, title, description, category, body, source, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-      )
-      .run(projectId, title, description, category, null, source ?? "manual", now, now);
-    const id = r.lastInsertRowid as number;
-    const row = db.prepare("SELECT * FROM ideas WHERE id = ?").get(id) as IdeaRow;
+    const inserted = db.transaction(() => {
+      const r = db
+        .prepare(
+          `INSERT INTO ideas (project_id, title, description, category, body, source, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+        )
+        .run(projectId, title, description, category, null, source ?? "manual", now, now);
+      const id = r.lastInsertRowid as number;
+      const milestoneId = createLinkedMilestoneForIdea(db, { projectId, ideaId: id, title, now });
+      createTemplateTicketsForIdea(db, {
+        projectId,
+        ideaId: id,
+        milestoneId,
+        title,
+        now,
+      });
+      return id;
+    })();
+    const row = db.prepare("SELECT * FROM ideas WHERE id = ?").get(inserted) as IdeaRow;
     return NextResponse.json(rowToRecord(row));
   } catch (e) {
     console.error("Ideas POST error:", e);

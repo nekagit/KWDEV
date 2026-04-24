@@ -11,6 +11,7 @@ import { createTicket } from "@/lib/data/tickets";
 import { createOrUpdateDesign } from "@/lib/data/designs";
 import { createOrUpdateArchitecture } from "@/lib/data/architectures";
 import { createProject } from "@/lib/data/projects";
+import { buildUntrustedInputSection, safeJsonParseWithContract } from "@/lib/prompt-contracts";
 
 export const dynamic = "force-static";
 
@@ -24,12 +25,18 @@ const SECTION_KINDS = new Set<string>(["hero", "features", "testimonials", "cta"
 const NAV_STYLES = new Set<string>(["minimal", "centered", "full", "sidebar"]);
 
 function buildPromptRecord(idea: { title: string; description: string; category: string }): string {
+  const titleBlock = buildUntrustedInputSection("IDEA_TITLE", idea.title);
+  const descriptionBlock = buildUntrustedInputSection("IDEA_DESCRIPTION", idea.description);
+  const categoryBlock = buildUntrustedInputSection("IDEA_CATEGORY", idea.category);
   return `You are a product and technical lead. Given the following product idea, generate a complete project specification as a single JSON object. Output ONLY valid JSON, no markdown, no code fence, no explanation.
 
 ## Idea
-- Title: ${idea.title}
-- Description: ${idea.description}
-- Category: ${idea.category}
+- Title:
+${titleBlock}
+- Description:
+${descriptionBlock}
+- Category:
+${categoryBlock}
 
 ## Required output shape (exact keys)
 
@@ -143,14 +150,24 @@ ${userPromptRecord}`;
     );
   }
 
-  const jsonMatch = raw.match(/\{[\s\S]*\}/);
-  const jsonStr = jsonMatch ? jsonMatch[0] : raw;
   let parsed: AIModel;
-  try {
-    parsed = JSON.parse(jsonStr);
-  } catch {
+  const parsedResult = safeJsonParseWithContract(raw, "object");
+  if (!parsedResult.ok) {
+    const retriedRaw = await runAgentPrompt(cwd, combinedPrompt + "\n\nIMPORTANT: Return strict JSON object only.");
+    const retriedParsed = safeJsonParseWithContract(retriedRaw, "object");
+    if (!retriedParsed.ok) {
+      return NextResponse.json(
+        { error: "Model did not return strict JSON object", raw: retriedRaw.slice(0, 500) },
+        { status: 502 }
+      );
+    }
+    parsed = retriedParsed.data as AIModel;
+  } else {
+    parsed = parsedResult.data as AIModel;
+  }
+  if (!parsed || typeof parsed !== "object") {
     return NextResponse.json(
-      { error: "Model did not return valid JSON", raw: raw.slice(0, 500) },
+      { error: "Model did not return valid project object", raw: raw.slice(0, 500) },
       { status: 502 }
     );
   }

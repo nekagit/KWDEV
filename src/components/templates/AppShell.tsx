@@ -18,6 +18,7 @@ import { CommandPalette } from "@/components/organisms/CommandPalette";
 import { SkipToMainContent } from "@/components/molecules/Accessible/SkipToMainContent";
 import { RunStatusAnnouncer } from "@/components/molecules/Accessible/RunStatusAnnouncer";
 import { BackToTop } from "@/components/molecules/Buttons/BackToTop";
+import { GlobalProjectChatBubble } from "@/components/organisms/GlobalProjectChatBubble";
 import {
   TOP_NAV_ACTIVE_CLASSNAME,
   TOP_NAV_BASE_LINK_CLASSNAME,
@@ -108,34 +109,39 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <RunStatusAnnouncer />
       {/* Top navbar: app-wide, full width, does not scroll away */}
       <header
-        className="shrink-0 h-12 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 flex items-center px-4 gap-x-1"
+        className="shrink-0 h-12 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 flex items-center justify-between px-4 gap-x-2"
         aria-label="App navigation"
       >
-        {appNavItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = pathname === item.href || (item.href !== "/" && typeof pathname === "string" && pathname.startsWith(item.href + "/"));
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                TOP_NAV_BASE_LINK_CLASSNAME,
-                isActive
-                  ? TOP_NAV_ACTIVE_CLASSNAME
-                  : TOP_NAV_INACTIVE_CLASSNAME
-              )}
-            >
-              <Icon
+        <div className="flex min-w-0 items-center gap-x-1">
+          {appNavItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = pathname === item.href || (item.href !== "/" && typeof pathname === "string" && pathname.startsWith(item.href + "/"));
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
                 className={cn(
-                  "size-4 shrink-0",
-                  item.iconColor ?? "text-sky-400",
-                  !isActive && "opacity-90"
+                  TOP_NAV_BASE_LINK_CLASSNAME,
+                  isActive
+                    ? TOP_NAV_ACTIVE_CLASSNAME
+                    : TOP_NAV_INACTIVE_CLASSNAME
                 )}
-              />
-              {item.label}
-            </Link>
-          );
-        })}
+              >
+                <Icon
+                  className={cn(
+                    "size-4 shrink-0",
+                    item.iconColor ?? "text-sky-400",
+                    !isActive && "opacity-90"
+                  )}
+                />
+                {item.label}
+              </Link>
+            );
+          })}
+        </div>
+        <div className="shrink-0">
+          <GlobalProjectChatBubble />
+        </div>
       </header>
 
       {/* Main content: no app sidebar on any page; project details page renders its own left sidebar in place. */}

@@ -54,3 +54,9 @@ export function validatePromptFilePairs(fileNames: string[]): string[] {
   }
   return errors.sort();
 }
+
+export function promptsHaveDrift(markdownRaw: string, jsonRaw: string): boolean {
+  const markdown = markdownRaw.trim();
+  const sourceMarkdown = extractPromptTextFromJson(jsonRaw).trim();
+  return markdown !== sourceMarkdown;
+}

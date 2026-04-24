@@ -52,16 +52,19 @@ pub(super) fn init_schema(conn: &Connection) -> Result<(), String> {
             number INTEGER NOT NULL,
             title TEXT NOT NULL,
             description TEXT,
-            priority TEXT NOT NULL DEFAULT 'P1',
+            priority TEXT NOT NULL DEFAULT 'P1' CHECK (priority IN ('P0','P1','P2','P3')),
             feature_name TEXT NOT NULL DEFAULT 'General',
-            done INTEGER NOT NULL DEFAULT 0,
-            status TEXT NOT NULL DEFAULT 'Todo',
-            milestone_id INTEGER,
-            idea_id INTEGER,
+            done INTEGER NOT NULL DEFAULT 0 CHECK (done IN (0,1)),
+            status TEXT NOT NULL DEFAULT 'Todo' CHECK (status IN ('Todo','Done')),
+            milestone_id INTEGER NOT NULL,
+            idea_id INTEGER NOT NULL,
             agents TEXT,
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL,
-            UNIQUE(project_id, number)
+            UNIQUE(project_id, number),
+            FOREIGN KEY(project_id) REFERENCES projects(id) ON DELETE CASCADE,
+            FOREIGN KEY(milestone_id) REFERENCES milestones(id) ON DELETE RESTRICT,
+            FOREIGN KEY(idea_id) REFERENCES ideas(id) ON DELETE RESTRICT
         );
         CREATE TABLE IF NOT EXISTS plan_kanban_state (
             project_id TEXT PRIMARY KEY,
@@ -71,20 +74,22 @@ pub(super) fn init_schema(conn: &Connection) -> Result<(), String> {
         CREATE TABLE IF NOT EXISTS milestones (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             project_id TEXT NOT NULL,
+            idea_id INTEGER NOT NULL REFERENCES ideas(id) ON DELETE RESTRICT,
             name TEXT NOT NULL,
             slug TEXT NOT NULL,
             content TEXT,
             created_at TEXT NOT NULL,
-            updated_at TEXT NOT NULL
+            updated_at TEXT NOT NULL,
+            FOREIGN KEY(project_id) REFERENCES projects(id) ON DELETE CASCADE
         );
         CREATE TABLE IF NOT EXISTS ideas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             project_id TEXT,
             title TEXT NOT NULL,
             description TEXT NOT NULL,
-            category TEXT NOT NULL DEFAULT 'other',
+            category TEXT NOT NULL DEFAULT 'other' CHECK (category IN ('saas','iaas','paas','website','webapp','webshop','other')),
             body TEXT,
-            source TEXT NOT NULL DEFAULT 'manual',
+            source TEXT NOT NULL DEFAULT 'manual' CHECK (source IN ('template','ai','manual')),
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL
         );
@@ -100,7 +105,7 @@ pub(super) fn init_schema(conn: &Connection) -> Result<(), String> {
             files_changed TEXT NOT NULL DEFAULT '[]',
             summary TEXT NOT NULL DEFAULT '',
             created_at TEXT NOT NULL,
-            status TEXT NOT NULL DEFAULT 'pending'
+            status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','accepted','declined'))
         );
         CREATE TABLE IF NOT EXISTS project_docs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -138,6 +143,41 @@ pub(super) fn init_schema(conn: &Connection) -> Result<(), String> {
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL
         );
+        CREATE TABLE IF NOT EXISTS project_prompt_links (
+            project_id TEXT NOT NULL,
+            prompt_id INTEGER NOT NULL,
+            created_at TEXT NOT NULL,
+            PRIMARY KEY(project_id, prompt_id)
+        );
+        CREATE TABLE IF NOT EXISTS project_ticket_links (
+            project_id TEXT NOT NULL,
+            ticket_id TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            PRIMARY KEY(project_id, ticket_id)
+        );
+        CREATE TABLE IF NOT EXISTS project_idea_links (
+            project_id TEXT NOT NULL,
+            idea_id INTEGER NOT NULL,
+            created_at TEXT NOT NULL,
+            PRIMARY KEY(project_id, idea_id)
+        );
+        CREATE TABLE IF NOT EXISTS project_design_links (
+            project_id TEXT NOT NULL,
+            design_id TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            PRIMARY KEY(project_id, design_id)
+        );
+        CREATE TABLE IF NOT EXISTS project_architecture_links (
+            project_id TEXT NOT NULL,
+            architecture_id TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            PRIMARY KEY(project_id, architecture_id)
+        );
+        CREATE INDEX IF NOT EXISTS idx_plan_tickets_project_status ON plan_tickets(project_id, status);
+        CREATE INDEX IF NOT EXISTS idx_plan_tickets_project_number ON plan_tickets(project_id, number);
+        CREATE INDEX IF NOT EXISTS idx_milestones_project_slug ON milestones(project_id, slug);
+        CREATE INDEX IF NOT EXISTS idx_ideas_project_id ON ideas(project_id, id);
+        CREATE INDEX IF NOT EXISTS idx_implementation_log_project_completed ON implementation_log(project_id, completed_at DESC);
         ",
     )
     .map_err(|e| e.to_string())?;

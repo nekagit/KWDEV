@@ -1,6 +1,7 @@
 /** route component. */
 import { NextRequest, NextResponse } from "next/server";
 import { getDb, type PlanTicketRow } from "@/lib/db";
+import { safeJsonArray } from "@/lib/db-json";
 
 export const dynamic = "force-static";
 
@@ -20,11 +21,11 @@ function rowToTicket(r: PlanTicketRow) {
     featureName: r.feature_name,
     done: r.done === 1,
     status: r.status as "Todo" | "Done",
-    milestone_id: r.milestone_id ?? undefined,
-    idea_id: r.idea_id ?? undefined,
-    milestoneId: r.milestone_id ?? undefined,
-    ideaId: r.idea_id ?? undefined,
-    agents: r.agents ? (JSON.parse(r.agents) as string[]) : undefined,
+    milestone_id: r.milestone_id,
+    idea_id: r.idea_id,
+    milestoneId: r.milestone_id,
+    ideaId: r.idea_id,
+    agents: safeJsonArray<string>(r.agents),
     created_at: r.created_at,
     updated_at: r.updated_at,
   };
@@ -53,7 +54,7 @@ export async function GET(
   }
 }
 
-/** POST: create ticket. Body: number?, title, description?, priority?, feature_name?, milestone_id, idea_id?, agents? */
+/** POST: create ticket. Body: number?, title, description?, priority?, feature_name?, milestone_id, idea_id, agents? */
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -80,7 +81,7 @@ export async function POST(
         : typeof body.ideaId === "number"
           ? body.ideaId
           : null;
-    if (milestoneId == null) {
+    if (milestoneId == null || !Number.isInteger(milestoneId) || milestoneId < 1) {
       return NextResponse.json(
         { error: "milestone_id is required" },
         { status: 400 }
@@ -105,40 +106,72 @@ export async function POST(
     const done = body.done === true ? 1 : 0;
     const status =
       body.status === "Done" ? "Done" : "Todo";
-    const agents = Array.isArray(body.agents)
+    const agents = Array.isArray(body.agents) && body.agents.every((agent: unknown) => typeof agent === "string")
       ? JSON.stringify(body.agents)
       : null;
-
-    let number = typeof body.number === "number" ? body.number : undefined;
-    if (number == null) {
-      const max = db
-        .prepare(
-          "SELECT COALESCE(MAX(number), 0) AS n FROM plan_tickets WHERE project_id = ?"
-        )
-        .get(projectId) as { n: number };
-      number = max.n + 1;
+    const milestoneExists = db
+      .prepare("SELECT id FROM milestones WHERE id = ? AND project_id = ?")
+      .get(milestoneId, projectId) as { id: number } | undefined;
+    if (!milestoneExists) {
+      return NextResponse.json({ error: "milestone_id does not exist for project" }, { status: 400 });
     }
-    const id = `ticket-${projectId}-${number}`;
+    if (ideaId == null || !Number.isInteger(ideaId) || ideaId < 1) {
+      return NextResponse.json({ error: "idea_id is required" }, { status: 400 });
+    }
+    const ideaExists = db
+      .prepare("SELECT id FROM ideas WHERE id = ? AND project_id = ?")
+      .get(ideaId, projectId) as { id: number } | undefined;
+    if (!ideaExists) {
+      return NextResponse.json({ error: "idea_id does not exist for project" }, { status: 400 });
+    }
+    const milestoneIdea = db
+      .prepare("SELECT idea_id FROM milestones WHERE id = ? AND project_id = ?")
+      .get(milestoneId, projectId) as { idea_id: number } | undefined;
+    if (!milestoneIdea || milestoneIdea.idea_id !== ideaId) {
+      return NextResponse.json({ error: "ticket idea_id must match milestone idea_id" }, { status: 400 });
+    }
 
-    db.prepare(
-      `INSERT INTO plan_tickets (id, project_id, number, title, description, priority, feature_name, done, status, milestone_id, idea_id, agents, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    ).run(
-      id,
-      projectId,
-      number,
-      title,
-      description,
-      priority,
-      featureName,
-      done,
-      status,
-      milestoneId,
-      ideaId,
-      agents,
-      now,
-      now
-    );
+    let id = "";
+    let number = typeof body.number === "number" ? body.number : undefined;
+    let created = false;
+    let attempts = 0;
+    while (!created && attempts < 3) {
+      attempts += 1;
+      if (number == null) {
+        const max = db
+          .prepare(
+            "SELECT COALESCE(MAX(number), 0) AS n FROM plan_tickets WHERE project_id = ?"
+          )
+          .get(projectId) as { n: number };
+        number = max.n + 1;
+      }
+      id = `ticket-${projectId}-${number}`;
+      try {
+        db.prepare(
+          `INSERT INTO plan_tickets (id, project_id, number, title, description, priority, feature_name, done, status, milestone_id, idea_id, agents, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        ).run(
+          id,
+          projectId,
+          number,
+          title,
+          description,
+          priority,
+          featureName,
+          done,
+          status,
+          milestoneId,
+          ideaId,
+          agents,
+          now,
+          now
+        );
+        created = true;
+      } catch (error) {
+        number = undefined;
+        if (attempts >= 3) throw error;
+      }
+    }
     const row = db
       .prepare("SELECT * FROM plan_tickets WHERE id = ?")
       .get(id) as PlanTicketRow;

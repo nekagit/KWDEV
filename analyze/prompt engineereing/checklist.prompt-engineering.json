@@ -1,0 +1,126 @@
+{
+  "name": "KWDEV Prompt Engineering Checklist",
+  "version": "1.0.0",
+  "application_context": {
+    "app_name": "KWDEV",
+    "domain": "Agent-driven software execution workspace",
+    "core_runtime": [
+      "Prompt-driven API generation routes",
+      "Worker/terminal agent orchestration",
+      "Project-scoped prompt catalogs"
+    ]
+  },
+  "scoring_scale": {
+    "min": 1,
+    "max": 10,
+    "guidance": {
+      "1_3": "High risk, major redesign needed",
+      "4_6": "Usable but inconsistent or fragile",
+      "7_8": "Strong baseline with clear improvements remaining",
+      "9_10": "Best-in-class and systematically enforced"
+    }
+  },
+  "categories": [
+    {
+      "id": "contract_design",
+      "title": "Output Contract Design",
+      "weight": 0.14,
+      "checks": [
+        "Every prompt has explicit output mode (json_only or markdown_doc_only)",
+        "Expected JSON top-level shape is explicit (object vs array)",
+        "Output examples are concise and aligned with parser expectations"
+      ]
+    },
+    {
+      "id": "parser_reliability",
+      "title": "Parser Reliability and Recovery",
+      "weight": 0.14,
+      "checks": [
+        "Strict parser rejects mixed prose + JSON output",
+        "Retry path exists with stronger output reminder",
+        "Error responses surface useful raw snippet for debugging"
+      ]
+    },
+    {
+      "id": "input_safety",
+      "title": "Prompt Injection and Input Safety",
+      "weight": 0.14,
+      "checks": [
+        "Untrusted content is wrapped in explicit begin/end boundaries",
+        "Prompt text says enclosed content is data, not instructions",
+        "Sensitive flows that combine file content and instructions are guarded"
+      ]
+    },
+    {
+      "id": "purpose_alignment",
+      "title": "App-Purpose Alignment (Execution-First)",
+      "weight": 0.12,
+      "checks": [
+        "Execution paths prioritize concrete actions and verification",
+        "ask/plan/agent modes are semantically consistent in metadata and prompt text",
+        "Prompt guidance matches agent runtime behavior"
+      ]
+    },
+    {
+      "id": "source_of_truth",
+      "title": "Prompt Source of Truth and Drift Control",
+      "weight": 0.12,
+      "checks": [
+        "Prompt file pairs are validated (.prompt.md and .prompt.json)",
+        "Drift detection exists between markdown and source_markdown payload",
+        "Canonical authoring/source policy is explicit and enforced"
+      ]
+    },
+    {
+      "id": "reuse_and_composability",
+      "title": "Reuse and Composability",
+      "weight": 0.1,
+      "checks": [
+        "Shared prompt helper utilities are used across routes",
+        "Cross-route duplication of guardrails is minimized",
+        "Prompt builders are modular for context blocks"
+      ]
+    },
+    {
+      "id": "validation_and_types",
+      "title": "Validation and Type Safety",
+      "weight": 0.08,
+      "checks": [
+        "Request schemas validate input bounds and required fields",
+        "Post-parse normalization includes allowlists and limits",
+        "Core contracts are represented with clear TypeScript types"
+      ]
+    },
+    {
+      "id": "observability",
+      "title": "Observability and Failure Diagnostics",
+      "weight": 0.06,
+      "checks": [
+        "Failures are returned with actionable messages",
+        "Critical flows include useful operational logs",
+        "Error categories are distinguishable (validation vs parse vs runtime)"
+      ]
+    },
+    {
+      "id": "testing_governance",
+      "title": "Testing and Governance",
+      "weight": 0.1,
+      "checks": [
+        "Contract helpers are unit tested",
+        "Route-level hardening checks exist for key endpoints",
+        "Prompt catalog/governance checks cover drift and structure"
+      ]
+    }
+  ],
+  "best_practices": [
+    "Use explicit output contracts with strict parsers",
+    "Treat all user text and document content as untrusted input",
+    "Prefer shared helpers over route-local ad hoc regex parsing",
+    "Keep one canonical source for prompt authoring, validate derived artifacts",
+    "Align UI intent, runtime metadata, and prompt wording",
+    "Cap lengths and enforce enum allowlists before persistence",
+    "Fail loudly with actionable diagnostics and short raw snippets",
+    "Back all hardening changes with focused tests"
+  ]
+}
+

@@ -685,6 +685,17 @@ fn get_ideas_list(ProjectIdArgOptional { project_id }: ProjectIdArgOptional) -> 
 }
 
 #[derive(serde::Deserialize)]
+struct IntegrityAuditArgs {
+    #[serde(alias = "projectId")]
+    project_id: String,
+}
+
+#[tauri::command]
+fn run_integrity_audit(args: IntegrityAuditArgs) -> Result<serde_json::Value, String> {
+    with_db(|conn| db::run_integrity_audit_for_project(conn, &args.project_id))
+}
+
+#[derive(serde::Deserialize)]
 struct CreateIdeaArgs {
     #[serde(alias = "projectId")]
     project_id: Option<String>,
@@ -4480,6 +4491,7 @@ pub fn run() {
             update_plan_ticket,
             delete_plan_ticket,
             get_ideas_list,
+            run_integrity_audit,
             create_idea,
             delete_idea,
             improve_idea_for_project,

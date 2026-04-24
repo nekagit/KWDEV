@@ -6,13 +6,31 @@ KWDEV is a project/workflow workspace focused on agent-driven software execution
 ## Core Areas
 - **Projects page**: central project navigation and details.
 - **Project tab (inside project details)**: focused on project files and ADR workspace management.
-- **Setup tab (inside project details)**: top-level setup tabs are Prompts, Skills, Design, Rules, MCP, and Agents.
+- **Setup tab (inside project details)**: top-level setup tabs are Architecture, Testing, Security, Skills, Design, Rules, MCP, and Agents.
+- **Prompts tab (inside project details)**: dedicated bottom-circle tab for project prompt management and full codebase prompt catalog.
 - **Rules in Setup**: Rules tab uses three category tabs: Architecture, Testing, and Security.
-- **Bottom project circles**: project detail bottom circles are user-reorderable via drag-and-drop and persisted locally.
+- **Bottom project circles**: project detail bottom circles include Prompts as a first-class tab, are user-reorderable via drag-and-drop, and persisted locally.
 - **Worker tab**: agent execution workflows (Vibing, Agents, terminals, queue, history).
 - **Planner tab**: ticket and kanban planning.
 - **Control tab**: implementation logging and outcomes.
 - **Versioning tab**: git-focused project visibility.
+
+## Planner Integrity Model (current)
+- Planner entities are strictly interdependent:
+  - each `idea` must be linked to milestones and tickets
+  - each `milestone` belongs to an `idea`
+  - each planner `ticket` belongs to both a `milestone` and an `idea`
+- Idea creation now auto-generates:
+  - one default linked milestone
+  - a templated starter ticket set
+- Relationship consistency is maintained by:
+  - strict DB constraints for planner foreign keys
+  - route/command validation for same-project linkage
+  - propagation logic when milestone idea linkage changes
+- A project-level integrity report endpoint powers discrepancy visibility and repair actions:
+  - `GET /api/data/projects/[id]/integrity-report`
+  - `POST /api/data/projects/[id]/integrity-report` (safe repair pass)
+- Planner secondary tabs include a Discrepancies view for data-driven audit feedback.
 
 ## Worker Visual System (current)
 - Worker top-level sections now use a shared flat neutral surface system defined in `src/lib/worker-run-layout.ts` (`WORKER_RUN_SECTION_SURFACE_CLASSNAME`).
@@ -93,6 +111,10 @@ KWDEV is a project/workflow workspace focused on agent-driven software execution
 - `data/prompts/workflows/*.prompt.json` is the execution source, parsed from `source_markdown`.
 - `data/prompts/workflows/*.prompt.md` remains the editable markdown companion and must stay paired with the same stem.
 - Prompt initialization now validates that each prompt stem has both files (`.prompt.md` and `.prompt.json`) and reports missing counterparts explicitly.
+- Project Prompts tab catalog now merges three sources for visibility:
+  - `data/prompts/**` prompt files (recursive)
+  - inline prompt source registry from code files
+  - prompt records already stored in database tables
 
 ## Setup Entity Storage (current)
 - Setup entities are DB-first and project-scoped.

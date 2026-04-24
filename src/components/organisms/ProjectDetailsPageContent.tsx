@@ -25,6 +25,7 @@ import {
   Play,
   ExternalLink,
   SlidersHorizontal,
+  MessageSquare,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Project } from "@/types/project";
@@ -38,6 +39,9 @@ import { ProjectControlTab } from "@/components/organisms/Tabs/ProjectControlTab
 import { ProjectIdeasDocTab } from "@/components/organisms/Tabs/ProjectIdeasDocTab";
 import { ProjectRunTab } from "@/components/organisms/Tabs/ProjectRunTab";
 import { ProjectBottomRunTab } from "@/components/organisms/Tabs/ProjectBottomRunTab";
+import { ProjectPlannerTicketsTab } from "@/components/organisms/Tabs/ProjectPlannerTicketsTab";
+import { ProjectPlannerDiscrepanciesTab } from "@/components/organisms/Tabs/ProjectPlannerDiscrepanciesTab";
+import { ProjectPromptsTab } from "@/components/organisms/Tabs/ProjectPromptsTab";
 import { ErrorBoundary } from "@/components/organisms/ErrorBoundary";
 import { cn } from "@/lib/utils";
 import { MetadataBadge, CountBadge } from "@/components/molecules/Displays/DisplayPrimitives";
@@ -94,6 +98,15 @@ const TAB_ROW_2 = [
     activeGlow: "data-[state=active]:shadow-violet-500/30",
   },
   {
+    value: "prompts",
+    label: "Prompts",
+    icon: MessageSquare,
+    color: "text-fuchsia-400",
+    fill: "bg-fuchsia-500/15",
+    activeFill: "data-[state=active]:bg-fuchsia-500/90",
+    activeGlow: "data-[state=active]:shadow-fuchsia-500/30",
+  },
+  {
     value: "worker",
     label: "Worker",
     icon: Bot,
@@ -133,7 +146,7 @@ const TAB_ROW_2 = [
 
 const BOTTOM_TAB_ORDER_STORAGE_KEY = "kwdev-project-bottom-tab-order";
 const ALL_BOTTOM_TABS = [...TAB_ROW_1, ...TAB_ROW_2] as const;
-const DEFAULT_BOTTOM_TAB_ORDER = ["project", "run", "setup", "todo", "worker", "control", "git"] as const;
+const DEFAULT_BOTTOM_TAB_ORDER = ["project", "run", "setup", "prompts", "todo", "worker", "control", "git"] as const;
 const LEGACY_BOTTOM_TAB_ORDER = ["project", "todo", "run", "setup", "worker", "control", "git"] as const;
 
 /** Valid tab values for URL ?tab= (deep link). */
@@ -706,6 +719,14 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
             <ProjectProjectTab project={project} projectId={projectId} docsRefreshKey={docsRefreshKey} mode="setup" />
           </TabsContent>
 
+          <TabsContent
+            value="prompts"
+            key={`${projectId}-prompts`}
+            className="mt-0 animate-in fade-in-0 slide-in-from-bottom-2 duration-300"
+          >
+            <ProjectPromptsTab projectId={projectId} projectPath={project.repoPath} />
+          </TabsContent>
+
           {/* ── Planner Tab ── */}
           <TabsContent
             value="todo"
@@ -728,7 +749,7 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
               <div data-testid="planner-secondary-tabs" className="rounded-xl border border-border/40 bg-card/30 p-3 md:p-4">
                 <Tabs defaultValue="planner-ideas" className="w-full">
                   <div className="flex items-center justify-between gap-2 mb-3">
-                    <p className="text-xs text-muted-foreground">Switch between idea intake and milestone planning.</p>
+                    <p className="text-xs text-muted-foreground">Switch between idea intake, milestone planning, and ticket table view.</p>
                     <TabsList>
                       <TabsTrigger value="planner-ideas" className="gap-1.5">
                         <Lightbulb className="size-3.5" />
@@ -737,6 +758,14 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
                       <TabsTrigger value="planner-milestones" className="gap-1.5">
                         <Flag className="size-3.5" />
                         Milestones
+                      </TabsTrigger>
+                      <TabsTrigger value="planner-tickets" className="gap-1.5">
+                        <ListTodo className="size-3.5" />
+                        Tickets
+                      </TabsTrigger>
+                      <TabsTrigger value="planner-discrepancies" className="gap-1.5">
+                        <Activity className="size-3.5" />
+                        Discrepancies
                       </TabsTrigger>
                     </TabsList>
                   </div>
@@ -751,6 +780,14 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
                       projectId={projectId}
                       onTicketAdded={() => setPlannerRefreshKey((k) => k + 1)}
                     />
+                  </TabsContent>
+
+                  <TabsContent value="planner-tickets" className="mt-0">
+                    <ProjectPlannerTicketsTab projectId={projectId} />
+                  </TabsContent>
+
+                  <TabsContent value="planner-discrepancies" className="mt-0">
+                    <ProjectPlannerDiscrepanciesTab projectId={projectId} />
                   </TabsContent>
                 </Tabs>
               </div>

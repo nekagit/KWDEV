@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import { runAgentPrompt } from "@/lib/agent-runner";
+import { buildUntrustedInputSection, safeJsonParseWithContract } from "@/lib/prompt-contracts";
 
 export const dynamic = "force-static";
 
@@ -48,10 +49,12 @@ Output only a single JSON object with exactly these keys (no markdown, no code f
 - "priority": One of "P0", "P1", "P2", "P3". P0 = critical/foundation, P1 = high, P2 = medium, P3 = lower/later. Default to P1 if unclear.
 - "featureName": A feature or area this ticket belongs to (e.g. "Settings", "Authentication", "Uncategorized"). Use a sensible grouping.`;
 
+  const featuresBlock = buildUntrustedInputSection("EXISTING_FEATURES", existingFeatures.join(", "));
+  const requestBlock = buildUntrustedInputSection("USER_REQUEST", prompt);
   const userContent =
     existingFeatures.length > 0
-      ? `Existing feature names in this project (prefer reusing one if it fits): ${existingFeatures.join(", ")}\n\nUser request:\n${prompt}`
-      : `User request:\n${prompt}`;
+      ? `Existing feature names in this project (prefer reusing one if it fits):\n${featuresBlock}\n\nUser request:\n${requestBlock}`
+      : `User request:\n${requestBlock}`;
 
   const combinedPrompt = [systemPrompt, "", userContent].join("\n");
   const cwd = typeof body.projectPath === "string" && body.projectPath.trim()
@@ -63,15 +66,22 @@ Output only a single JSON object with exactly these keys (no markdown, no code f
   }
 
   try {
-    const raw = await runAgentPrompt(cwd, combinedPrompt);
-    const jsonMatch = raw.match(/\{[\s\S]*\}/);
-    const jsonStr = jsonMatch ? jsonMatch[0] : raw;
-    let parsed: Record<string, unknown>;
-    try {
-      parsed = JSON.parse(jsonStr);
-    } catch {
+    let parsed: Record<string, unknown> = {};
+    let parsedOk = false;
+    let lastRaw = "";
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const strictSuffix = attempt === 0 ? "" : "\n\nIMPORTANT: Return strict JSON object only.";
+      lastRaw = await runAgentPrompt(cwd, combinedPrompt + strictSuffix);
+      const parsedResult = safeJsonParseWithContract(lastRaw, "object");
+      if (parsedResult.ok) {
+        parsed = parsedResult.data as Record<string, unknown>;
+        parsedOk = true;
+        break;
+      }
+    }
+    if (!parsedOk) {
       return NextResponse.json(
-        { error: "Model did not return valid JSON", raw },
+        { error: "Model did not return strict JSON object", raw: lastRaw },
         { status: 502 }
       );
     }

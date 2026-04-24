@@ -1,6 +1,7 @@
 /** route component. */
 import { NextRequest, NextResponse } from "next/server";
 import { getDb, type ImplementationLogRow } from "@/lib/db";
+import { safeJsonArray } from "@/lib/db-json";
 
 export const dynamic = "force-static";
 
@@ -18,7 +19,7 @@ function rowToEntry(r: ImplementationLogRow) {
     milestone_id: r.milestone_id ?? undefined,
     idea_id: r.idea_id ?? undefined,
     completed_at: r.completed_at,
-    files_changed: JSON.parse(r.files_changed) as { path: string; status: string }[],
+    files_changed: safeJsonArray<{ path: string; status: string }>(r.files_changed),
     summary: r.summary,
     created_at: r.created_at,
     status: r.status ?? "pending",
@@ -61,13 +62,27 @@ export async function POST(
     const ticketTitle = typeof body.ticket_title === "string" ? body.ticket_title.trim() : "";
     const completedAt = typeof body.completed_at === "string" ? body.completed_at : new Date().toISOString();
     const filesChanged = Array.isArray(body.files_changed)
-      ? body.files_changed
+      ? body.files_changed.filter(
+          (entry: unknown): entry is { path: string; status: string } =>
+            typeof entry === "object" &&
+            entry !== null &&
+            "path" in entry &&
+            "status" in entry &&
+            typeof (entry as { path: unknown }).path === "string" &&
+            typeof (entry as { status: unknown }).status === "string"
+        )
       : [];
     const summary = typeof body.summary === "string" ? body.summary : "";
     const milestoneId =
       typeof body.milestone_id === "number" ? body.milestone_id : null;
     const ideaId = typeof body.idea_id === "number" ? body.idea_id : null;
 
+    if (!runId || ticketNumber < 1 || !ticketTitle) {
+      return NextResponse.json(
+        { error: "run_id, ticket_number, and ticket_title are required" },
+        { status: 400 }
+      );
+    }
     const db = getDb();
     const now = new Date().toISOString();
     const r = db

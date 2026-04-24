@@ -8,6 +8,10 @@ import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { UIThemeProvider } from "@/context/ui-theme";
 import { QuickActionsProvider } from "@/context/quick-actions-context";
+import { Inter } from "next/font/google";
+
+const inter = Inter({ subsets: ["latin"], display: "swap", variable: "--font-inter" });
+
 
 export const metadata: Metadata = {
   title: "KWDEV",
@@ -60,7 +64,7 @@ export default function RootLayout({
           @keyframes root-loading-pulse { 0%,100% { opacity: 0.4; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1); } }
         `}} />
       </head>
-      <body suppressHydrationWarning className="min-h-screen antialiased bg-background text-foreground" style={{ background: "hsl(var(--background))", color: "hsl(var(--foreground))" }}>
+      <body suppressHydrationWarning className={`${inter.variable} font-sans min-h-screen antialiased bg-background text-foreground`} style={{ background: "hsl(var(--background))", color: "hsl(var(--foreground))" }}>
         {/* If React never hydrates (e.g. chunk load failed), hide overlay after 15s so user sees the page or can refresh */}
         <script
           dangerouslySetInnerHTML={{

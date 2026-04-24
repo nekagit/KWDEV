@@ -1,6 +1,7 @@
 /** route component. */
 import { NextRequest, NextResponse } from "next/server";
 import { getDb, type ImplementationLogRow } from "@/lib/db";
+import { safeJsonArray } from "@/lib/db-json";
 
 export const dynamic = "force-static";
 
@@ -18,7 +19,7 @@ function rowToEntry(r: ImplementationLogRow) {
     milestone_id: r.milestone_id ?? undefined,
     idea_id: r.idea_id ?? undefined,
     completed_at: r.completed_at,
-    files_changed: JSON.parse(r.files_changed) as { path: string; status: string }[],
+    files_changed: safeJsonArray<{ path: string; status: string }>(r.files_changed),
     summary: r.summary,
     created_at: r.created_at,
     status: r.status ?? "pending",

@@ -3,16 +3,17 @@ import fs from "node:fs";
 import path from "node:path";
 
 describe("project rules categories", () => {
-  it("shows architecture, testing, and security categories inside rules tab", () => {
+  it("uses a single rules table without architecture/testing/security sub-tabs", () => {
     const projectTabPath = path.join(
       process.cwd(),
       "src/components/organisms/Tabs/ProjectProjectTab.tsx"
     );
     const source = fs.readFileSync(projectTabPath, "utf8");
 
-    expect(source).toContain("const RULE_CATEGORY_TABS = [\"architecture\", \"testing\", \"security\"] as const;");
-    expect(source).toContain('<TabsTrigger key={category} value={category}');
-    expect(source).toContain('<TabsContent key={category} value={category}');
-    expect(source).toContain("categoryFilter={category}");
+    expect(source).toContain('<TabsContent value="rules" className="mt-0">');
+    expect(source).toContain('entityType="rules"');
+    expect(source).not.toContain("const RULE_CATEGORY_TABS");
+    expect(source).not.toContain('<TabsTrigger key={category} value={category}');
+    expect(source).not.toContain("categoryFilter={category}");
   });
 });

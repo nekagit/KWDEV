@@ -2,6 +2,7 @@
  * Prompts data access: read/write from DB only.
  */
 import { getDb, type PromptRow } from "@/lib/db";
+import { safeJsonArray } from "@/lib/db-json";
 
 export interface PromptRecordRecord {
   id: number;
@@ -19,7 +20,7 @@ function rowToRecord(r: PromptRow): PromptRecordRecord {
     title: r.title,
     content: r.content,
     category: r.category ?? null,
-    tags: r.tags ? (JSON.parse(r.tags) as string[]) : null,
+    tags: safeJsonArray<string>(r.tags),
     created_at: r.created_at,
     updated_at: r.updated_at,
   };
@@ -62,13 +63,22 @@ export function createOrUpdatePrompt(data: {
     }
   }
 
-  const maxId = db.prepare("SELECT COALESCE(MAX(id), 0) AS m FROM prompts").get() as { m: number };
-  const nextId = maxId.m + 1;
-  db.prepare(
-    "INSERT INTO prompts (id, title, content, category, tags, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
-  ).run(nextId, title, content, category, tags, now, now);
-  const row = db.prepare("SELECT * FROM prompts WHERE id = ?").get(nextId) as PromptRow;
-  return rowToRecord(row);
+  let attempts = 0;
+  while (attempts < 3) {
+    const maxId = db.prepare("SELECT COALESCE(MAX(id), 0) AS m FROM prompts").get() as { m: number };
+    const nextId = maxId.m + 1;
+    try {
+      db.prepare(
+        "INSERT INTO prompts (id, title, content, category, tags, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
+      ).run(nextId, title, content, category, tags, now, now);
+      const row = db.prepare("SELECT * FROM prompts WHERE id = ?").get(nextId) as PromptRow;
+      return rowToRecord(row);
+    } catch (error) {
+      attempts += 1;
+      if (attempts >= 3) throw error;
+    }
+  }
+  throw new Error("Failed to allocate prompt id");
 }
 
 export function deletePrompt(id: number): boolean {

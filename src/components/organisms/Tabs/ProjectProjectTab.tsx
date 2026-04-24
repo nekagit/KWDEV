@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Bot, FileText, FolderGit2, MessageSquare, Palette, Plug, ShieldCheck, Star, TestTube2, Waypoints, Wrench } from "lucide-react";
+import { Bot, FileText, FolderGit2, Palette, Plug, ShieldCheck, Star, TestTube2, Waypoints, Wrench } from "lucide-react";
 import { EmptyState } from "@/components/molecules/Display/EmptyState";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,15 +9,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { listProjectFiles, type FileEntry } from "@/lib/api-projects";
 import { PROJECT_DIR } from "@/lib/cursor-paths";
 import { ProjectFilesTab } from "@/components/organisms/Tabs/ProjectFilesTab";
-import { ProjectDesignTab } from "@/components/organisms/Tabs/ProjectDesignTab";
 import { SetupEntityTableSection } from "@/components/organisms/Tabs/SetupEntityTableSection";
 import type { Project } from "@/types/project";
 
 const ADR_DIR = ".cursor/adr";
-const RULE_CATEGORY_TABS = ["architecture", "testing", "security"] as const;
 
 const PROJECT_INNER_TABS = ["project-files", "adr"] as const;
-const SETUP_INNER_TABS = ["prompts", "skills", "design", "rules", "mcp", "agents"] as const;
+const SETUP_INNER_TABS = ["architecture", "testing", "security", "skills", "design", "rules", "mcp", "agents"] as const;
 
 function formatSize(bytes: number): string {
   if (bytes === 0) return "0 B";
@@ -123,9 +121,17 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, mode }: 
             </>
           ) : (
             <>
-              <TabsTrigger value="prompts" className="gap-1.5 text-xs data-[state=active]:bg-background">
-                <MessageSquare className="size-3.5" />
-                Prompts
+              <TabsTrigger value="architecture" className="gap-1.5 text-xs data-[state=active]:bg-background">
+                <Waypoints className="size-3.5" />
+                Architecture
+              </TabsTrigger>
+              <TabsTrigger value="testing" className="gap-1.5 text-xs data-[state=active]:bg-background">
+                <TestTube2 className="size-3.5" />
+                Testing
+              </TabsTrigger>
+              <TabsTrigger value="security" className="gap-1.5 text-xs data-[state=active]:bg-background">
+                <ShieldCheck className="size-3.5" />
+                Security
               </TabsTrigger>
               <TabsTrigger value="skills" className="gap-1.5 text-xs data-[state=active]:bg-background">
                 <Star className="size-3.5" />
@@ -194,8 +200,35 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, mode }: 
         )}
 
         {mode === "setup" && (
-          <TabsContent value="prompts" className="mt-0">
-            <SetupEntityTableSection projectId={projectId} projectPath={project.repoPath} entityType="prompts" />
+          <TabsContent value="architecture" className="mt-0">
+            <SetupEntityTableSection
+              projectId={projectId}
+              projectPath={project.repoPath}
+              entityType="rules"
+              categoryFilter="architecture"
+            />
+          </TabsContent>
+        )}
+
+        {mode === "setup" && (
+          <TabsContent value="testing" className="mt-0">
+            <SetupEntityTableSection
+              projectId={projectId}
+              projectPath={project.repoPath}
+              entityType="rules"
+              categoryFilter="testing"
+            />
+          </TabsContent>
+        )}
+
+        {mode === "setup" && (
+          <TabsContent value="security" className="mt-0">
+            <SetupEntityTableSection
+              projectId={projectId}
+              projectPath={project.repoPath}
+              entityType="rules"
+              categoryFilter="security"
+            />
           </TabsContent>
         )}
 
@@ -207,44 +240,22 @@ export function ProjectProjectTab({ project, projectId, docsRefreshKey, mode }: 
 
         {mode === "setup" && (
           <TabsContent value="design" className="mt-0">
-            <div className="rounded-xl border border-border/40 bg-card/50 backdrop-blur-sm p-4 md:p-6">
-              <ProjectDesignTab project={project} projectId={projectId} showHeader={false} />
-            </div>
+            <SetupEntityTableSection
+              projectId={projectId}
+              projectPath={project.repoPath}
+              entityType="rules"
+              categoryFilter="design"
+            />
           </TabsContent>
         )}
 
         {mode === "setup" && (
           <TabsContent value="rules" className="mt-0">
-            <Tabs defaultValue="architecture" className="w-full">
-              <TabsList className="flex flex-wrap gap-1 bg-muted/50 border border-border/40 rounded-lg p-1 mb-4">
-                {RULE_CATEGORY_TABS.map((category) => (
-                  <TabsTrigger key={category} value={category} className="gap-1.5 text-xs data-[state=active]:bg-background">
-                    {category === "architecture" ? (
-                      <Waypoints className="size-3.5" />
-                    ) : category === "testing" ? (
-                      <TestTube2 className="size-3.5" />
-                    ) : (
-                      <ShieldCheck className="size-3.5" />
-                    )}
-                    {category === "architecture"
-                      ? "Architecture"
-                      : category === "testing"
-                        ? "Testing"
-                        : "Security"}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-              {RULE_CATEGORY_TABS.map((category) => (
-                <TabsContent key={category} value={category}>
-                  <SetupEntityTableSection
-                    projectId={projectId}
-                    projectPath={project.repoPath}
-                    entityType="rules"
-                    categoryFilter={category}
-                  />
-                </TabsContent>
-              ))}
-            </Tabs>
+            <SetupEntityTableSection
+              projectId={projectId}
+              projectPath={project.repoPath}
+              entityType="rules"
+            />
           </TabsContent>
         )}
 

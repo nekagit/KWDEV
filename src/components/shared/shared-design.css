@@ -8,14 +8,14 @@
    Design tokens (usable by Tailwind or direct CSS)
    --------------------------------------------------------------------------- */
 :root {
-  /* Smooth, layered shadows (best practice: soft, multi-layer) */
-  --shared-shadow-sm: 0 1px 2px hsl(0 0% 0% / 0.03), 0 1px 3px hsl(0 0% 0% / 0.03);
-  --shared-shadow: 0 1px 3px hsl(0 0% 0% / 0.04), 0 2px 6px hsl(0 0% 0% / 0.03),
-    0 4px 12px hsl(0 0% 0% / 0.02);
-  --shared-shadow-md: 0 2px 4px hsl(0 0% 0% / 0.04), 0 4px 8px hsl(0 0% 0% / 0.04),
-    0 8px 16px hsl(0 0% 0% / 0.03);
-  --shared-shadow-lg: 0 4px 8px hsl(0 0% 0% / 0.05), 0 8px 16px hsl(0 0% 0% / 0.04),
-    0 16px 32px hsl(0 0% 0% / 0.03);
+  /* Elevated multi-layer shadows (Modern Awwwards-tier) */
+  --shared-shadow-sm: 0 1px 2px hsl(0 0% 0% / 0.04), 0 2px 4px hsl(0 0% 0% / 0.02);
+  --shared-shadow: 0 2px 8px -2px hsl(0 0% 0% / 0.05), 0 4px 16px -4px hsl(0 0% 0% / 0.02);
+  --shared-shadow-md: 0 4px 16px -4px hsl(0 0% 0% / 0.08), 0 8px 24px -8px hsl(0 0% 0% / 0.04);
+  --shared-shadow-lg: 0 12px 32px -4px hsl(0 0% 0% / 0.12), 0 4px 12px -4px hsl(0 0% 0% / 0.06);
+
+  /* Double bezel inner highlight */
+  --shared-inner-bezel: inset 0 1px 0 0 hsl(100% 100% 100% / 0.05);
 
   /* Typography: larger, readable base */
   --shared-font-size-base: 1rem;
@@ -97,14 +97,14 @@
 /* Cards and elevated surfaces: smooth shadow by default */
 [data-shared-ui].shared-card,
 [data-shared-ui] [class*="bg-card"][class*="rounded"] {
-  box-shadow: var(--shared-shadow);
+  box-shadow: var(--shared-shadow), var(--shared-inner-bezel);
   border-radius: var(--shared-radius);
   transition: box-shadow var(--shared-transition), transform var(--shared-transition);
 }
 
 [data-shared-ui].shared-card:hover,
 [data-shared-ui] [class*="bg-card"][class*="rounded"]:hover {
-  box-shadow: var(--shared-shadow-md);
+  box-shadow: var(--shared-shadow-md), var(--shared-inner-bezel);
   transform: translateY(-1px);
 }
 

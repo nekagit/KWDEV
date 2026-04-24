@@ -19,7 +19,7 @@ pub use legacy::{
 };
 pub use milestones_ideas::{
     create_idea, create_milestone, delete_idea, delete_milestone, get_ideas_list,
-    get_milestones_for_project,
+    get_milestones_for_project, run_integrity_audit_for_project,
 };
 pub use plan::{
     create_plan_ticket, delete_plan_ticket, get_plan_kanban_state_for_project,
