@@ -105,7 +105,7 @@ fn create_template_plan_tickets_for_idea(
             .query_row(
                 "SELECT COALESCE(MAX(number), 0) FROM plan_tickets WHERE project_id = ?1",
                 rusqlite::params![project_id.trim()],
-                |row| row.get(0),
+                |row| row.get::<_, i64>(0),
             )
             .map_err(|e| e.to_string())?
             + 1;
@@ -161,14 +161,16 @@ pub fn create_idea(
         create_template_plan_tickets_for_idea(conn, project_id, id, milestone_id, title, &now)?;
         Ok::<i64, String>(id)
     })();
-    match result {
-        Ok(_) => conn.execute("COMMIT", []).map_err(|e| e.to_string())?,
+    let id = match result {
+        Ok(inserted_id) => {
+            conn.execute("COMMIT", []).map_err(|e| e.to_string())?;
+            inserted_id
+        }
         Err(e) => {
             let _ = conn.execute("ROLLBACK", []);
             return Err(e);
         }
-    }
-    let id = conn.last_insert_rowid();
+    };
     let (project_id_out, title_out, description_out, category_out, source_out, created_at, updated_at): (
         Option<String>, String, String, String, String, String, String,
     ) = conn

@@ -12,7 +12,8 @@ import {
     FileJson,
     FileImage,
     MoreVertical,
-    Trash2
+    Trash2,
+    Link2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -28,6 +29,19 @@ import type { Project } from "@/types/project";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
+import {
+    fileEntryKindLabel,
+    formatEntryTimestamp,
+    formatPermissionsCell,
+} from "@/lib/project-files-display";
 
 interface ProjectFilesTabProps {
     project: Project;
@@ -215,65 +229,101 @@ export function ProjectFilesTab({ project, projectId, onStateChange }: ProjectFi
                         <p className="text-xs">Empty directory</p>
                     </div>
                 ) : (
-                    <div className="flex flex-col p-2">
-                        {files.map((file) => (
-                            <div
-                                key={file.name}
-                                className={cn(
-                                    "group flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer",
-                                    "hover:bg-accent/50 active:bg-accent"
-                                )}
-                                onClick={() => handleNavigate(file)}
-                            >
-                                <div className="flex items-center gap-3 overflow-hidden">
-                                    {file.isDirectory ? (
-                                        <Folder className="h-4 w-4 text-blue-400 shrink-0" fill="currentColor" fillOpacity={0.2} />
-                                    ) : (
-                                        (() => {
-                                            const Icon = getFileIcon(file.name);
-                                            return <Icon className="h-4 w-4 text-muted-foreground shrink-0" />;
-                                        })()
-                                    )}
-                                    <span className={cn(
-                                        "truncate",
-                                        file.isDirectory && "font-medium text-foreground",
-                                        !file.isDirectory && "text-muted-foreground group-hover:text-foreground"
-                                    )}>
-                                        {file.name}
-                                    </span>
-                                </div>
-
-                                <div className="flex items-center gap-3 text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <span>{file.isDirectory ? "-" : formatSize(file.size)}</span>
-                                    {!file.isDirectory && (
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                                <Button variant="ghost" size="icon" className="h-6 w-6">
-                                                    <MoreVertical className="h-3 w-3" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleOpenFile(file); }}>
-                                                    View
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem
-                                                    className="text-destructive focus:text-destructive"
-                                                    onClick={(e) => handleDeleteFile(file, e)}
-                                                    disabled={deletingPath === fullPathFor(file)}
-                                                >
-                                                    {deletingPath === fullPathFor(file) ? (
-                                                        <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" />
-                                                    ) : (
-                                                        <Trash2 className="h-3.5 w-3.5 mr-2" />
+                    <div className="w-full overflow-auto max-h-[min(70vh,560px)]">
+                        <Table className="min-w-[820px] text-xs">
+                            <TableHeader>
+                                <TableRow className="hover:bg-transparent border-border/60">
+                                    <TableHead className="w-[28%] min-w-[140px]">Name</TableHead>
+                                    <TableHead className="w-[9%] whitespace-nowrap">Kind</TableHead>
+                                    <TableHead className="w-[10%] text-right whitespace-nowrap">Size</TableHead>
+                                    <TableHead className="w-[15%] whitespace-nowrap">Modified</TableHead>
+                                    <TableHead className="w-[15%] whitespace-nowrap">Created</TableHead>
+                                    <TableHead className="w-[11%] font-mono text-[11px] whitespace-nowrap">Mode</TableHead>
+                                    <TableHead className="w-[48px] text-right pr-3"> </TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {files.map((file) => (
+                                    <TableRow
+                                        key={file.name}
+                                        data-testid={`project-file-row-${file.name}`}
+                                        className={cn(
+                                            "cursor-pointer",
+                                            "hover:bg-accent/50 active:bg-accent"
+                                        )}
+                                        onClick={() => handleNavigate(file)}
+                                    >
+                                        <TableCell className="font-medium">
+                                            <div className="flex items-center gap-2 min-w-0">
+                                                {file.isSymbolicLink ? (
+                                                    <Link2 className="h-3.5 w-3.5 text-amber-500/90 shrink-0" aria-hidden />
+                                                ) : file.isDirectory ? (
+                                                    <Folder className="h-3.5 w-3.5 text-blue-400 shrink-0" fill="currentColor" fillOpacity={0.2} />
+                                                ) : (
+                                                    (() => {
+                                                        const Icon = getFileIcon(file.name);
+                                                        return <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />;
+                                                    })()
+                                                )}
+                                                <span
+                                                    className={cn(
+                                                        "truncate",
+                                                        file.isDirectory && "text-foreground",
+                                                        !file.isDirectory && "text-muted-foreground"
                                                     )}
-                                                    Delete
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
+                                                    title={fullPathFor(file)}
+                                                >
+                                                    {file.name}
+                                                </span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-muted-foreground whitespace-nowrap">
+                                            {fileEntryKindLabel(file)}
+                                        </TableCell>
+                                        <TableCell className="text-right tabular-nums text-muted-foreground whitespace-nowrap">
+                                            {file.isDirectory ? "—" : formatSize(file.size)}
+                                        </TableCell>
+                                        <TableCell className="text-muted-foreground whitespace-nowrap">
+                                            {formatEntryTimestamp(file.updatedAt)}
+                                        </TableCell>
+                                        <TableCell className="text-muted-foreground whitespace-nowrap">
+                                            {formatEntryTimestamp(file.createdAt)}
+                                        </TableCell>
+                                        <TableCell className="font-mono text-[11px] text-muted-foreground whitespace-nowrap">
+                                            {formatPermissionsCell(file.permissions)}
+                                        </TableCell>
+                                        <TableCell className="text-right pr-1" onClick={(e) => e.stopPropagation()}>
+                                            {!file.isDirectory && (
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="icon" className="h-7 w-7">
+                                                            <MoreVertical className="h-3.5 w-3.5" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem onClick={() => void handleOpenFile(file)}>
+                                                            View
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem
+                                                            className="text-destructive focus:text-destructive"
+                                                            onClick={(e) => handleDeleteFile(file, e)}
+                                                            disabled={deletingPath === fullPathFor(file)}
+                                                        >
+                                                            {deletingPath === fullPathFor(file) ? (
+                                                                <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" />
+                                                            ) : (
+                                                                <Trash2 className="h-3.5 w-3.5 mr-2" />
+                                                            )}
+                                                            Delete
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            )}
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
                     </div>
                 )}
             </div>

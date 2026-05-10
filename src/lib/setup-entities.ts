@@ -9,6 +9,13 @@ import {
   type ProjectConfigType,
   type ProjectDocType,
 } from "@/lib/api-projects";
+import {
+  mergeAgentStarters,
+  mergeMcpStarters,
+  mergeRuleStarters,
+  mergeSkillStarters,
+  type StarterEntityRow,
+} from "@/lib/setup-entity-starters";
 
 export type SetupEntityType = "prompts" | "skills" | "rules" | "mcp" | "agents";
 
@@ -101,6 +108,46 @@ async function writeToDb(projectId: string, entityType: SetupEntityType, records
   }
   const docType = DOC_TYPE_BY_ENTITY[entityType];
   await setProjectDoc(projectId, docType, JSON.stringify(records, null, 2));
+}
+
+async function applyDefaultStarters(projectId: string, entityType: SetupEntityType): Promise<void> {
+  const now = NOW();
+  if (entityType === "prompts") return;
+
+  if (entityType === "rules") {
+    const current = await listFromDb(projectId, "rules");
+    const merged = mergeRuleStarters(current as unknown as StarterEntityRow[], now) as SetupEntityRecord[];
+    if (merged.length > current.length) {
+      await writeToDb(projectId, "rules", merged);
+    }
+    return;
+  }
+
+  if (entityType === "skills") {
+    const current = await listFromDb(projectId, "skills");
+    const merged = mergeSkillStarters(current as unknown as StarterEntityRow[], now) as SetupEntityRecord[];
+    if (merged.length > current.length) {
+      await writeToDb(projectId, "skills", merged);
+    }
+    return;
+  }
+
+  if (entityType === "mcp") {
+    const current = await listFromDb(projectId, "mcp");
+    const merged = mergeMcpStarters(current as unknown as StarterEntityRow[], now) as SetupEntityRecord[];
+    if (merged.length > current.length) {
+      await writeToDb(projectId, "mcp", merged);
+    }
+    return;
+  }
+
+  if (entityType === "agents") {
+    const current = await listFromDb(projectId, "agents");
+    const merged = mergeAgentStarters(current as unknown as StarterEntityRow[], now) as SetupEntityRecord[];
+    if (merged.length > current.length) {
+      await writeToDb(projectId, "agents", merged);
+    }
+  }
 }
 
 function parseAgentFrontmatter(content: string): { name?: string; description?: string } {
@@ -202,19 +249,17 @@ export async function ensureSetupEntityMigrated(
   entityType: SetupEntityType
 ): Promise<void> {
   const state = await getMigrationState(projectId);
-  if (state.migrated[entityType]) return;
-
-  const current = await listFromDb(projectId, entityType);
-  if (current.length > 0) {
+  if (!state.migrated[entityType]) {
+    let records = await listFromDb(projectId, entityType);
+    if (records.length === 0) {
+      const imported = await importLegacyRecords(projectId, projectPath, entityType);
+      if (imported.length > 0) {
+        await writeToDb(projectId, entityType, imported);
+      }
+    }
     await setMigrated(projectId, entityType);
-    return;
   }
-
-  const imported = await importLegacyRecords(projectId, projectPath, entityType);
-  if (imported.length > 0) {
-    await writeToDb(projectId, entityType, imported);
-  }
-  await setMigrated(projectId, entityType);
+  await applyDefaultStarters(projectId, entityType);
 }
 
 export async function listSetupEntities(projectId: string, entityType: SetupEntityType): Promise<SetupEntityRecord[]> {

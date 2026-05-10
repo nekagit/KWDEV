@@ -15,7 +15,7 @@ describe("project bottom tabs drag and drop", () => {
     expect(source).toContain("onDragOver");
     expect(source).toContain("onDrop");
     expect(source).toContain("kwdev-project-bottom-tab-order");
-    expect(source).toContain('const DEFAULT_BOTTOM_TAB_ORDER = ["project", "run", "setup", "todo", "worker", "control", "git"] as const;');
+    expect(source).toContain('const DEFAULT_BOTTOM_TAB_ORDER = ["project", "run", "setup", "prompts", "todo", "worker", "control", "git"] as const;');
     expect(source).toContain('const LEGACY_BOTTOM_TAB_ORDER = ["project", "todo", "run", "setup", "worker", "control", "git"] as const;');
     expect(source).toContain("const todoIndex = completed.indexOf(\"todo\");");
     expect(source).toContain("const workerIndex = completed.indexOf(\"worker\");");

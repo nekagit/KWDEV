@@ -4,6 +4,7 @@ import path from "path";
 import fs from "fs";
 import { repoAllowed } from "@/lib/repo-allowed";
 import { getProjectById } from "@/lib/data/projects";
+import { formatUnixPermissionString } from "@/lib/project-files-display";
 
 export const dynamic = "force-static";
 
@@ -63,12 +64,28 @@ export async function GET(
 
         const entries = fs.readdirSync(resolved, { withFileTypes: true });
 
-        const files = entries.map((entry) => ({
-            name: entry.name,
-            isDirectory: entry.isDirectory(),
-            size: entry.isDirectory() ? 0 : fs.statSync(path.join(resolved, entry.name)).size,
-            updatedAt: fs.statSync(path.join(resolved, entry.name)).mtime,
-        }));
+        const files = entries.map((entry) => {
+            const entryPath = path.join(resolved, entry.name);
+            const st = fs.statSync(entryPath);
+            const isSymlink = entry.isSymbolicLink();
+            const isDirectory = st.isDirectory();
+            const permissions =
+                process.platform === "win32"
+                    ? "—"
+                    : formatUnixPermissionString(st.mode, {
+                          isDirectory,
+                          isSymbolicLink: isSymlink,
+                      });
+            return {
+                name: entry.name,
+                isDirectory,
+                isSymbolicLink: isSymlink,
+                size: isDirectory ? 0 : st.size,
+                updatedAt: st.mtime.toISOString(),
+                createdAt: st.birthtime.toISOString(),
+                permissions,
+            };
+        });
 
         return NextResponse.json({ files });
     } catch (e) {

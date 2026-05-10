@@ -1,20 +1,55 @@
 import path from "path";
 import { fileURLToPath } from "url";
+import webpack from "webpack";
+import { resolveNextOutput } from "./script/next-output.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+const output = resolveNextOutput(process.env);
+
 /** @type {import('next').NextConfig} */
-// Static export only for production build (Tauri uses ../out). Dev server needs full Next so API routes work.
 const nextConfig = {
-  ...(process.env.NODE_ENV === "production" && { output: "export" }),
+  ...(output ? { output } : {}),
   images: {
     unoptimized: true,
   },
-  // No assetPrefix in dev: layout.tsx <base href="http://127.0.0.1:4000/"> handles Tauri webview; assetPrefix can break CSS in Next 15.
   assetPrefix: undefined,
   serverExternalPackages: ["ssh2"],
-  // Force resolution of sonner and Next internal loaders from project node_modules
   webpack: (config, { isServer }) => {
+    config.plugins.push(
+      new webpack.NormalModuleReplacementPlugin(
+        /@tauri-apps\/api\/core/,
+        (resource) => {
+          if (process.env.NEXT_PUBLIC_IS_TAURI !== "true") {
+            resource.request = path.resolve(__dirname, "./src/lib/noop-tauri-api");
+          }
+        }
+      ),
+      new webpack.NormalModuleReplacementPlugin(
+        /@tauri-apps\/api\/event/,
+        (resource) => {
+          if (process.env.NEXT_PUBLIC_IS_TAURI !== "true") {
+            resource.request = path.resolve(__dirname, "./src/lib/noop-tauri-api");
+          }
+        }
+      ),
+      new webpack.NormalModuleReplacementPlugin(
+        /@tauri-apps\/api\/dialog/,
+        (resource) => {
+          if (process.env.NEXT_PUBLIC_IS_TAURI !== "true") {
+            resource.request = path.resolve(__dirname, "./src/lib/noop-tauri-api");
+          }
+        }
+      ),
+      new webpack.NormalModuleReplacementPlugin(
+        /@tauri-apps\/api\/tauri/,
+        (resource) => {
+          if (process.env.NEXT_PUBLIC_IS_TAURI !== "true") {
+            resource.request = path.resolve(__dirname, "./src/lib/noop-tauri-api");
+          }
+        }
+      )
+    );
     if (isServer) {
       config.externals.push("ssh2");
     }
@@ -22,7 +57,6 @@ const nextConfig = {
       ...config.resolve.alias,
       sonner: path.resolve(__dirname, "node_modules/sonner"),
     };
-    // Fix "Can't resolve 'next-flight-client-entry-loader'" (Next 15.0.3 with ESM config)
     const nextLoadersDir = path.resolve(
       __dirname,
       "node_modules/next/dist/build/webpack/loaders"
@@ -35,11 +69,10 @@ const nextConfig = {
         "next-flight-client-entry-loader.js"
       ),
     };
-    // Tauri webview can be slower to load chunks; avoid "Loading chunk app/layout failed (timeout)"
     if (!isServer) {
       config.output = {
         ...config.output,
-        chunkLoadTimeout: 180000, // 3 minutes (default 120s can be too short in Tauri dev)
+        chunkLoadTimeout: 180000,
       };
     }
     return config;

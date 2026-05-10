@@ -1579,9 +1579,45 @@ pub struct DirListingEntry {
     pub name: String,
     #[serde(rename = "isDirectory")]
     pub is_directory: bool,
+    #[serde(rename = "isSymbolicLink")]
+    pub is_symbolic_link: bool,
     pub size: u64,
     #[serde(rename = "updatedAt")]
     pub updated_at: String,
+    #[serde(rename = "createdAt")]
+    pub created_at: String,
+    pub permissions: String,
+}
+
+#[cfg(unix)]
+fn unix_permission_display(meta: &std::fs::Metadata, is_directory: bool, is_symlink: bool) -> String {
+    use std::os::unix::fs::PermissionsExt;
+    let mode = meta.permissions().mode();
+    let perm_bits = mode & 0o777;
+    let triple = |n: u32| {
+        format!(
+            "{}{}{}",
+            if n & 4 != 0 { 'r' } else { '-' },
+            if n & 2 != 0 { 'w' } else { '-' },
+            if n & 1 != 0 { 'x' } else { '-' },
+        )
+    };
+    let u = (perm_bits >> 6) & 7;
+    let g = (perm_bits >> 3) & 7;
+    let o = perm_bits & 7;
+    let first = if is_symlink {
+        'l'
+    } else if is_directory {
+        'd'
+    } else {
+        '-'
+    };
+    format!("{}{}{}{}", first, triple(u), triple(g), triple(o))
+}
+
+#[cfg(not(unix))]
+fn unix_permission_display(_meta: &std::fs::Metadata, _is_directory: bool, _is_symlink: bool) -> String {
+    "-".to_string()
 }
 
 /// Return the KWDEV workspace root (contains script/, data/). Used so the app can load prompts and agents from this repo instead of the target project's .cursor.
@@ -1624,6 +1660,8 @@ fn list_files_under_root(root: String, path: String) -> Result<Vec<DirListingEnt
         if name.is_empty() || name == "." || name == ".." {
             continue;
         }
+        let file_type = e.file_type().map_err(|e| e.to_string())?;
+        let is_symlink = file_type.is_symlink();
         let meta = std::fs::metadata(&path).map_err(|e| e.to_string())?;
         let is_directory = path.is_dir();
         let size = if is_directory { 0 } else { meta.len() };
@@ -1635,11 +1673,23 @@ fn list_files_under_root(root: String, path: String) -> Result<Vec<DirListingEnt
                 dt.format("%Y-%m-%dT%H:%M:%SZ").to_string()
             })
             .unwrap_or_default();
+        let created_at = meta
+            .created()
+            .ok()
+            .map(|t| {
+                let dt: DateTime<Utc> = t.into();
+                dt.format("%Y-%m-%dT%H:%M:%SZ").to_string()
+            })
+            .unwrap_or_default();
+        let permissions = unix_permission_display(&meta, is_directory, is_symlink);
         entries.push(DirListingEntry {
             name,
             is_directory,
+            is_symbolic_link: is_symlink,
             size,
             updated_at,
+            created_at,
+            permissions,
         });
     }
     entries.sort_by(|a, b| {
@@ -3661,6 +3711,19 @@ fn open_dir_in_file_manager(dir: &Path) -> Result<(), String> {
     Ok(())
 }
 
+/// Open an http(s) URL in the system default browser (used when embedded WebView iframe previews are blank).
+#[tauri::command]
+fn open_external_url(url: String) -> Result<(), String> {
+    let u = url.trim();
+    if u.is_empty() {
+        return Err("URL is empty".to_string());
+    }
+    if !(u.starts_with("http://") || u.starts_with("https://")) {
+        return Err("Only http and https URLs are allowed".to_string());
+    }
+    open::that(u).map_err(|e| e.to_string())
+}
+
 /// Opens the given path in the system file manager (Finder on macOS, Explorer on Windows, xdg-open on Linux).
 #[tauri::command]
 fn open_path_in_file_manager(path: String) -> Result<(), String> {
@@ -4551,6 +4614,7 @@ pub fn run() {
             open_project_in_system_terminal,
             open_project_in_editor,
             open_path_in_file_manager,
+            open_external_url,
             open_documentation_folder,
             get_documentation_folder_path,
             open_ideas_folder,

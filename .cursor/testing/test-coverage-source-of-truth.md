@@ -102,3 +102,26 @@
     - Planner UI includes a secondary Discrepancies tab.
     - Project integrity report endpoint exists for discrepancy audit + repair workflow.
 
+- `src-tauri/src/db/milestones_ideas.rs` (Tauri/SQLite `create_idea` + plan ticket numbering)
+  - Build verification: `cargo build --no-default-features` (in `src-tauri`)
+  - Related TypeScript behavior: `src/lib/__tests__/planner-integrity-automation.test.ts`, `src/lib/__tests__/milestones-ideas-no-general-default.test.ts` (planner/idea flows via API)
+
+- `src/lib/setup-entity-starters.ts`, `src/lib/setup-entities.ts` (`ensureSetupEntityMigrated` + `applyDefaultStarters`)
+  - `src/lib/__tests__/setup-entity-starters.test.ts`
+  - Covered behavior:
+    - Rule starters fill each category tab once (architecture, testing, security, design, general).
+    - Skill, MCP, and agent merges are idempotent and respect existing rows.
+
+- `src/lib/running-app-preview-url.ts`
+  - `src/lib/__tests__/running-app-preview-url.test.ts`
+  - Covered behavior:
+    - Canonical preview/open URL uses `127.0.0.1` with trailing slash.
+    - Invalid ports throw `RangeError`.
+
+- `src/lib/project-files-display.ts`, `src/components/organisms/Tabs/ProjectFilesTab.tsx`, `src/app/api/data/projects/[id]/files/route.ts`, `src-tauri/src/lib.rs` (`DirListingEntry` / `list_files_under_root`)
+  - `src/lib/__tests__/project-files-display.test.ts`
+  - Covered behavior:
+    - Filename extension parsing and POSIX permission string formatting for listing APIs.
+    - File-entry kind labels (folder, symlink, extension class, plain file).
+    - Project Files UI renders a dense metadata table (timestamps, mode, size).
+

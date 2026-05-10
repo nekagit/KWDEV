@@ -339,8 +339,14 @@ export async function deleteProjectPath(
 export type FileEntry = {
   name: string;
   isDirectory: boolean;
+  /** True when the directory entry is a symlink (link itself, not necessarily the target). */
+  isSymbolicLink?: boolean;
   size: number;
   updatedAt: string;
+  /** ISO 8601; empty when the filesystem does not expose creation time. */
+  createdAt?: string;
+  /** POSIX ls-style (e.g. `-rw-r--r--`) or platform placeholder. */
+  permissions?: string;
 };
 
 export async function listProjectFiles(

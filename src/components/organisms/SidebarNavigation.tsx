@@ -6,9 +6,12 @@ import { getOrganismClasses } from "./organism-classes";
 
 const c = getOrganismClasses("SidebarNavigation.tsx");
 
+type NavItemWithIconClass = SidebarNavItem & { iconClassName?: string };
+
 function getNavItems() {
   const { githubNavItem, workNavItems, bottomNavItems } = getSidebarNavItemsStructured();
-  const withClass = (item: SidebarNavItem, cls: string) => ({ ...item, iconClassName: cls });
+  const withClass = (item: SidebarNavItem, cls: string): NavItemWithIconClass =>
+    ({ ...item, iconClassName: cls });
   return {
     githubNavItem: withClass(githubNavItem, c["14"]),
     workNavItems: workNavItems.map((i) => withClass(i, c["14"])),
@@ -25,7 +28,7 @@ function SidebarNavigationContent({
 }) {
   const { githubNavItem, workNavItems, bottomNavItems } = getNavItems();
 
-  const renderItem = (item: NavItem) => {
+  const renderItem = (item: NavItemWithIconClass) => {
     const { href, label, icon, iconClassName } = item;
     const isActive = pathname === href || pathname.startsWith(href + "/");
     return (

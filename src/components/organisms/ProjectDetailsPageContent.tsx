@@ -24,6 +24,8 @@ import {
   Bot,
   Play,
   ExternalLink,
+  Globe,
+  Info,
   SlidersHorizontal,
   MessageSquare,
 } from "lucide-react";
@@ -65,6 +67,8 @@ import { toast } from "sonner";
 import { Breadcrumb } from "@/components/molecules/Navigation/Breadcrumb";
 import { debugIngest } from "@/lib/debug-ingest";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { buildRunningAppPreviewUrl } from "@/lib/running-app-preview-url";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const TAB_ROW_1 = [
   {
@@ -149,6 +153,8 @@ const ALL_BOTTOM_TABS = [...TAB_ROW_1, ...TAB_ROW_2] as const;
 const DEFAULT_BOTTOM_TAB_ORDER = ["project", "run", "setup", "prompts", "todo", "worker", "control", "git"] as const;
 const LEGACY_BOTTOM_TAB_ORDER = ["project", "todo", "run", "setup", "worker", "control", "git"] as const;
 
+type BottomTabId = (typeof DEFAULT_BOTTOM_TAB_ORDER)[number];
+
 /** Valid tab values for URL ?tab= (deep link). */
 const VALID_PROJECT_TABS = new Set([
   ...TAB_ROW_1.map((t) => t.value),
@@ -195,11 +201,11 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("worker");
-  const [bottomTabOrder, setBottomTabOrder] = useState<string[]>(
+  const [bottomTabOrder, setBottomTabOrder] = useState<BottomTabId[]>(
     [...DEFAULT_BOTTOM_TAB_ORDER]
   );
-  const [draggedBottomTab, setDraggedBottomTab] = useState<string | null>(null);
-  const [dragOverBottomTab, setDragOverBottomTab] = useState<string | null>(null);
+  const [draggedBottomTab, setDraggedBottomTab] = useState<BottomTabId | null>(null);
+  const [dragOverBottomTab, setDragOverBottomTab] = useState<BottomTabId | null>(null);
   // Sync active tab from URL ?tab= when valid (deep link; one-way: URL → tab).
   useEffect(() => {
     if (tabFromUrl && (VALID_PROJECT_TABS as Set<string>).has(tabFromUrl)) {
@@ -226,9 +232,12 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
         setBottomTabOrder(fallback);
         return;
       }
-      const validSet = new Set(fallback);
+      const validSet = new Set<string>(fallback);
       const deduped = parsed.filter(
-        (value): value is string => typeof value === "string" && validSet.has(value)
+        (value): value is BottomTabId =>
+          typeof value === "string" &&
+          validSet.has(value) &&
+          (DEFAULT_BOTTOM_TAB_ORDER as readonly string[]).includes(value)
       );
       const isLegacyDefault =
         deduped.length === LEGACY_BOTTOM_TAB_ORDER.length &&
@@ -277,6 +286,21 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
     setAgentProviderState(provider);
     if (projectId) setAgentProvider(projectId, provider);
   }, [projectId]);
+
+  const handleOpenRunningInSystemBrowser = useCallback(async () => {
+    if (viewRunningPort == null) return;
+    try {
+      const url = buildRunningAppPreviewUrl(viewRunningPort);
+      if (isTauri) {
+        await invoke("open_external_url", { url });
+        toast.success("Opened in your default browser");
+      } else {
+        window.open(url, "_blank", "noopener,noreferrer");
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not open browser");
+    }
+  }, [viewRunningPort]);
 
   useEffect(() => {
     if (project?.runPort != null) setPortInput(String(project.runPort));
@@ -355,7 +379,7 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
     return () => window.removeEventListener("ticket-implementation-done", handler);
   }, [projectId]);
   const handleBottomTabDrop = useCallback(
-    (targetValue: string) => {
+    (targetValue: BottomTabId) => {
       if (!draggedBottomTab || draggedBottomTab === targetValue) return;
       setBottomTabOrder((previous) => {
         const fromIndex = previous.indexOf(draggedBottomTab);
@@ -497,7 +521,7 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
   const architectureCount = project.architectureIds?.length ?? 0;
   const bottomTabMap = new Map(ALL_BOTTOM_TABS.map((tab) => [tab.value, tab] as const));
   const orderedBottomTabs = bottomTabOrder
-    .map((value) => bottomTabMap.get(value))
+    .map((value) => bottomTabMap.get(value as BottomTabId))
     .filter((tab): tab is (typeof ALL_BOTTOM_TABS)[number] => !!tab);
 
   return (
@@ -724,7 +748,7 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
             key={`${projectId}-prompts`}
             className="mt-0 animate-in fade-in-0 slide-in-from-bottom-2 duration-300"
           >
-            <ProjectPromptsTab projectId={projectId} projectPath={project.repoPath} />
+            <ProjectPromptsTab projectId={projectId} projectPath={project.repoPath ?? ""} />
           </TabsContent>
 
           {/* ── Planner Tab ── */}
@@ -904,29 +928,52 @@ export function ProjectDetailsPageContent(props: ProjectDetailsPageContentProps 
       {/* View Running Project modal: iframe + open in new tab — full viewport width/height */}
       <Dialog open={viewRunningOpen} onOpenChange={setViewRunningOpen}>
         <DialogContent className="max-w-[100vw] w-[100vw] sm:max-w-[100vw] h-[100vh] max-h-[100vh] flex flex-col gap-3 p-0 overflow-hidden rounded-none border-0 sm:rounded-none sm:border-0">
-          <DialogHeader className="px-4 pt-4 pb-0 shrink-0">
-            <DialogTitle className="text-sm font-medium">Running project</DialogTitle>
+          <DialogHeader className="px-4 pt-4 pb-0 shrink-0 space-y-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <DialogTitle className="text-sm font-medium">Running project</DialogTitle>
+              {viewRunningPort != null && (
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="gap-1.5"
+                    onClick={() => void handleOpenRunningInSystemBrowser()}
+                  >
+                    <Globe className="size-3.5" />
+                    Open in default browser
+                  </Button>
+                  <Button variant="outline" size="sm" className="gap-1.5" asChild>
+                    <a
+                      href={buildRunningAppPreviewUrl(viewRunningPort)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <ExternalLink className="size-3.5" />
+                      Open in new tab
+                    </a>
+                  </Button>
+                </div>
+              )}
+            </div>
           </DialogHeader>
           <div className="flex-1 min-h-0 flex flex-col gap-2 px-4 pb-4 overflow-hidden">
             {viewRunningPort != null && (
               <>
-                <a
-                  href={`http://localhost:${viewRunningPort}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline shrink-0"
-                >
-                  <ExternalLink className="size-3" />
-                  Open in new tab
-                </a>
-                <p className="text-xs text-muted-foreground shrink-0">
-                  If the app does not load below (e.g. when this page is on HTTPS), use &quot;Open in new tab&quot; above.
-                </p>
+                <Alert className="border-amber-500/40 bg-amber-500/5 py-3">
+                  <Info className="size-4 text-amber-600 dark:text-amber-500" />
+                  <AlertTitle className="text-sm">Embedded preview often stays blank</AlertTitle>
+                  <AlertDescription className="text-xs text-muted-foreground">
+                    Next.js, Vite, and many dev servers send headers (
+                    <span className="font-mono">X-Frame-Options</span>,{" "}
+                    <span className="font-mono">Content-Security-Policy</span>) that block iframes inside this window.
+                    Use <strong>Open in default browser</strong> above to view your app reliably — especially in the desktop app.
+                  </AlertDescription>
+                </Alert>
                 <div className="flex-1 min-h-0 rounded-md border border-border bg-muted/30 overflow-hidden">
                   <iframe
                     title="Running project"
-                    src={`http://localhost:${viewRunningPort}`}
-                    className="w-full h-full min-h-[400px] block rounded-md border-0"
+                    src={buildRunningAppPreviewUrl(viewRunningPort)}
+                    className="w-full h-full min-h-[400px] block rounded-md border-0 bg-background"
                     style={{ height: "100%" }}
                   />
                 </div>

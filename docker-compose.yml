@@ -1,0 +1,25 @@
+# Optional: run the Next.js web UI in Docker (development server).
+# Easiest path remains: `npm run dev` on the host → http://127.0.0.1:4000
+#
+# Usage:
+#   docker compose up --build
+#
+# Mounts this repo into the container and installs deps into a named volume.
+
+services:
+  web:
+    image: node:20-bookworm
+    working_dir: /app
+    volumes:
+      - .:/app
+      - kwdev-node-modules:/app/node_modules
+    ports:
+      - "${KWDEV_PORT:-4000}:4000"
+    environment:
+      NEXT_PUBLIC_IS_TAURI: "false"
+      WATCHPACK_POLLING: "true"
+    command: >
+      bash -lc "npm ci && npx next dev -p 4000 -H 0.0.0.0 --webpack"
+
+volumes:
+  kwdev-node-modules:

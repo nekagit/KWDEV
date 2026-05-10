@@ -5,7 +5,7 @@ KWDEV is a project/workflow workspace focused on agent-driven software execution
 
 ## Core Areas
 - **Projects page**: central project navigation and details.
-- **Project tab (inside project details)**: focused on project files and ADR workspace management.
+- **Project tab (inside project details)**: focused on project files and ADR workspace management. **Project Files** uses a scrollable table with name, kind (folder / symlink / extension), size, modified & created timestamps, POSIX-style permissions (desktop + Unix web), and row actions.
 - **Setup tab (inside project details)**: top-level setup tabs are Architecture, Testing, Security, Skills, Design, Rules, MCP, and Agents.
 - **Prompts tab (inside project details)**: dedicated bottom-circle tab for project prompt management and full codebase prompt catalog.
 - **Rules in Setup**: Rules tab uses three category tabs: Architecture, Testing, and Security.
@@ -117,6 +117,7 @@ KWDEV is a project/workflow workspace focused on agent-driven software execution
   - prompt records already stored in database tables
 
 ## Setup Entity Storage (current)
+- On first load of each Setup entity table (and for projects already migrated), **default starter rows** are merged in when missing: **rules** — one row per category (`architecture`, `testing`, `security`, `design`, `general`); **skills** — two named starters; **MCP** — one example JSON template when empty; **agents** — one markdown starter agent when empty.
 - Setup entities are DB-first and project-scoped.
 - `Prompts`, `Skills`, `Rules`, and `Agents` are stored in `project_docs`:
   - `setup_prompts`
@@ -128,6 +129,10 @@ KWDEV is a project/workflow workspace focused on agent-driven software execution
 - Setup migration status is tracked per project in `project_configs`:
   - `setup_migrations`
 - Legacy file sources are imported once per entity and project, then Setup reads/writes DB only.
+
+## Run tab — “Open running app” preview
+- Full-screen modal embeds `http://127.0.0.1:<port>/` in an iframe for convenience.
+- Many dev servers send **frame-blocking** headers (`X-Frame-Options`, CSP `frame-ancestors`), so the iframe is often **blank**; the UI prioritizes **Open in default browser** (Tauri invokes `open_external_url`) and **Open in new tab** for a reliable view.
 
 ## Vibing Section
 - Vibing now focuses on:
